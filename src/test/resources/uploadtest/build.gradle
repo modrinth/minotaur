@@ -1,0 +1,19 @@
+buildscript {
+    
+    dependencies {
+	
+        classpath files { file('../../../../build/libs').listFiles()}
+    }
+}
+
+apply plugin: 'java'
+
+import com.diluv.diluvgradle.TaskDiluvUpload
+
+task testPlugin (type: TaskDiluvUpload){
+    
+    token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d'
+    projectId = 242195
+    uploadFile = jar
+    changelog = 'The changelog for my file.'
+}
