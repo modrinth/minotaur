@@ -1,11 +1,7 @@
 plugins {
     id 'java'
-    id 'signing'
-    id 'io.codearte.nexus-staging' version '0.21.2'
-    id "de.marcphilipp.nexus-publish" version "0.4.0"
 }
 
-version = "${project_version}" + (isSnapshot() ? '+' + getBuildNumber() : '')
 description = 'Gradle plugin for deploying build artifacts.'
 
 sourceCompatibility = 1.8
@@ -19,31 +15,11 @@ repositories {
 dependencies {
 
     compile gradleApi()
-	
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.0'
-    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.12.5'
-    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.12.5'
 }
 
 test {
     useJUnitPlatform()
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    description = 'Creates a JAR containing the source code.'
-    from sourceSets.main.allSource
-    archiveClassifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    description = 'Creates a JAR containing the JavaDocs.'
-    from javadoc.destinationDir
-    archiveClassifier = 'javadoc'
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
 }
 
 jar {
@@ -60,92 +36,4 @@ jar {
                 'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
         ])
     }
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    if (System.getenv("GPG_KEYNAME")) {
-        ext."signing.gnupg.keyName" = System.getenv("GPG_KEYNAME");
-    }
-}
-
-signing {
-    useGpgCmd()
-    sign publishing.publications
-}
-
-tasks.withType(Sign) {
-    onlyIf { !isSnapshot() }
-}
-
-nexusStaging {
-    packageGroup = 'com.diluv'
-    numberOfRetries = 20
-    delayBetweenRetriesInMillis = 3000
-}
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            username = System.getenv("OSSRH_USERNAME")
-            password = System.getenv("OSSRH_PASSWORD")
-        }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            group = project.group
-            artifactId = project.name
-            version = project.version
-
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name = project.name
-                description = project.description
-                url = 'https://github.com/Diluv/Diluv-Gradle'
-
-                scm {
-                    connection = 'scm:git:git://github.com/Diluv/Diluv-Gradle.git'
-                    developerConnection = 'scm:git:ssh://github.com/Diluv/Diluv-Gradle.git'
-                    url = 'https://github.com/Diluv/Diluv-Gradle'
-                }
-
-                licenses {
-                    license {
-                        name = 'GNU Lesser General Public License v2.1'
-                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'lclc98'
-                        name = 'lclc98'
-                        email = 'lclc98@lclc98.com'
-                    }
-                }
-            }
-        }
-    }
-}
-
-nexusStaging {
-    username = System.getenv("OSSRH_USERNAME")
-    password = System.getenv("OSSRH_PASSWORD")
-}
-
-static String getBuildNumber() {
-    return System.getenv("BUILD_NUMBER") ?: "0"
-}
-
-static boolean isSnapshot() {
-    String ref = System.getenv("GITHUB_REF");
-    if (ref != null && ref.startsWith("refs/tags/v")) {
-        return false
-    }
-    return true
 }
