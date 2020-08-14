@@ -1,8 +1,14 @@
 buildscript {
-    
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
     dependencies {
-	
         classpath files { file('../../../../build/libs').listFiles()}
+        classpath group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
+        classpath group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
     }
 }
 
@@ -12,8 +18,11 @@ import com.diluv.diluvgradle.TaskDiluvUpload
 
 task testPlugin (type: TaskDiluvUpload){
     
-    token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d'
-    projectId = 242195
+	apiURL = 'http://127.0.0.1:4567/v1/projects/files'
+    token = "C_RxaYIzXLYxKXD8itdhMUB6J6rKLcvPWpinbpH0ezc"
+    projectId = 1
+	changelog = 'The changelog for my file.'
     uploadFile = jar
-    changelog = 'The changelog for my file.'
+	projectVersion = '99.0.12345'
+	gameVersion = '1.12.2'
 }
