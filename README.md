@@ -1,10 +1,25 @@
 # Diluv-Gradle
 
-A Gradle plugin for uploading build artifacts and other files to Diluv.
+A Gradle plugin that allows files and build artifacts to be uploaded to Diluv automatically.
 
 ## Requirements
 
-This plugin has only been tested with Gradle 4.9. Support for older Gradle versions is not guaranteed.
+This plugin has only been tested with Gradle 4.9. Compatibility with other versions is not guranteed.
+
+**NOTE:** In some environments you will need to add httpmime and httpclient to the script classpath. This is still being investigated.
+
+```groovy
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
+        classpath group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+    }
+}
+```
 
 ## Setup Guide
 
@@ -18,7 +33,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.diluv.diluvgradle:DiluvGradle:0.0.0'
+        classpath 'com.diluv.diluvgradle:DiluvGradle:VERSION'
     }
 }
 ```
@@ -30,14 +45,23 @@ import com.diluv.diluvgradle.TaskDiluvUpload
 
 task publishDiluv (type: TaskDiluvUpload){
     
-    token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d' // Use a property or something!
-    projectId = 242195
+    token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d' // Use an environment property!
+    projectId = 123456
+	projectVersion = '1.0.0'
     uploadFile = jar // This is the java jar task
-    changelog = 'The changelog for my file.'
+	gameVersion = '1.12.2'
 }
 ```
 
-Now you will be able to upload your build by adding publishDiluv to the Gradle CLI. 
-```
-./gradlew build publishDiluv
-```
+| Property       | Required | Description                                                                      |
+|----------------|----------|----------------------------------------------------------------------------------|
+| apiURL         | false    | The API endpoint URL to use for uploading files. Defaults to official Diluv API. |
+| token          | true     | A valid API token for the Diluv API.                                             |
+| projectId      | true     | The ID of the project to upload to.                                              |
+| projectVersion | true     | The version of the file. Please use semantic versioning.                         |
+| changelog      | false    | The changelog for the file. Allows markdown formatting.                          |
+| uploadFile     | true     | The file to upload. Can be an actual file or a file task.                        |
+| releaseType    | false    | The release status of the file. Defaults to "alpha".                             |
+| classifier     | false    | The type of file being uploaded. Defaults to binary.                             |
+| gameVersion    | true     | The version of the game the file is for.                                         |
+| dependencies   | false    | Currently unknown.                                                               |
