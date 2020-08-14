@@ -47,9 +47,9 @@ task publishDiluv (type: TaskDiluvUpload){
     
     token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d' // Use an environment property!
     projectId = 123456
-	projectVersion = '1.0.0'
+    projectVersion = '1.0.0'
     uploadFile = jar // This is the java jar task
-	gameVersion = '1.12.2'
+    gameVersion = '1.12.2'
 }
 ```
 
