@@ -49,7 +49,8 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The change log data to associate with the new file.
      */
-    public String changelog;
+    // TODO create a beter default message.
+    public String changelog = "The file has been updated.";
     
     /**
      * The upload artifact file. This can be any object type that is resolvable by
