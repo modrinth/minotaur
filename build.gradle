@@ -1,8 +1,6 @@
 plugins {
     id 'java'
-	id 'java-gradle-plugin'	
-    id 'maven-publish' // local
-	id 'com.gradle.plugin-publish' version '0.12.0' // public
+    id 'maven-publish'
 }
 
 version = '1.0.1'
@@ -46,29 +44,6 @@ jar {
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
         ])
-    }
-}
-
-pluginBundle {
-    website = 'https://www.diluv.com'
-    vcsUrl = 'https://github.com/Diluv/Diluv-Gradle'
-    plugins {
-        diluvPlugin {
-            id = 'com.diluv.diluvgradle'
-			displayName = project.archivesBaseName
-            version = project.version
-            description = project.description
-            tags = ['diluv', 'publish', 'minecraft']
-        }
-    }
-}
-
-gradlePlugin {
-    plugins {
-        diluvPlugin {
-            id = 'com.diluv.diluvgradle'
-            implementationClass = 'com.diluv.diluvgradle.DiluvPlugin'
-        }
     }
 }
 
