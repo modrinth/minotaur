@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle;
+package com.diluv.diluvgradle.responses;
 
 import java.util.List;
 import com.google.gson.annotations.Expose;
