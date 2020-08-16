@@ -1,9 +1,11 @@
 plugins {
     id 'java'
+	id 'java-gradle-plugin'	
     id 'maven-publish' // local
+	id 'com.gradle.plugin-publish' version '0.12.0' // public
 }
 
-version = '1.0.0'
+version = '1.0.1'
 group = 'com.diluv.diluvgradle'
 archivesBaseName = 'DiluvGradle'
 description = 'Gradle plugin for deploying build artifacts.'
@@ -47,26 +49,36 @@ jar {
     }
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.archivesBaseName
-            version project.version
-            from components.java
+pluginBundle {
+    website = 'https://www.diluv.com'
+    vcsUrl = 'https://github.com/Diluv/Diluv-Gradle'
+    plugins {
+        diluvPlugin {
+            id = 'com.diluv.diluvgradle'
+			displayName = project.archivesBaseName
+            version = project.version
+            description = project.description
+            tags = ['diluv', 'publish', 'minecraft']
         }
     }
+}
 
-    repositories {
-        maven {
-            // Sets the login credentials for your maven.
-            credentials {
-                username findProperty('userMaven')
-                password findProperty('authMaven')
-            }
+gradlePlugin {
+    plugins {
+        diluvPlugin {
+            id = 'com.diluv.diluvgradle'
+            implementationClass = 'com.diluv.diluvgradle.DiluvPlugin'
+        }
+    }
+}
 
-            // Sets the maven URL
-            url findProperty('urlMaven')
+publishing {
+    publications {
+        pluginPublication (MavenPublication) {
+            from components.java;
+            groupId = project.group;
+            artifactId = project.archivesBaseName;
+            version = project.version;
         }
     }
 }

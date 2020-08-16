@@ -9,6 +9,7 @@ buildscript {
         classpath files { file('../../../../build/libs').listFiles()}
         classpath group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
         classpath group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+		classpath group: 'com.google.code.gson', name: 'gson', version: '2.6.2'
     }
 }
 
@@ -23,6 +24,6 @@ task testPlugin (type: TaskDiluvUpload){
     projectId = 1
 	changelog = 'The changelog for my file.'
     uploadFile = jar
-	projectVersion = '99.0.12345'
+	projectVersion = '99.0.333'
 	gameVersion = '1.12.2'
 }

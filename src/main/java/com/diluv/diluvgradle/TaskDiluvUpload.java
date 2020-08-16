@@ -14,16 +14,22 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * A task used to communicate with Diluv for the purpose of uploading build artifacts.
  */
 public class TaskDiluvUpload extends DefaultTask {
             
+    private static final Gson GSON = new GsonBuilder().create();
+    
     /**
      * The URL used for communicating with Diluv. This should not be changed unless you know
      * what you're doing. It's main use case is for debug, development, or advanced user
@@ -78,6 +84,15 @@ public class TaskDiluvUpload extends DefaultTask {
     // TODO how to format this
     public String dependencies;
     
+    @Nullable
+    private ResponseUpload uploadInfo;
+    
+    @Nullable
+    public ResponseUpload getUploadInfo() {
+        
+        return this.uploadInfo;
+    }
+    
     @TaskAction
     public void apply () {
         
@@ -122,11 +137,20 @@ public class TaskDiluvUpload extends DefaultTask {
         
         try {
             
-            // TODO Expose response data to the script.
-            // TODO Check response and post success/fail lifecycle message.
             final HttpResponse response = client.execute(post);
-                        
-            this.getProject().getLogger().info("Sucessfully uploaded {} to {}.", file.getName(), this.projectId);
+            final int status = response.getStatusLine().getStatusCode();
+            
+            if (status == 200) {
+                
+                this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
+                this.getProject().getLogger().lifecycle("Sucessfully uploaded {} to {} as file id {}.", file.getName(), this.projectId, uploadInfo.getId());
+            }
+            
+            else {
+                
+                // TODO handle errors better
+                this.getProject().getLogger().error("Upload failed! Status: {} Response: {}", status, EntityUtils.toString(response.getEntity()));
+            }
         }
         
         catch (IOException e) {
