@@ -20,6 +20,7 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
+import com.diluv.diluvgradle.responses.ResponseUpload;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -109,6 +110,15 @@ public class TaskDiluvUpload extends DefaultTask {
     }
     
     public void upload() throws URISyntaxException, IOException {
+        
+        if (this.gameVersion == null) {
+            
+            if (getProject().getExtensions().getExtraProperties().has("MC_VERSION")) {
+                
+                this.gameVersion = getProject().getExtensions().getExtraProperties().get("MC_VERSION").toString();
+                this.getProject().getLogger().debug("No game version specified. Using fallback version {} from ForgeGradle.", this.gameVersion);
+            }
+        }
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.apiURL);
