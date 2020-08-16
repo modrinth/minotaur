@@ -111,13 +111,10 @@ public class TaskDiluvUpload extends DefaultTask {
     
     public void upload() throws URISyntaxException, IOException {
         
+        // Attempt to automatically resolve the game version if one wasn't specified.
         if (this.gameVersion == null) {
             
-            if (getProject().getExtensions().getExtraProperties().has("MC_VERSION")) {
-                
-                this.gameVersion = getProject().getExtensions().getExtraProperties().get("MC_VERSION").toString();
-                this.getProject().getLogger().debug("No game version specified. Using fallback version {} from ForgeGradle.", this.gameVersion);
-            }
+            this.gameVersion = detectGameVersion(this.getProject());
         }
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
@@ -207,6 +204,29 @@ public class TaskDiluvUpload extends DefaultTask {
         return project.file(in);
     }
 
+    /**
+     * Attempts to automatically detect a game version based on the script environment. This is intended as a fallback and should never override user specified data.
+     * @param project The Gradle project to look through.
+     * @return A detected game version string. This will be null if nothing was found.
+     */
+    @Nullable
+    private static String detectGameVersion(Project project) {
+        
+        String version = null;
+        
+        // ForgeGradle will store the game version here.
+        // https://github.com/MinecraftForge/ForgeGradle/blob/9252ffe1fa5c2acf133f35d169ba4ffc84e6a9fd/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L179
+        if (project.getExtensions().getExtraProperties().has("MC_VERSION")) {
+            
+            version = project.getExtensions().getExtraProperties().get("MC_VERSION").toString();
+        }
+        
+        // TODO Add loom support.
+        
+        project.getLogger().debug("Using fallback game version {}.", version);
+        return version;
+    }
+    
     @Override
     public String toString () {
         
