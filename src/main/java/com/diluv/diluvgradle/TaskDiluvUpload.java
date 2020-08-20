@@ -38,7 +38,8 @@ public class TaskDiluvUpload extends DefaultTask {
     private static final Gson GSON = new GsonBuilder().create();
     
     /**
-     * A regex pattern for matching semantic versioning version numbers. This was taken from https://semver.org/.
+     * A regex pattern for matching semantic versioning version numbers. This was taken from
+     * https://semver.org/.
      */
     private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
     
@@ -78,7 +79,6 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The release type for the project.
      */
-    // TODO get a list of valid types
     public String releaseType = "alpha";
     
     /**
@@ -89,18 +89,29 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The version of the game the file supports.
      */
-    // TODO validate this.
     public String gameVersion;
     
     // TODO how to format this
     public String dependencies;
     
+    /**
+     * The response from the API when the file was uploaded successfully.
+     */
     @Nullable
     public ResponseUpload uploadInfo = null;
     
+    /**
+     * The response from the API when the file failed to upload.
+     */
     @Nullable
     public ResponseError errorInfo = null;
     
+    /**
+     * Checks if the upload was successful or not. This is provided as a small helper for use
+     * in the build script.
+     * 
+     * @return Whether or not the file was successfully uploaded.
+     */
     public boolean wasUploadSuccessful () {
         
         return this.uploadInfo != null && this.errorInfo == null;
@@ -122,7 +133,7 @@ public class TaskDiluvUpload extends DefaultTask {
         }
         
         // Only semantic versioning is allowed.
-        if (!isSemanticVersion(this.projectVersion)) {
+        if (!SEM_VER.matcher(this.projectVersion).matches()) {
             
             this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
             throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
@@ -136,6 +147,7 @@ public class TaskDiluvUpload extends DefaultTask {
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         
+        // Ensure the file actually exists before trying to upload it.
         if (file == null || !file.exists()) {
             
             this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
@@ -145,26 +157,33 @@ public class TaskDiluvUpload extends DefaultTask {
         try {
             
             final URI endpoint = new URI(this.getUploadEndpoint());
-                        
+            
             try {
                 
                 this.upload(endpoint, file);
             }
             
-            catch (IOException e) {
+            catch (final IOException e) {
                 
                 this.getProject().getLogger().error("Failed to upload the file!", e);
                 throw new GradleException("Failed to upload the file!", e);
             }
         }
         
-        catch (URISyntaxException e) {
-
+        catch (final URISyntaxException e) {
+            
             this.getProject().getLogger().error("Invalid endpoint URI!", e);
             throw new GradleException("Invalid endpoint URI!", e);
         }
     }
     
+    /**
+     * Uploads a file using the provided configuration.
+     * 
+     * @param endpoint The upload endpoint.
+     * @param file The file to upload.
+     * @throws IOException Whenever something goes wrong wit uploading the file.
+     */
     public void upload (URI endpoint, File file) throws IOException {
         
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
@@ -223,14 +242,14 @@ public class TaskDiluvUpload extends DefaultTask {
         return "TaskDiluvUpload [apiURL=" + this.apiURL + ", token=" + (this.token != null) + ", projectId=" + this.projectId + ", projectVersion=" + this.projectVersion + ", changelog=" + this.changelog + ", uploadFile=" + this.uploadFile + ", releaseType=" + this.releaseType + ", classifier=" + this.classifier + ", gameVersion=" + this.gameVersion + ", dependencies=" + this.dependencies + "]";
     }
     
+    /**
+     * Provides the upload API endpoint to use.
+     * 
+     * @return The upload API endpoint.
+     */
     private String getUploadEndpoint () {
         
         return this.apiURL + "/v1/projects/" + this.projectId + "/files";
-    }
-    
-    private static boolean isSemanticVersion (String version) {
-        
-        return SEM_VER.matcher(version).matches();
     }
     
     /**
