@@ -176,6 +176,7 @@ public class TaskDiluvUpload extends DefaultTask {
                 
             	this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
             	this.getProject().getLogger().error("Upload failed! Status: {} Reson: {}", status, this.errorInfo.getMessage());
+            	throw new GradleException("Upload failed! Status: " + status + " Reson: " + this.errorInfo.getMessage());
             }
         }
         
