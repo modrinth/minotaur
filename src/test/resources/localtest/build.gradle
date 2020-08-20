@@ -26,6 +26,9 @@ task testPlugin (type: TaskDiluvUpload){
     
     doLast {
     
-        println 'Download: ' + uploadInfo.getDownloadURL()
+        if (uploadInfo != null) {
+		
+            println 'Download: ' + uploadInfo.getDownloadURL()
+		}
     }
 }

@@ -91,12 +91,6 @@ public class TaskDiluvUpload extends DefaultTask {
     @Nullable
     private ResponseUpload uploadInfo;
     
-    @Nullable
-    public ResponseUpload getUploadInfo() {
-        
-        return this.uploadInfo;
-    }
-    
     @TaskAction
     public void apply () {
         
