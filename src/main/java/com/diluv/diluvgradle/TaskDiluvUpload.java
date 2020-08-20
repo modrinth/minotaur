@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +31,8 @@ import com.google.gson.GsonBuilder;
 public class TaskDiluvUpload extends DefaultTask {
             
     private static final Gson GSON = new GsonBuilder().create();
+    
+    private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
     
     /**
      * The URL used for communicating with Diluv. This should not be changed unless you know
@@ -123,6 +126,12 @@ public class TaskDiluvUpload extends DefaultTask {
         	this.projectVersion = this.getProject().getVersion().toString();
         }
         
+        if (!isSemanticVersion(this.projectVersion)) {
+        	
+        	this.getProject().getLogger().error("Project version {} is not semantic versioning. The file can not be uploaded. https://semver.org", this.projectVersion);
+        	return;
+        }
+        
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
@@ -183,6 +192,11 @@ public class TaskDiluvUpload extends DefaultTask {
     private String getUploadEndpoint() {
         
         return this.apiURL + "/v1/projects/" + this.projectId + "/files";
+    }
+    
+    private static boolean isSemanticVersion(String version) {
+    	
+    	return SEM_VER.matcher(version).matches();
     }
     
     /**
