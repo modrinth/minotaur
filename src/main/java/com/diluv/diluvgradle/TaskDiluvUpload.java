@@ -100,6 +100,24 @@ public class TaskDiluvUpload extends DefaultTask {
     @TaskAction
     public void apply () {
         
+        // Attempt to automatically resolve the game version if one wasn't specified.
+        if (this.gameVersion == null) {
+            
+            this.gameVersion = detectGameVersion(this.getProject());
+        }
+        
+        // Use project version if no version is specified.
+        if (this.projectVersion == null) {
+            
+            this.projectVersion = this.getProject().getVersion().toString();
+        }
+        
+        if (!isSemanticVersion(this.projectVersion)) {
+            
+            this.getProject().getLogger().error("Project version {} is not semantic versioning. The file can not be uploaded. https://semver.org", this.projectVersion);
+            return;
+        }
+        
         try {
             
             this.upload();
@@ -113,24 +131,6 @@ public class TaskDiluvUpload extends DefaultTask {
     }
     
     public void upload() throws URISyntaxException, IOException {
-        
-        // Attempt to automatically resolve the game version if one wasn't specified.
-        if (this.gameVersion == null) {
-            
-            this.gameVersion = detectGameVersion(this.getProject());
-        }
-        
-        // Use project version if no version is specified.
-        if (this.projectVersion == null) {
-        	
-        	this.projectVersion = this.getProject().getVersion().toString();
-        }
-        
-        if (!isSemanticVersion(this.projectVersion)) {
-        	
-        	this.getProject().getLogger().error("Project version {} is not semantic versioning. The file can not be uploaded. https://semver.org", this.projectVersion);
-        	return;
-        }
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());

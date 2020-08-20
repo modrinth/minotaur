@@ -13,7 +13,7 @@ apply plugin: 'java'
 
 import com.diluv.diluvgradle.TaskDiluvUpload
 
-version = '1.0.99'
+version = '1.0.200.qwerty'
 
 task testPlugin (type: TaskDiluvUpload){
     
