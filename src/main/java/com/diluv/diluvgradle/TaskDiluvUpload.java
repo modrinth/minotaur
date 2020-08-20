@@ -122,9 +122,17 @@ public class TaskDiluvUpload extends DefaultTask {
             throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
         }
         
+        final File file = resolveFile(this.getProject(), this.uploadFile, null);
+        
+        if (file == null || !file.exists()) {
+        	
+            this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
+            throw new GradleException("The upload file is missing or null. " + String.valueOf(this.uploadFile));
+        }
+        
         try {
             
-            this.upload();
+            this.upload(file);
         }
         
         catch (URISyntaxException | IOException e) {
@@ -134,9 +142,8 @@ public class TaskDiluvUpload extends DefaultTask {
         }
     }
     
-    public void upload () throws URISyntaxException, IOException {
+    public void upload (File file) throws URISyntaxException, IOException {
         
-        final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
