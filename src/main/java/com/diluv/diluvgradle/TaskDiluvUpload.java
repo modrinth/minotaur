@@ -117,6 +117,12 @@ public class TaskDiluvUpload extends DefaultTask {
             this.gameVersion = detectGameVersion(this.getProject());
         }
         
+        // Use project version if no version is specified.
+        if (this.projectVersion == null) {
+        	
+        	this.projectVersion = this.getProject().getVersion().toString();
+        }
+        
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
@@ -165,6 +171,18 @@ public class TaskDiluvUpload extends DefaultTask {
             this.getProject().getLogger().error("Failure to upload file!", e);
             throw e;
         }
+    }
+    
+    
+    @Override
+    public String toString () {
+        
+        return "TaskDiluvUpload [apiURL=" + apiURL + ", token=" + (token != null) + ", projectId=" + projectId + ", projectVersion=" + projectVersion + ", changelog=" + changelog + ", uploadFile=" + uploadFile + ", releaseType=" + releaseType + ", classifier=" + classifier + ", gameVersion=" + gameVersion + ", dependencies=" + dependencies + "]";
+    }
+    
+    private String getUploadEndpoint() {
+        
+        return this.apiURL + "/v1/projects/" + this.projectId + "/files";
     }
     
     /**
@@ -225,16 +243,5 @@ public class TaskDiluvUpload extends DefaultTask {
         
         project.getLogger().debug("Using fallback game version {}.", version);
         return version;
-    }
-    
-    @Override
-    public String toString () {
-        
-        return "TaskDiluvUpload [apiURL=" + apiURL + ", token=" + (token != null) + ", projectId=" + projectId + ", projectVersion=" + projectVersion + ", changelog=" + changelog + ", uploadFile=" + uploadFile + ", releaseType=" + releaseType + ", classifier=" + classifier + ", gameVersion=" + gameVersion + ", dependencies=" + dependencies + "]";
-    }
-    
-    private String getUploadEndpoint() {
-    	
-    	return this.apiURL + "/v1/projects/" + this.projectId + "/files";
     }
 }

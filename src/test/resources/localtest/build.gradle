@@ -13,6 +13,8 @@ apply plugin: 'java'
 
 import com.diluv.diluvgradle.TaskDiluvUpload
 
+version = '1.0.99'
+
 task testPlugin (type: TaskDiluvUpload){
     
     apiURL = 'http://127.0.0.1:4567'
@@ -20,7 +22,6 @@ task testPlugin (type: TaskDiluvUpload){
     projectId = 1
     changelog = 'The changelog for my file.'
     uploadFile = jar
-    projectVersion = '5.0.999'
     gameVersion = '1.12.2'
     
     doLast {
