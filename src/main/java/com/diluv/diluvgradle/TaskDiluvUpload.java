@@ -144,22 +144,33 @@ public class TaskDiluvUpload extends DefaultTask {
         
         try {
             
-            this.upload(file);
+            final URI endpoint = new URI(this.getUploadEndpoint());
+                        
+            try {
+                
+                this.upload(endpoint, file);
+            }
+            
+            catch (IOException e) {
+                
+                this.getProject().getLogger().error("Failed to upload the file!", e);
+                throw new GradleException("Failed to upload the file!", e);
+            }
         }
         
-        catch (URISyntaxException | IOException e) {
-            
-            // TODO handle errors better. Build failure?
-            this.getProject().getLogger().error("Failure to upload file!", e);
+        catch (URISyntaxException e) {
+
+            this.getProject().getLogger().error("Invalid endpoint URI!", e);
+            throw new GradleException("Invalid endpoint URI!", e);
         }
     }
     
-    public void upload (File file) throws URISyntaxException, IOException {
+    public void upload (URI endpoint, File file) throws IOException {
         
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
-        final HttpPost post = new HttpPost(new URI(this.getUploadEndpoint()));
+        final HttpPost post = new HttpPost(endpoint);
         
         post.addHeader("Authorization", "Bearer " + this.token);
         
