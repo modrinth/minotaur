@@ -125,7 +125,7 @@ public class TaskDiluvUpload extends DefaultTask {
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         
         if (file == null || !file.exists()) {
-        	
+            
             this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
             throw new GradleException("The upload file is missing or null. " + String.valueOf(this.uploadFile));
         }
