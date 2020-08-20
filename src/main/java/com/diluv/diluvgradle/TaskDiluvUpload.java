@@ -22,6 +22,7 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
+import com.diluv.diluvgradle.responses.ResponseError;
 import com.diluv.diluvgradle.responses.ResponseUpload;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -90,7 +91,15 @@ public class TaskDiluvUpload extends DefaultTask {
     public String dependencies;
     
     @Nullable
-    private ResponseUpload uploadInfo;
+    private ResponseUpload uploadInfo = null;
+    
+    @Nullable
+    private ResponseError errorInfo = null;
+    
+    public boolean wasUploadSuccessful() {
+    	
+    	return this.uploadInfo != null && this.errorInfo == null;
+    }
     
     @TaskAction
     public void apply () {
@@ -165,8 +174,8 @@ public class TaskDiluvUpload extends DefaultTask {
             
             else {
                 
-                // TODO handle errors better
-                this.getProject().getLogger().error("Upload failed! Status: {} Response: {}", status, EntityUtils.toString(response.getEntity()));
+            	this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+            	this.getProject().getLogger().error("Upload failed! Status: {} Reson: {}", status, this.errorInfo.getMessage());
             }
         }
         
