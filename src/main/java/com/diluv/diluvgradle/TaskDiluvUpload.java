@@ -32,8 +32,14 @@ import com.google.gson.GsonBuilder;
  */
 public class TaskDiluvUpload extends DefaultTask {
     
+    /**
+     * Constant gson instance used for deserializing the API responses when files are uploaded.
+     */
     private static final Gson GSON = new GsonBuilder().create();
     
+    /**
+     * A regex pattern for matching semantic versioning version numbers. This was taken from https://semver.org/.
+     */
     private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
     
     /**
@@ -61,8 +67,7 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The change log data to associate with the new file.
      */
-    // TODO create a beter default message.
-    public String changelog = "The file has been updated.";
+    public String changelog;
     
     /**
      * The upload artifact file. This can be any object type that is resolvable by
@@ -116,10 +121,17 @@ public class TaskDiluvUpload extends DefaultTask {
             this.projectVersion = this.getProject().getVersion().toString();
         }
         
+        // Only semantic versioning is allowed.
         if (!isSemanticVersion(this.projectVersion)) {
             
             this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
             throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
+        }
+        
+        // Set a default changelog if the dev hasn't provided one.
+        if (this.changelog == null) {
+            
+            this.changelog = "The project has been updated to " + this.getProject() + ". No changelog was specified.";
         }
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
