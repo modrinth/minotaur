@@ -1,11 +1,12 @@
 package com.diluv.diluvgradle.responses;
 
 import java.util.List;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class ResponseUpload {
-
+    
     @Expose
     @SerializedName("status")
     private String status;
@@ -53,12 +54,12 @@ public class ResponseUpload {
     @Expose
     @SerializedName("dependencies")
     // TODO Is this String or Long
-    private List<Object> dependencies = null;
+    private final List<Object> dependencies = null;
     
     @Expose
     @SerializedName("gameVersions")
     // TODO Is this String or Long
-    private List<Object> gameVersions = null;
+    private final List<Object> gameVersions = null;
     
     @Expose
     @SerializedName("gameSlug")
@@ -83,80 +84,99 @@ public class ResponseUpload {
     @Expose
     @SerializedName("uploaderDisplayName")
     private String uploaderDisplayName;
-
-    public String getStatus() {
-        return status;
-    }
-
-    public Long getLastStatusChanged() {
-        return lastStatusChanged;
-    }
-
-    public Long getId() {
-        return id;
+    
+    public String getStatus () {
+        
+        return this.status;
     }
     
-    public String getName() {
-        return name;
-    }
-
-    public String getDownloadURL() {
-        return downloadURL;
-    }
-
-    public Long getSize() {
-        return size;
-    }
-
-    public String getChangelog() {
-        return changelog;
-    }
-
-    public String getSha512() {
-        return sha512;
-    }
-
-    public String getReleaseType() {
-        return releaseType;
-    }
-
-    public String getClassifier() {
-        return classifier;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public List<Object> getDependencies() {
-        return dependencies;
-    }
-
-    public List<Object> getGameVersions() {
-        return gameVersions;
-    }
-
-    public String getGameSlug() {
-        return gameSlug;
-    }
-
-    public String getProjectTypeSlug() {
-        return projectTypeSlug;
-    }
-
-    public String getProjectSlug() {
-        return projectSlug;
-    }
-
-    public Long getUploaderUserId() {
-        return uploaderUserId;
-    }
-
-    public String getUploaderUsername() {
-        return uploaderUsername;
+    public Long getLastStatusChanged () {
+        
+        return this.lastStatusChanged;
     }
     
-    public String getUploaderDisplayName() {
-        return uploaderDisplayName;
+    public Long getId () {
+        
+        return this.id;
+    }
+    
+    public String getName () {
+        
+        return this.name;
+    }
+    
+    public String getDownloadURL () {
+        
+        return this.downloadURL;
+    }
+    
+    public Long getSize () {
+        
+        return this.size;
+    }
+    
+    public String getChangelog () {
+        
+        return this.changelog;
+    }
+    
+    public String getSha512 () {
+        
+        return this.sha512;
+    }
+    
+    public String getReleaseType () {
+        
+        return this.releaseType;
+    }
+    
+    public String getClassifier () {
+        
+        return this.classifier;
+    }
+    
+    public Long getCreatedAt () {
+        
+        return this.createdAt;
+    }
+    
+    public List<Object> getDependencies () {
+        
+        return this.dependencies;
+    }
+    
+    public List<Object> getGameVersions () {
+        
+        return this.gameVersions;
+    }
+    
+    public String getGameSlug () {
+        
+        return this.gameSlug;
+    }
+    
+    public String getProjectTypeSlug () {
+        
+        return this.projectTypeSlug;
+    }
+    
+    public String getProjectSlug () {
+        
+        return this.projectSlug;
+    }
+    
+    public Long getUploaderUserId () {
+        
+        return this.uploaderUserId;
+    }
+    
+    public String getUploaderUsername () {
+        
+        return this.uploaderUsername;
+    }
+    
+    public String getUploaderDisplayName () {
+        
+        return this.uploaderDisplayName;
     }
 }

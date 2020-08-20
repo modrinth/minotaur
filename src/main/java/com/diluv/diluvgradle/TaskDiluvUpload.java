@@ -31,7 +31,7 @@ import com.google.gson.GsonBuilder;
  * A task used to communicate with Diluv for the purpose of uploading build artifacts.
  */
 public class TaskDiluvUpload extends DefaultTask {
-            
+    
     private static final Gson GSON = new GsonBuilder().create();
     
     private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
@@ -69,7 +69,7 @@ public class TaskDiluvUpload extends DefaultTask {
      * {@link #resolveFile(Project, Object, File)}.
      */
     public Object uploadFile;
-
+    
     /**
      * The release type for the project.
      */
@@ -91,14 +91,14 @@ public class TaskDiluvUpload extends DefaultTask {
     public String dependencies;
     
     @Nullable
-    private ResponseUpload uploadInfo = null;
+    public ResponseUpload uploadInfo = null;
     
     @Nullable
-    private ResponseError errorInfo = null;
+    public ResponseError errorInfo = null;
     
-    public boolean wasUploadSuccessful() {
-    	
-    	return this.uploadInfo != null && this.errorInfo == null;
+    public boolean wasUploadSuccessful () {
+        
+        return this.uploadInfo != null && this.errorInfo == null;
     }
     
     @TaskAction
@@ -134,14 +134,14 @@ public class TaskDiluvUpload extends DefaultTask {
         }
     }
     
-    public void upload() throws URISyntaxException, IOException {
+    public void upload () throws URISyntaxException, IOException {
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
         this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
         final HttpPost post = new HttpPost(new URI(this.getUploadEndpoint()));
-
+        
         post.addHeader("Authorization", "Bearer " + this.token);
         
         final MultipartEntityBuilder form = MultipartEntityBuilder.create();
@@ -169,39 +169,38 @@ public class TaskDiluvUpload extends DefaultTask {
             if (status == 200) {
                 
                 this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-                this.getProject().getLogger().lifecycle("Sucessfully uploaded {} to {} as file id {}.", file.getName(), this.projectId, uploadInfo.getId());
+                this.getProject().getLogger().lifecycle("Sucessfully uploaded {} to {} as file id {}.", file.getName(), this.projectId, this.uploadInfo.getId());
             }
             
             else {
                 
-            	this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-            	this.getProject().getLogger().error("Upload failed! Status: {} Reson: {}", status, this.errorInfo.getMessage());
-            	throw new GradleException("Upload failed! Status: " + status + " Reson: " + this.errorInfo.getMessage());
+                this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+                this.getProject().getLogger().error("Upload failed! Status: {} Reson: {}", status, this.errorInfo.getMessage());
+                throw new GradleException("Upload failed! Status: " + status + " Reson: " + this.errorInfo.getMessage());
             }
         }
         
-        catch (IOException e) {
-
+        catch (final IOException e) {
+            
             this.getProject().getLogger().error("Failure to upload file!", e);
             throw e;
         }
     }
     
-    
     @Override
     public String toString () {
         
-        return "TaskDiluvUpload [apiURL=" + apiURL + ", token=" + (token != null) + ", projectId=" + projectId + ", projectVersion=" + projectVersion + ", changelog=" + changelog + ", uploadFile=" + uploadFile + ", releaseType=" + releaseType + ", classifier=" + classifier + ", gameVersion=" + gameVersion + ", dependencies=" + dependencies + "]";
+        return "TaskDiluvUpload [apiURL=" + this.apiURL + ", token=" + (this.token != null) + ", projectId=" + this.projectId + ", projectVersion=" + this.projectVersion + ", changelog=" + this.changelog + ", uploadFile=" + this.uploadFile + ", releaseType=" + this.releaseType + ", classifier=" + this.classifier + ", gameVersion=" + this.gameVersion + ", dependencies=" + this.dependencies + "]";
     }
     
-    private String getUploadEndpoint() {
+    private String getUploadEndpoint () {
         
         return this.apiURL + "/v1/projects/" + this.projectId + "/files";
     }
     
-    private static boolean isSemanticVersion(String version) {
-    	
-    	return SEM_VER.matcher(version).matches();
+    private static boolean isSemanticVersion (String version) {
+        
+        return SEM_VER.matcher(version).matches();
     }
     
     /**
@@ -240,14 +239,16 @@ public class TaskDiluvUpload extends DefaultTask {
         // Fallback to Gradle's built in file resolution mechanics.
         return project.file(in);
     }
-
+    
     /**
-     * Attempts to automatically detect a game version based on the script environment. This is intended as a fallback and should never override user specified data.
+     * Attempts to automatically detect a game version based on the script environment. This is
+     * intended as a fallback and should never override user specified data.
+     * 
      * @param project The Gradle project to look through.
      * @return A detected game version string. This will be null if nothing was found.
      */
     @Nullable
-    private static String detectGameVersion(Project project) {
+    private static String detectGameVersion (Project project) {
         
         String version = null;
         

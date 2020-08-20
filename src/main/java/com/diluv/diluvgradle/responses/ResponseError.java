@@ -16,19 +16,19 @@ public class ResponseError {
     @Expose
     @SerializedName("message")
     private String message;
-
+    
     public String getType () {
         
-        return type;
+        return this.type;
     }
-
+    
     public String getError () {
         
-        return error;
+        return this.error;
     }
-
+    
     public String getMessage () {
         
-        return message;
+        return this.message;
     }
 }
