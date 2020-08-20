@@ -19,7 +19,7 @@ public class Tests {
         try (final ProjectConnection connection = connector.connect()) {
             
             final BuildLauncher launcher = connection.newBuild();
-            launcher.forTasks("testPlugin");
+            launcher.forTasks("build", "testPlugin");
             launcher.run();
         }
         
