@@ -17,6 +17,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -108,8 +109,8 @@ public class TaskDiluvUpload extends DefaultTask {
         
         if (!isSemanticVersion(this.projectVersion)) {
             
-            this.getProject().getLogger().error("Project version {} is not semantic versioning. The file can not be uploaded. https://semver.org", this.projectVersion);
-            return;
+            this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
+            throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
         }
         
         try {
