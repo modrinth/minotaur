@@ -19,7 +19,7 @@ import com.diluv.diluvgradle.TaskDiluvUpload
 
 task testPlugin (type: TaskDiluvUpload){
     
-	apiURL = 'http://127.0.0.1:4567/v1/projects/files'
+	apiURL = 'http://127.0.0.1:4567'
     token = "C_RxaYIzXLYxKXD8itdhMUB6J6rKLcvPWpinbpH0ezc"
     projectId = 1
 	changelog = 'The changelog for my file.'

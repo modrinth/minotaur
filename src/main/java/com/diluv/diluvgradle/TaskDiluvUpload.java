@@ -36,7 +36,7 @@ public class TaskDiluvUpload extends DefaultTask {
      * what you're doing. It's main use case is for debug, development, or advanced user
      * configurations.
      */
-    public String apiURL = "https://api.diluv.com/v1/projects/files";
+    public String apiURL = "https://api.diluv.com";
     
     /**
      * The API token used to communicate with Diluv. Make sure you keep this public!
@@ -118,10 +118,10 @@ public class TaskDiluvUpload extends DefaultTask {
         }
         
         final File file = resolveFile(this.getProject(), this.uploadFile, null);
-        this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.apiURL);
+        this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
         
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
-        final HttpPost post = new HttpPost(new URI(this.apiURL));
+        final HttpPost post = new HttpPost(new URI(this.getUploadEndpoint()));
 
         post.addHeader("Authorization", "Bearer " + this.token);
         
@@ -231,5 +231,10 @@ public class TaskDiluvUpload extends DefaultTask {
     public String toString () {
         
         return "TaskDiluvUpload [apiURL=" + apiURL + ", token=" + (token != null) + ", projectId=" + projectId + ", projectVersion=" + projectVersion + ", changelog=" + changelog + ", uploadFile=" + uploadFile + ", releaseType=" + releaseType + ", classifier=" + classifier + ", gameVersion=" + gameVersion + ", dependencies=" + dependencies + "]";
+    }
+    
+    private String getUploadEndpoint() {
+    	
+    	return this.apiURL + "/v1/projects/" + this.projectId + "/files";
     }
 }
