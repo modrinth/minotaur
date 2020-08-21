@@ -53,8 +53,7 @@ public class ResponseUpload {
     
     @Expose
     @SerializedName("dependencies")
-    // TODO Is this String or Long
-    private final List<Object> dependencies = null;
+    private List<Long> dependencies;
     
     @Expose
     @SerializedName("gameVersions")
@@ -140,7 +139,7 @@ public class ResponseUpload {
         return this.createdAt;
     }
     
-    public List<Object> getDependencies () {
+    public List<Long> getDependencies () {
         
         return this.dependencies;
     }
