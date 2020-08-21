@@ -1,0 +1,34 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath group: 'com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.0.1'
+    }
+}
+
+apply plugin: 'java'
+
+import com.diluv.diluvgradle.TaskDiluvUpload
+
+version = '1.0.2774'
+
+task testPlugin (type: TaskDiluvUpload){
+    
+    apiURL = 'http://127.0.0.1:4567'
+    token = "C_RxaYIzXLYxKXD8itdhMUB6J6rKLcvPWpinbpH0ezc"
+    projectId = 1
+    changelog = 'The changelog for my file.'
+    uploadFile = jar
+    gameVersion = '1.12.2'
+    
+    doLast {
+    
+        if (wasUploadSuccessful()) {
+		
+            println 'Download: ' + uploadInfo.getDownloadURL()
+		}
+    }
+}

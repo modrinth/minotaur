@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+version = '1.0.1'
+group = 'com.diluv.diluvgradle'
+archivesBaseName = 'DiluvGradle'
+description = 'Gradle plugin for deploying build artifacts.'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+
+    compile gradleApi()
+	
+    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.6.2'
+	
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes([
+                'Timestamp'               : System.currentTimeMillis(),
+                'Specification-Title'     : project.archivesBaseName,
+                'Specification-Vendor'    : project.vendor,
+                'Specification-Version'   : project.version,
+                'Implementation-Title'    : project.archivesBaseName,
+                'Implementation-Version'  : project.version,
+                'Implementation-Vendor'   : project.vendor,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
+        ])
+    }
+}
+
+publishing {
+    publications {
+        pluginPublication (MavenPublication) {
+            from components.java;
+            groupId = project.group;
+            artifactId = project.archivesBaseName;
+            version = project.version;
+        }
+    }
+}
