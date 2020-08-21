@@ -52,10 +52,6 @@ public class ResponseUpload {
     private Long createdAt;
     
     @Expose
-    @SerializedName("dependencies")
-    private List<Long> dependencies;
-    
-    @Expose
     @SerializedName("gameVersions")
     // TODO Is this String or Long
     private final List<Object> gameVersions = null;
@@ -137,11 +133,6 @@ public class ResponseUpload {
     public Long getCreatedAt () {
         
         return this.createdAt;
-    }
-    
-    public List<Long> getDependencies () {
-        
-        return this.dependencies;
     }
     
     public List<Object> getGameVersions () {

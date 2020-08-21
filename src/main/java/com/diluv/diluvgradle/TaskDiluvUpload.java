@@ -91,9 +91,6 @@ public class TaskDiluvUpload extends DefaultTask {
      */
     public String gameVersion;
     
-    // TODO how to format this
-    public String dependencies;
-    
     /**
      * The response from the API when the file was uploaded successfully.
      */
@@ -203,11 +200,6 @@ public class TaskDiluvUpload extends DefaultTask {
         form.addTextBody("classifier", this.classifier);
         form.addTextBody("game_versions", this.gameVersion);
         
-        if (this.dependencies != null) {
-            
-            form.addTextBody("dependencies", this.dependencies);
-        }
-        
         post.setEntity(form.build());
         
         try {
@@ -239,7 +231,7 @@ public class TaskDiluvUpload extends DefaultTask {
     @Override
     public String toString () {
         
-        return "TaskDiluvUpload [apiURL=" + this.apiURL + ", token=" + (this.token != null) + ", projectId=" + this.projectId + ", projectVersion=" + this.projectVersion + ", changelog=" + this.changelog + ", uploadFile=" + this.uploadFile + ", releaseType=" + this.releaseType + ", classifier=" + this.classifier + ", gameVersion=" + this.gameVersion + ", dependencies=" + this.dependencies + "]";
+        return "TaskDiluvUpload [apiURL=" + this.apiURL + ", token=" + (this.token != null) + ", projectId=" + this.projectId + ", projectVersion=" + this.projectVersion + ", changelog=" + this.changelog + ", uploadFile=" + this.uploadFile + ", releaseType=" + this.releaseType + ", classifier=" + this.classifier + ", gameVersion=" + this.gameVersion + "]";
     }
     
     /**
