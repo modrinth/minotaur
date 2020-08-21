@@ -53,8 +53,7 @@ public class ResponseUpload {
     
     @Expose
     @SerializedName("gameVersions")
-    // TODO Is this String or Long
-    private final List<Object> gameVersions = null;
+    private final List<GameVersion> gameVersions = null;
     
     @Expose
     @SerializedName("gameSlug")
@@ -135,7 +134,7 @@ public class ResponseUpload {
         return this.createdAt;
     }
     
-    public List<Object> getGameVersions () {
+    public List<GameVersion> getGameVersions () {
         
         return this.gameVersions;
     }
@@ -168,5 +167,35 @@ public class ResponseUpload {
     public String getUploaderDisplayName () {
         
         return this.uploaderDisplayName;
+    }
+    
+    public static class GameVersion {
+
+        @Expose
+        @SerializedName("version")
+        private String version;
+
+        @Expose
+        @SerializedName("type")
+        private String type;
+        
+        @Expose
+        @SerializedName("released")
+        private long released;
+        
+        public String getVersion () {
+            
+            return this.version;
+        }
+        
+        public String getType () {
+            
+            return this.type;
+        }
+        
+        public Long getReleaseDate () {
+            
+            return this.released;
+        }
     }
 }
