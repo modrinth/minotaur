@@ -6,7 +6,7 @@ plugins {
     id "de.marcphilipp.nexus-publish" version "0.4.0"
 }
 
-version = '1.0.1'
+version = "${project_version}"
 group = 'com.diluv.diluvgradle'
 archivesBaseName = 'DiluvGradle'
 description = 'Gradle plugin for deploying build artifacts.'
