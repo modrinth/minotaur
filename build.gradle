@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'maven-publish'
     id 'signing'
     id 'io.codearte.nexus-staging' version '0.22.0'
     id "de.marcphilipp.nexus-publish" version "0.4.0"
@@ -47,17 +46,6 @@ jar {
                 'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
         ])
-    }
-}
-
-publishing {
-    publications {
-        pluginPublication (MavenPublication) {
-            from components.java;
-            groupId = project.group;
-            artifactId = project.archivesBaseName;
-            version = project.version;
-        }
     }
 }
 
