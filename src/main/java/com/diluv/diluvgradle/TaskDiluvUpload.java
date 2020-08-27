@@ -2,6 +2,7 @@ package com.diluv.diluvgradle;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.regex.Pattern;
@@ -300,7 +301,30 @@ public class TaskDiluvUpload extends DefaultTask {
             version = project.getExtensions().getExtraProperties().get("MC_VERSION").toString();
         }
         
-        // TODO Add loom support.
+        else {
+            
+            // Loom/Fabric Gradle detection.
+            try {
+                
+                // Using reflection because loom isn't always available.
+                final Class<?> loomType = Class.forName("net.fabricmc.loom.LoomGradleExtension");
+                final Method getProvider = loomType.getMethod("getMinecraftProvider");
+                
+                final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.providers.MinecraftProvider");
+                final Method getVersion = minecraftProvider.getMethod("getMinecraftVersion");
+                
+                final Object loomExt = project.getExtensions().getByType(loomType);
+                final Object loomProvider = getProvider.invoke(loomExt);
+                final Object loomVersion = getVersion.invoke(loomProvider);
+                
+                version = loomVersion.toString();
+            }
+            
+            catch (final Exception e) {
+                
+                project.getLogger().debug("Failed to detect loom game version.", e);
+            }
+        }
         
         project.getLogger().debug("Using fallback game version {}.", version);
         return version;
