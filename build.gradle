@@ -38,7 +38,7 @@ test {
 gradlePlugin {
     plugins {
         diluvPlugin {
-            id = 'org.diluv.diluvgradle'
+            id = 'com.diluv.diluvgradle'
             implementationClass = 'com.diluv.diluvgradle.DiluvPlugin'
         }
     }
