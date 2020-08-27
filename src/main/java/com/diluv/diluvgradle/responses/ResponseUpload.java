@@ -170,11 +170,11 @@ public class ResponseUpload {
     }
     
     public static class GameVersion {
-
+        
         @Expose
         @SerializedName("version")
         private String version;
-
+        
         @Expose
         @SerializedName("type")
         private String type;

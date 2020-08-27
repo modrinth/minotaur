@@ -3,6 +3,8 @@ plugins {
     id 'signing'
     id 'io.codearte.nexus-staging' version '0.22.0'
     id "de.marcphilipp.nexus-publish" version "0.4.0"
+    id "com.gradle.plugin-publish" version "0.12.0"
+    id "java-gradle-plugin"
 }
 
 version = "${project_version}"
@@ -31,6 +33,28 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+gradlePlugin {
+    plugins {
+        diluvPlugin {
+            id = 'org.diluv.diluvgradle'
+            implementationClass = 'com.diluv.diluvgradle.DiluvPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://diluv.com'
+    vcsUrl = 'https://github.com/Diluv/Diluv-Gradle'
+    description = 'Diluv plugin for uploading your build artifacts!'
+    tags = ['diluv', 'publish', 'mods', 'minecraft']
+
+    plugins {
+        diluvGradle {
+            displayName = 'DiluvGradle'
+        }
+    }
 }
 
 jar {

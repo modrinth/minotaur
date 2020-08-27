@@ -46,6 +46,9 @@ task publishDiluv (type: TaskDiluvUpload){
 | releaseType    | false    | The release status of the file. Defaults to "alpha".                             |
 | classifier     | false    | The type of file being uploaded. Defaults to binary.                             |
 | gameVersion    | true     | The version of the game the file is for. Comma separated for multiple.           |
+| failSilently   | false    | When true an upload failure will not fail your build.                            |
+
+**Note:** In some scenarios the `gameVersion` property can be detected automatically. For example the ForgeGradle and LoomGradle environments. For best results you should set this property manually.
 
 ### Additional Properties
 
