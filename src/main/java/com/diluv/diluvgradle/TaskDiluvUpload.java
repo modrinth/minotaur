@@ -129,6 +129,11 @@ public class TaskDiluvUpload extends DefaultTask {
             if (this.gameVersion == null) {
                 
                 this.gameVersion = detectGameVersion(this.getProject());
+                
+                if (this.gameVersion == null) {
+                    
+                    throw new GradleException("Can not upload to Diluv. gameVersion is null and could not be detected.");
+                }
             }
             
             // Use project version if no version is specified.
