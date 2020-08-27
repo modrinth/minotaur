@@ -93,6 +93,11 @@ public class TaskDiluvUpload extends DefaultTask {
     public String gameVersion;
     
     /**
+     * Allows build to continue even if the upload failed.
+     */
+    public boolean failSilently = false;
+    
+    /**
      * The response from the API when the file was uploaded successfully.
      */
     @Nullable
@@ -118,60 +123,77 @@ public class TaskDiluvUpload extends DefaultTask {
     @TaskAction
     public void apply () {
         
-        // Attempt to automatically resolve the game version if one wasn't specified.
-        if (this.gameVersion == null) {
-            
-            this.gameVersion = detectGameVersion(this.getProject());
-        }
-        
-        // Use project version if no version is specified.
-        if (this.projectVersion == null) {
-            
-            this.projectVersion = this.getProject().getVersion().toString();
-        }
-        
-        // Only semantic versioning is allowed.
-        if (!SEM_VER.matcher(this.projectVersion).matches()) {
-            
-            this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
-            throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
-        }
-        
-        // Set a default changelog if the dev hasn't provided one.
-        if (this.changelog == null) {
-            
-            this.changelog = "The project has been updated to " + this.getProject() + ". No changelog was specified.";
-        }
-        
-        final File file = resolveFile(this.getProject(), this.uploadFile, null);
-        
-        // Ensure the file actually exists before trying to upload it.
-        if (file == null || !file.exists()) {
-            
-            this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
-            throw new GradleException("The upload file is missing or null. " + String.valueOf(this.uploadFile));
-        }
-        
         try {
             
-            final URI endpoint = new URI(this.getUploadEndpoint());
+            // Attempt to automatically resolve the game version if one wasn't specified.
+            if (this.gameVersion == null) {
+                
+                this.gameVersion = detectGameVersion(this.getProject());
+            }
+            
+            // Use project version if no version is specified.
+            if (this.projectVersion == null) {
+                
+                this.projectVersion = this.getProject().getVersion().toString();
+            }
+            
+            // Only semantic versioning is allowed.
+            if (!SEM_VER.matcher(this.projectVersion).matches()) {
+                
+                this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
+                throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
+            }
+            
+            // Set a default changelog if the dev hasn't provided one.
+            if (this.changelog == null) {
+                
+                this.changelog = "The project has been updated to " + this.getProject() + ". No changelog was specified.";
+            }
+            
+            final File file = resolveFile(this.getProject(), this.uploadFile, null);
+            
+            // Ensure the file actually exists before trying to upload it.
+            if (file == null || !file.exists()) {
+                
+                this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
+                throw new GradleException("The upload file is missing or null. " + String.valueOf(this.uploadFile));
+            }
             
             try {
                 
-                this.upload(endpoint, file);
+                final URI endpoint = new URI(this.getUploadEndpoint());
+                
+                try {
+                    
+                    this.upload(endpoint, file);
+                }
+                
+                catch (final IOException e) {
+                    
+                    this.getProject().getLogger().error("Failed to upload the file!", e);
+                    throw new GradleException("Failed to upload the file!", e);
+                }
             }
             
-            catch (final IOException e) {
+            catch (final URISyntaxException e) {
                 
-                this.getProject().getLogger().error("Failed to upload the file!", e);
-                throw new GradleException("Failed to upload the file!", e);
+                this.getProject().getLogger().error("Invalid endpoint URI!", e);
+                throw new GradleException("Invalid endpoint URI!", e);
             }
         }
         
-        catch (final URISyntaxException e) {
+        catch (final Exception e) {
             
-            this.getProject().getLogger().error("Invalid endpoint URI!", e);
-            throw new GradleException("Invalid endpoint URI!", e);
+            if (this.failSilently) {
+                
+                this.getLogger().info("Failed to upload to Diluv. Check logs for more info.");
+                this.getLogger().error("Diluv upload failed silently.", e);
+            }
+            
+            else {
+                
+                throw e;
+            }
         }
     }
     
