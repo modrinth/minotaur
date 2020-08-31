@@ -9,11 +9,13 @@ import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import com.diluv.diluvgradle.request.RequestData;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
@@ -59,7 +61,7 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The ID of the project to upload the file to.
      */
-    public int projectId;
+    public long projectId;
     
     /**
      * The version of the project being uploaded.
@@ -219,15 +221,18 @@ public class TaskDiluvUpload extends DefaultTask {
         post.addHeader("Authorization", "Bearer " + this.token);
         
         final MultipartEntityBuilder form = MultipartEntityBuilder.create();
-        form.addTextBody("project_id", Long.toString(this.projectId));
-        form.addTextBody("version", this.projectVersion);
-        form.addTextBody("changelog", this.changelog);
         form.addBinaryBody("file", file);
         form.addTextBody("filename", file.getName());
-        form.addTextBody("releaseType", this.releaseType);
-        form.addTextBody("classifier", this.classifier);
-        form.addTextBody("game_versions", this.gameVersion);
-        
+
+        RequestData data = new RequestData();
+        data.setProjectId(this.projectId);
+        data.setVersion(this.projectVersion);
+        data.setChangelog(this.changelog);
+        data.setReleaseType(this.releaseType);
+        data.setClassifier(this.classifier);
+        data.getGameVersions().add(this.gameVersion);
+        form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
+
         post.setEntity(form.build());
         
         try {
