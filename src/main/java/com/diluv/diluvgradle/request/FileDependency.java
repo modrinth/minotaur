@@ -3,6 +3,7 @@ package com.diluv.diluvgradle.request;
 import com.google.gson.annotations.Expose;
 
 public class FileDependency {
+
     @Expose
     public Long projectId;
 
