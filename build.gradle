@@ -1,8 +1,5 @@
 plugins {
     id 'java'
-    id 'signing'
-    id 'io.codearte.nexus-staging' version '0.22.0'
-    id "de.marcphilipp.nexus-publish" version "0.4.0"
     id "com.gradle.plugin-publish" version "0.12.0"
     id "java-gradle-plugin"
 }
@@ -10,7 +7,7 @@ plugins {
 version = "${project_version}"
 group = 'com.diluv.diluvgradle'
 archivesBaseName = 'DiluvGradle'
-description = 'Gradle plugin for deploying build artifacts.'
+description = 'Diluv plugin for uploading your build artifacts!'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -88,80 +85,6 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 artifacts {
     archives sourcesJar
     archives javadocJar
-}
-
-gradle.taskGraph.whenReady { taskGraph ->
-    ext."signing.gnupg.keyName" = "A35B3CEC"
-}
-
-signing {
-    useGpgCmd()
-    sign publishing.publications
-}
-
-tasks.withType(Sign) {
-    onlyIf { !isSnapshot() }
-}
-
-nexusStaging {
-    packageGroup = 'com.diluv'
-    numberOfRetries = 40
-    delayBetweenRetriesInMillis = 5000
-}
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            username = System.getenv("OSSRH_USERNAME")
-            password = System.getenv("OSSRH_PASSWORD")
-        }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            group = project.group
-            artifactId = project.name
-            version = project.version
-
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name = project.name
-                description = project.description
-                url = 'https://github.com/Diluv/Diluv-Gradle'
-
-                scm {
-                    connection = 'scm:git:git://github.com/Diluv/Diluv-Gradle.git'
-                    developerConnection = 'scm:git:ssh://github.com/Diluv/Diluv-Gradle.git'
-                    url = 'https://github.com/Diluv/Diluv-Gradle'
-                }
-
-                licenses {
-                    license {
-                        name = 'GNU Lesser General Public License v2.1'
-                        url = 'https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'lclc98'
-                        name = 'lclc98'
-                        email = 'lclc98@lclc98.com'
-                    }
-                }
-            }
-        }
-    }
-}
-
-nexusStaging {
-    username = System.getenv("OSSRH_USERNAME")
-    password = System.getenv("OSSRH_PASSWORD")
 }
 
 static String getBuildNumber() {
