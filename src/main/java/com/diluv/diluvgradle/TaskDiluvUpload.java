@@ -61,7 +61,7 @@ public class TaskDiluvUpload extends DefaultTask {
     /**
      * The ID of the project to upload the file to.
      */
-    public long projectId;
+    public String projectId;
     
     /**
      * The version of the project being uploaded.
@@ -225,7 +225,6 @@ public class TaskDiluvUpload extends DefaultTask {
         form.addTextBody("filename", file.getName());
 
         RequestData data = new RequestData();
-        data.setProjectId(this.projectId);
         data.setVersion(this.projectVersion);
         data.setChangelog(this.changelog);
         data.setReleaseType(this.releaseType);

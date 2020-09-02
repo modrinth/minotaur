@@ -9,10 +9,6 @@ import java.util.List;
 public class RequestData {
 
     @Expose
-    @SerializedName("project_id")
-    public long projectId;
-
-    @Expose
     @SerializedName("version")
     public String version;
 
@@ -35,14 +31,6 @@ public class RequestData {
     @Expose
     @SerializedName("dependencies")
     public List<FileDependency> dependencies = new ArrayList<>();
-
-    public long getProjectId() {
-        return this.projectId;
-    }
-
-    public void setProjectId(long projectId) {
-        this.projectId = projectId;
-    }
 
     public String getVersion() {
         return this.version;
