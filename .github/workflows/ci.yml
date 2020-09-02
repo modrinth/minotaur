@@ -17,15 +17,6 @@ jobs:
         with:
           java-version: 1.8
 
-      - name: Install GPG2
-        run: sudo apt install gnupg2
-
-      - name: Write private key
-        run: echo -n ${{ secrets.GPG_PRIVATE }} | base64 -d >> private.gpg
-
-      - name: Import private key
-        run: gpg2 --allow-secret-key-import --import private.gpg
-
       - name: Build with Gradle
         run: ./gradlew build
         env:
