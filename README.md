@@ -1,19 +1,26 @@
-# Diluv-Gradle
+# [Diluv-Gradle](https://plugins.gradle.org/plugin/com.diluv.diluvgradle)
 A Gradle plugin for uploading build artifacts directly to Diluv.
 
 ## Usage Guide
-To use this plugin you must add it to your build script classpath. This will make the code available to you in your script file.
+To use this plugin you must add it to your build script. This can be done using the plugins DSL or added to the classpath directly for legacy scripts.
 
-**Note:** This plugin has only been tested with Gradle 4.9. While compatibility with other versions is highly likely we make no guarantees.    
-**Note:** This plugin is still being developed and is not yet on maven central.    
+**Plugin DSL**    
+```gradle
+plugins {
+    id "com.diluv.diluvgradle" version "1.2.1"
+}
+```
 
-```groovy
+**Legacy**
+```gradle
 buildscript {
-    repositories {        
-        mavenCentral()
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
-        classpath 'com.diluv.diluvgradle:DiluvGradle:VERSION'
+        classpath group: 'gradle.plugin.com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.1'
     }
 }
 ```
@@ -84,7 +91,7 @@ task publishDiluv (type: TaskDiluvUpload){
 #### Error Info
 
 | Property | Type   | Description                                                          |
-|----------|--------|-----------------------------------------------------------------0----|
+|----------|--------|----------------------------------------------------------------------|
 | type     | String | The type of error that occurred, for example an authorization error. |
 | error    | String | An API error code string.                                            |
 | message  | String | The error message from the API.                                      |
@@ -108,6 +115,7 @@ buildscript {
         classpath files { file('../../../../build/libs').listFiles()}
         classpath group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
         classpath group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+        classpath group: 'com.google.code.gson', name: 'gson', version: '2.6.2'
     }
 }
 ```
