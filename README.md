@@ -7,7 +7,7 @@ To use this plugin you must add it to your build script. This can be done using 
 **Plugin DSL**    
 ```gradle
 plugins {
-    id "com.diluv.diluvgradle" version "1.2.1"
+    id "com.diluv.diluvgradle" version "1.2.2"
 }
 ```
 
@@ -20,7 +20,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'gradle.plugin.com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.1'
+        classpath group: 'gradle.plugin.com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.2'
     }
 }
 ```
