@@ -25,7 +25,7 @@ public class RequestData {
     public String classifier;
 
     @Expose
-    @SerializedName("game_versions")
+    @SerializedName("gameVersions")
     public List<String> gameVersions = new ArrayList<>();
 
     @Expose
