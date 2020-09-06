@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.1'
+        classpath group: 'com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.2'
     }
 }
 
