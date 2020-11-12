@@ -17,7 +17,7 @@ apply plugin: 'java'
     
 import com.diluv.diluvgradle.TaskDiluvUpload
 
-version = '1.0.92494'
+version = '1.0.924943'
 
 task testPlugin (type: TaskDiluvUpload){
     
@@ -27,4 +27,8 @@ task testPlugin (type: TaskDiluvUpload){
     changelog = 'The changelog for my file.'
     uploadFile = jar
     gameVersion = '1.12.2'
+	
+	addDependency(2);
+	addOptionalDependency(3);
+	addIncompatibility(4);
 }

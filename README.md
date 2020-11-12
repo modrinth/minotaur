@@ -42,18 +42,22 @@ task publishDiluv (type: TaskDiluvUpload){
 
 ### Available Properties
 
-| Property       | Required | Description                                                                      |
-|----------------|----------|----------------------------------------------------------------------------------|
-| apiURL         | false    | The API endpoint URL to use for uploading files. Defaults to official Diluv API. |
-| token          | true     | A valid API token for the Diluv API.                                             |
-| projectId      | true     | The ID of the project to upload to.                                              |
-| projectVersion | true     | The version of the file. Please use semantic versioning.                         |
-| changelog      | false    | The changelog for the file. Allows markdown formatting.                          |
-| uploadFile     | true     | The file to upload. Can be an actual file or a file task.                        |
-| releaseType    | false    | The release status of the file. Defaults to "alpha".                             |
-| classifier     | false    | The type of file being uploaded. Defaults to binary.                             |
-| gameVersion    | true     | The version of the game the file is for. Comma separated for multiple.           |
-| failSilently   | false    | When true an upload failure will not fail your build.                            |
+| Property                         | Required | Description                                                                         |
+|----------------------------------|----------|-------------------------------------------------------------------------------------|
+| apiURL                           | false    | The API endpoint URL to use for uploading files. Defaults to official Diluv API.    |
+| token                            | true     | A valid API token for the Diluv API.                                                |
+| projectId                        | true     | The ID of the project to upload to.                                                 |
+| projectVersion                   | true     | The version of the file. Please use semantic versioning.                            |
+| changelog                        | false    | The changelog for the file. Allows Markdown formatting.                             |
+| uploadFile                       | true     | The file to upload. Can be an actual file or a file task.                           |
+| releaseType                      | false    | The release status of the file. Defaults to "alpha".                                |
+| classifier                       | false    | The type of file being uploaded. Defaults to binary.                                |
+| gameVersion                      | true     | The version of the game the file is for. Comma separated for multiple.              |
+| failSilently                     | false    | When true an upload failure will not fail your build.                               |
+| addDependency(projectId)         | false    | Marks a project as a required dependency.                                           |
+| addOptionalDependency(projectId) | false    | Marks a project as an optional/soft dependency.                                     |
+| addIncompatibility(projectId)    | false    | Marks a project as being incompatible with this file.                               |
+| addRelation(projectId, type)     | false    | Adds a project relationship to the file. Only some relationship types are accepted. |
 
 **Note:** In some scenarios the `gameVersion` property can be detected automatically. For example the ForgeGradle and LoomGradle environments. For best results you should set this property manually.
 
