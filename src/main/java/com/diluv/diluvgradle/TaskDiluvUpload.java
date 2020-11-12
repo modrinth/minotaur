@@ -5,11 +5,16 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.diluv.diluvgradle.request.RequestData;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -25,6 +30,8 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
+import com.diluv.diluvgradle.request.FileDependency;
+import com.diluv.diluvgradle.request.RequestData;
 import com.diluv.diluvgradle.responses.ResponseError;
 import com.diluv.diluvgradle.responses.ResponseUpload;
 import com.google.gson.Gson;
@@ -45,6 +52,15 @@ public class TaskDiluvUpload extends DefaultTask {
      * https://semver.org/.
      */
     private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
+    
+    private static final String RELATION_REQUIRED = "required";
+    private static final String RELATION_OPTIONAL = "optional";
+    private static final String RELATION_INCOMPATIBLE = "incompatible";
+    
+    /**
+     * A list of recognized project relationship types.
+     */
+    private static final List<String> PROJECT_RELATION_TYPES = Arrays.asList(RELATION_REQUIRED, RELATION_OPTIONAL, RELATION_INCOMPATIBLE);
     
     /**
      * The URL used for communicating with Diluv. This should not be changed unless you know
@@ -111,6 +127,8 @@ public class TaskDiluvUpload extends DefaultTask {
     @Nullable
     public ResponseError errorInfo = null;
     
+    public Map<Long, String> projectRelations = new HashMap<>();
+    
     /**
      * Checks if the upload was successful or not. This is provided as a small helper for use
      * in the build script.
@@ -120,6 +138,58 @@ public class TaskDiluvUpload extends DefaultTask {
     public boolean wasUploadSuccessful () {
         
         return this.uploadInfo != null && this.errorInfo == null;
+    }
+    
+    /**
+     * Adds a required project dependency for the file.
+     * 
+     * @param project The project that this file requires.
+     */
+    public void addDependency (long project) {
+        
+        this.addRelation(project, RELATION_REQUIRED);
+    }
+    
+    /**
+     * Adds an optional project dependency for the file.
+     * 
+     * @param project The project that is optional.
+     */
+    public void addOptionalDependency (long project) {
+        
+        this.addRelation(project, RELATION_OPTIONAL);
+    }
+    
+    /**
+     * Adds an incompatibility relationship for the file.
+     * 
+     * @param project The project that the file is not compatible with.
+     */
+    public void addIncompatibility (long project) {
+        
+        this.addRelation(project, RELATION_INCOMPATIBLE);
+    }
+    
+    /**
+     * Adds a project relationship to the uploaded file. This determines things like
+     * dependencies and incompatibilities.
+     * 
+     * @param project The project to add a relation with.
+     * @param type The type of relation to add.
+     */
+    public void addRelation (long project, String type) {
+        
+        if (!PROJECT_RELATION_TYPES.contains(type)) {
+            
+            this.getProject().getLogger().warn("The project relation type {} is not recognized and may not work. The known types are {}.", type, PROJECT_RELATION_TYPES.stream().collect(Collectors.joining(", ")));
+        }
+        
+        final String existingRelation = this.projectRelations.put(project, type);
+        
+        if (existingRelation != null) {
+            
+            this.getProject().getLogger().warn("Overwriting relation for {} to {}, was previously set as {}.", project, type, existingRelation);
+        }
     }
     
     @TaskAction
@@ -223,15 +293,21 @@ public class TaskDiluvUpload extends DefaultTask {
         final MultipartEntityBuilder form = MultipartEntityBuilder.create();
         form.addBinaryBody("file", file);
         form.addTextBody("filename", file.getName());
-
-        RequestData data = new RequestData();
+        
+        final RequestData data = new RequestData();
         data.setVersion(this.projectVersion);
         data.setChangelog(this.changelog);
         data.setReleaseType(this.releaseType);
         data.setClassifier(this.classifier);
         data.getGameVersions().add(this.gameVersion);
+        
+        for (Entry<Long, String> relation : this.projectRelations.entrySet()) {
+            
+            data.getDependencies().add(new FileDependency(relation.getKey(), relation.getValue()));
+        }
+        
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
-
+        
         post.setEntity(form.build());
         
         try {
