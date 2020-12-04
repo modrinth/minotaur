@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle.request;
+package com.modrinth.minotaur.request;
 
 import com.google.gson.annotations.Expose;
 

@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle.request;
+package com.modrinth.minotaur.request;
 
 import java.util.ArrayList;
 import java.util.List;

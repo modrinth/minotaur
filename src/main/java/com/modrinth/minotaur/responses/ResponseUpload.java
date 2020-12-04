@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle.responses;
+package com.modrinth.minotaur.responses;
 
 import java.util.List;
 

@@ -5,9 +5,9 @@ plugins {
 }
 
 version = "${project_version}"
-group = 'com.diluv.diluvgradle'
-archivesBaseName = 'DiluvGradle'
-description = 'Diluv plugin for uploading your build artifacts!'
+group = 'com.modrinth.minotaur'
+archivesBaseName = 'Minotaur'
+description = 'Modrinth plugin for publishing builds to the website!'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -34,22 +34,22 @@ test {
 
 gradlePlugin {
     plugins {
-        diluvGradle {
-            id = 'com.diluv.diluvgradle'
-            implementationClass = 'com.diluv.diluvgradle.DiluvPlugin'
+        minotaur {
+            id = 'com.modrinth.minotaur'
+            implementationClass = 'com.modrinth.minotaur.Minotaur'
         }
     }
 }
 
 pluginBundle {
-    website = 'https://diluv.com'
-    vcsUrl = 'https://github.com/Diluv/Diluv-Gradle'
-    description = 'Diluv plugin for uploading your build artifacts!'
-    tags = ['diluv', 'publish', 'mods', 'minecraft']
+    website = 'https://modrinth.com'
+    vcsUrl = 'https://github.com/modrinth/minotaur'
+    description = 'Modrinth plugin for publishing builds to the website!'
+    tags = ['modrinth', 'publish', 'mods', 'minecraft']
 
     plugins {
-        diluvGradle {
-            displayName = 'DiluvGradle'
+        minotaur {
+            displayName = 'Minotaur'
         }
     }
 }

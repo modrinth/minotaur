@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle.responses;
+package com.modrinth.minotaur.responses;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

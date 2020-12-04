@@ -28,7 +28,7 @@ buildscript {
 The next step is to create a new task for uploading to Diluv. This task allows you to configure the upload and control when and how files are uploaded.
 
 ```groovy
-import com.diluv.diluvgradle.TaskDiluvUpload
+import TaskDiluvUpload
 
 task publishDiluv (type: TaskDiluvUpload){
 

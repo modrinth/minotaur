@@ -1,4 +1,4 @@
-package com.diluv.diluvgradle;
+package com.modrinth.minotaur;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import com.modrinth.minotaur.request.FileDependency;
+import com.modrinth.minotaur.responses.ResponseError;
+import com.modrinth.minotaur.responses.ResponseUpload;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -30,17 +33,14 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
-import com.diluv.diluvgradle.request.FileDependency;
-import com.diluv.diluvgradle.request.RequestData;
-import com.diluv.diluvgradle.responses.ResponseError;
-import com.diluv.diluvgradle.responses.ResponseUpload;
+import com.modrinth.minotaur.request.RequestData;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
  * A task used to communicate with Diluv for the purpose of uploading build artifacts.
  */
-public class TaskDiluvUpload extends DefaultTask {
+public class TaskModrinthUpload extends DefaultTask {
     
     /**
      * Constant gson instance used for deserializing the API responses when files are uploaded.
@@ -63,14 +63,14 @@ public class TaskDiluvUpload extends DefaultTask {
     private static final List<String> PROJECT_RELATION_TYPES = Arrays.asList(RELATION_REQUIRED, RELATION_OPTIONAL, RELATION_INCOMPATIBLE);
     
     /**
-     * The URL used for communicating with Diluv. This should not be changed unless you know
+     * The URL used for communicating with Modrinth. This should not be changed unless you know
      * what you're doing. It's main use case is for debug, development, or advanced user
      * configurations.
      */
-    public String apiURL = "https://api.diluv.com";
+    public String apiURL = "https://api.modrinth.com";
     
     /**
-     * The API token used to communicate with Diluv. Make sure you keep this public!
+     * The API token used to communicate with Modrinth. Make sure you keep this public!
      */
     public String token;
     
