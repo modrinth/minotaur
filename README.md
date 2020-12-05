@@ -1,5 +1,5 @@
-# [Diluv-Gradle](https://plugins.gradle.org/plugin/com.diluv.diluvgradle)
-A Gradle plugin for uploading build artifacts directly to Diluv.
+# [Minotaur](https://plugins.gradle.org/plugin/com.modrinth.minotaur)
+A Gradle plugin for uploading build artifacts directly to Modrinth.
 
 ## Usage Guide
 To use this plugin you must add it to your build script. This can be done using the plugins DSL or added to the classpath directly for legacy scripts.
@@ -7,7 +7,7 @@ To use this plugin you must add it to your build script. This can be done using 
 **Plugin DSL**    
 ```gradle
 plugins {
-    id "com.diluv.diluvgradle" version "1.2.2"
+    id "com.modrinth.minotaur" version "1.0.0"
 }
 ```
 
@@ -20,20 +20,20 @@ buildscript {
         }
     }
     dependencies {
-        classpath group: 'gradle.plugin.com.diluv.diluvgradle', name: 'DiluvGradle', version: '1.2.2'
+        classpath group: 'gradle.plugin.com.modrinth.minotaur', name: 'Minotaur', version: '1.0.0'
     }
 }
 ```
 
-The next step is to create a new task for uploading to Diluv. This task allows you to configure the upload and control when and how files are uploaded.
+The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
 
 ```groovy
-import TaskDiluvUpload
+import TaskModrinthUpload
 
-task publishDiluv (type: TaskDiluvUpload){
+task publishModrinth (type: TaskModrinthUpload){
 
-    token = 'a7104dd8-f43a-4468-b5cd-b6ed3394916d' // Use an environment property!
-    projectId = 123456
+    token = 'secret' // Use an environment property!
+    projectId = 'ssUbhMkL'
     projectVersion = '1.0.0'
     uploadFile = jar // This is the java jar task
     gameVersion = '1.12.2'
@@ -44,20 +44,18 @@ task publishDiluv (type: TaskDiluvUpload){
 
 | Property                         | Required | Description                                                                         |
 |----------------------------------|----------|-------------------------------------------------------------------------------------|
-| apiURL                           | false    | The API endpoint URL to use for uploading files. Defaults to official Diluv API.    |
-| token                            | true     | A valid API token for the Diluv API.                                                |
+| apiURL                           | false    | The API endpoint URL to use for uploading files. Defaults to official Modrinth API. |
+| token                            | true     | A valid API token for the Modrinth API.                                             |
 | projectId                        | true     | The ID of the project to upload to.                                                 |
-| projectVersion                   | true     | The version of the file. Please use semantic versioning.                            |
+| versionNumber                    | true     | The version number of the version.                                                  |
+| versionName                      | false    | The name of the version.                                                            |
 | changelog                        | false    | The changelog for the file. Allows Markdown formatting.                             |
 | uploadFile                       | true     | The file to upload. Can be an actual file or a file task.                           |
 | releaseType                      | false    | The release status of the file. Defaults to "alpha".                                |
-| classifier                       | false    | The type of file being uploaded. Defaults to binary.                                |
-| gameVersion                      | true     | The version of the game the file is for. Comma separated for multiple.              |
 | failSilently                     | false    | When true an upload failure will not fail your build.                               |
-| addDependency(projectId)         | false    | Marks a project as a required dependency.                                           |
-| addOptionalDependency(projectId) | false    | Marks a project as an optional/soft dependency.                                     |
-| addIncompatibility(projectId)    | false    | Marks a project as being incompatible with this file.                               |
-| addRelation(projectId, type)     | false    | Adds a project relationship to the file. Only some relationship types are accepted. |
+| addGameVersion(version)          | true     | Adds a game version that this file supports. At least one is needed.                |
+| addLoader(loader)                | true     | Allows supported mod loaders to be specified for the file.                           |
+| addFile(file)                    | false    | Allows supported mod loaders to be specified for the file.                          |
 
 **Note:** In some scenarios the `gameVersion` property can be detected automatically. For example the ForgeGradle and LoomGradle environments. For best results you should set this property manually.
 
@@ -73,35 +71,19 @@ task publishDiluv (type: TaskDiluvUpload){
 
 | Property            | Type        | Description                                             |
 |---------------------|-------------|---------------------------------------------------------|
-| status              | String      | The current status of the file. Approved, pending, etc. |
-| lastStatusChanged   | Long        | The time the status last changed.                       |
-| id                  | Long        | The ID for the uploaded file.                           |
-| name                | String      | The name of the uploaded file.                          |
-| downloadURL         | String      | A download URL for the uploaded file.                   |
-| size                | Long        | The file size in bytes.                                 |
-| changelog           | String      | The changelog for the file.                             |
-| sha512              | String      | A sha512 hash of the file.                              |
-| releaseType         | String      | The release type of the file.                           |
-| classifier          | String      | The classifier of the file.                             |
-| createdAt           | Long        | When the file was created.                              |
-| gameVersions        | GameVersion | Not yet implemented.                                    |
-| gameSlug            | String      | The slug for the game that the project belongs to.      |
-| projectTypeSlug     | String      | The slug for the project type.                          |
-| projectSlug         | String      | The slug of the project.                                |
-| uploaderUserId      | Long        | The ID of the user who uploaded the file.               |
-| uploaderUsername    | String      | The username of the user who uploaded the file.         |
-| uploaderDisplayName | String      | The display name of the user who uploaded the file.     |
+| id                  | String        | The ID for the uploaded version.                      |
+
+More properties coming soon!
 
 #### Error Info
 
 | Property | Type   | Description                                                          |
 |----------|--------|----------------------------------------------------------------------|
-| type     | String | The type of error that occurred, for example an authorization error. |
-| error    | String | An API error code string.                                            |
-| message  | String | The error message from the API.                                      |
+| error    | String | The type of error that occurred, for example an authorization error. |                                           |
+| description  | String | The error message from the API.                                  |
 
 ## Development Information
-This section contains information useful to those working on the plugin directly or creating their own custom versions of our plugin. If you want to just use DiluvGradle in your build pipeline you will not need to know or understand any of this.
+This section contains information useful to those working on the plugin directly or creating their own custom versions of our plugin. If you want to just use Minotaur in your build pipeline you will not need to know or understand any of this.
 
 ### Local Usage
 If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.

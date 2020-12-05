@@ -5,17 +5,10 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import javax.annotation.Nullable;
 
-import com.modrinth.minotaur.request.FileDependency;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import org.apache.http.HttpResponse;
@@ -38,7 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * A task used to communicate with Diluv for the purpose of uploading build artifacts.
+ * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
 public class TaskModrinthUpload extends DefaultTask {
     
@@ -48,26 +41,11 @@ public class TaskModrinthUpload extends DefaultTask {
     private static final Gson GSON = new GsonBuilder().create();
     
     /**
-     * A regex pattern for matching semantic versioning version numbers. This was taken from
-     * https://semver.org/.
-     */
-    private static final Pattern SEM_VER = Pattern.compile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$");
-    
-    private static final String RELATION_REQUIRED = "required";
-    private static final String RELATION_OPTIONAL = "optional";
-    private static final String RELATION_INCOMPATIBLE = "incompatible";
-    
-    /**
-     * A list of recognized project relationship types.
-     */
-    private static final List<String> PROJECT_RELATION_TYPES = Arrays.asList(RELATION_REQUIRED, RELATION_OPTIONAL, RELATION_INCOMPATIBLE);
-    
-    /**
      * The URL used for communicating with Modrinth. This should not be changed unless you know
      * what you're doing. It's main use case is for debug, development, or advanced user
      * configurations.
      */
-    public String apiURL = "https://api.modrinth.com";
+    public String apiURL = "https://api.modrinth.com/api";
     
     /**
      * The API token used to communicate with Modrinth. Make sure you keep this public!
@@ -82,7 +60,12 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * The version of the project being uploaded.
      */
-    public String projectVersion;
+    public String versionNumber;
+
+    /**
+     * The version name of the project being uploaded. Defaults to the version number.
+     */
+    public String versionName;
     
     /**
      * The change log data to associate with the new file.
@@ -94,21 +77,23 @@ public class TaskModrinthUpload extends DefaultTask {
      * {@link #resolveFile(Project, Object, File)}.
      */
     public Object uploadFile;
+
+    public Collection<Object> additionalFiles;
     
     /**
      * The release type for the project.
      */
-    public String releaseType = "alpha";
-    
+    public String releaseType = "release";
+
     /**
-     * The type of file being uploaded.
+     * The game versions of the game the version supports.
      */
-    public String classifier = "binary";
-    
+    public Set<String> gameVersions = new HashSet<>();
+
     /**
-     * The version of the game the file supports.
+     * The mod loaders of the game the version supports.
      */
-    public String gameVersion;
+    public Set<String> loaders = new HashSet<>();
     
     /**
      * Allows build to continue even if the upload failed.
@@ -126,9 +111,35 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     @Nullable
     public ResponseError errorInfo = null;
-    
-    public Map<Long, String> projectRelations = new HashMap<>();
-    
+
+    public TaskModrinthUpload() {
+        this.mustRunAfter(this.getProject().getTasks().getByName("build"));
+    }
+
+    public void addGameVersion (String version) {
+
+        this.getProject().getLogger().debug("Adding game version {} to project {}.", version, this.projectId);
+
+        if (!this.gameVersions.add(version)) {
+
+            this.getProject().getLogger().warn("The game version {} was already applied for project {}.", version, this.projectId);
+        }
+    }
+
+    public void addLoader (String loader) {
+
+        this.getProject().getLogger().debug("Adding loader tag {} to project {}.", loader, this.projectId);
+
+        if (!this.loaders.add(loader)) {
+
+            this.getProject().getLogger().warn("The loader tag {} was already applied for project {}.", loader, this.projectId);
+        }
+    }
+
+    public void addFile(Object file) {
+        additionalFiles.add(file);
+    }
+
     /**
      * Checks if the upload was successful or not. This is provided as a small helper for use
      * in the build script.
@@ -136,89 +147,40 @@ public class TaskModrinthUpload extends DefaultTask {
      * @return Whether or not the file was successfully uploaded.
      */
     public boolean wasUploadSuccessful () {
-        
         return this.uploadInfo != null && this.errorInfo == null;
-    }
-    
-    /**
-     * Adds a required project dependency for the file.
-     * 
-     * @param project The project that this file requires.
-     */
-    public void addDependency (long project) {
-        
-        this.addRelation(project, RELATION_REQUIRED);
-    }
-    
-    /**
-     * Adds an optional project dependency for the file.
-     * 
-     * @param project The project that is optional.
-     */
-    public void addOptionalDependency (long project) {
-        
-        this.addRelation(project, RELATION_OPTIONAL);
-    }
-    
-    /**
-     * Adds an incompatibility relationship for the file.
-     * 
-     * @param project The project that the file is not compatible with.
-     */
-    public void addIncompatibility (long project) {
-        
-        this.addRelation(project, RELATION_INCOMPATIBLE);
-    }
-    
-    /**
-     * Adds a project relationship to the uploaded file. This determines things like
-     * dependencies and incompatibilities.
-     * 
-     * @param project The project to add a relation with.
-     * @param type The type of relation to add.
-     */
-    public void addRelation (long project, String type) {
-        
-        if (!PROJECT_RELATION_TYPES.contains(type)) {
-            
-            this.getProject().getLogger().warn("The project relation type {} is not recognized and may not work. The known types are {}.", type, PROJECT_RELATION_TYPES.stream().collect(Collectors.joining(", ")));
-        }
-        
-        final String existingRelation = this.projectRelations.put(project, type);
-        
-        if (existingRelation != null) {
-            
-            this.getProject().getLogger().warn("Overwriting relation for {} to {}, was previously set as {}.", project, type, existingRelation);
-        }
     }
     
     @TaskAction
     public void apply () {
         
         try {
-            
+
             // Attempt to automatically resolve the game version if one wasn't specified.
-            if (this.gameVersion == null) {
-                
-                this.gameVersion = detectGameVersion(this.getProject());
-                
-                if (this.gameVersion == null) {
-                    
-                    throw new GradleException("Can not upload to Diluv. gameVersion is null and could not be detected.");
+            if (this.gameVersions.isEmpty()) {
+
+                final String detectedVersion = detectGameVersion(this.getProject());
+
+                if (detectedVersion == null) {
+
+                    throw new GradleException("Can not upload to Modrinth. No game version specified.");
+                }
+
+                else {
+                    this.addGameVersion(detectedVersion);
                 }
             }
-            
-            // Use project version if no version is specified.
-            if (this.projectVersion == null) {
-                
-                this.projectVersion = this.getProject().getVersion().toString();
+
+            if (this.loaders.isEmpty()) {
+                throw new GradleException("Can not upload to Modrinth. No loaders specified.");
             }
-            
-            // Only semantic versioning is allowed.
-            if (!SEM_VER.matcher(this.projectVersion).matches()) {
-                
-                this.getProject().getLogger().error("Project version {} is not semantic versioning compatible. The file can not be uploaded. https://semver.org", this.projectVersion);
-                throw new GradleException("Project version '" + this.projectVersion + "' is not semantic versioning compatible. The file can not be uploaded. https://semver.org");
+
+            // Use project version if no version is specified.
+            if (this.versionNumber == null) {
+                this.versionNumber = this.getProject().getVersion().toString();
+            }
+
+            if (this.versionName == null) {
+                this.versionName = this.getProject().getVersion().toString();
             }
             
             // Set a default changelog if the dev hasn't provided one.
@@ -226,14 +188,30 @@ public class TaskModrinthUpload extends DefaultTask {
                 
                 this.changelog = "The project has been updated to " + this.getProject() + ". No changelog was specified.";
             }
-            
+
+            List<File> filesToUpload = new ArrayList<>();
+
             final File file = resolveFile(this.getProject(), this.uploadFile, null);
             
             // Ensure the file actually exists before trying to upload it.
             if (file == null || !file.exists()) {
-                
                 this.getProject().getLogger().error("The upload file is missing or null. {}", this.uploadFile);
                 throw new GradleException("The upload file is missing or null. " + String.valueOf(this.uploadFile));
+            }
+
+            filesToUpload.add(file);
+
+            for (Object fileObject : this.additionalFiles)  {
+                final File resolvedFile = resolveFile(this.getProject(), fileObject, null);
+
+                // Ensure the file actually exists before trying to upload it.
+                if (resolvedFile == null || !resolvedFile.exists()) {
+
+                    this.getProject().getLogger().error("The upload file is missing or null. {}", fileObject);
+                    throw new GradleException("The upload file is missing or null. " + String.valueOf(fileObject));
+                }
+
+                filesToUpload.add(resolvedFile);
             }
             
             try {
@@ -242,7 +220,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 
                 try {
                     
-                    this.upload(endpoint, file);
+                    this.upload(endpoint, filesToUpload);
                 }
                 
                 catch (final IOException e) {
@@ -263,8 +241,8 @@ public class TaskModrinthUpload extends DefaultTask {
             
             if (this.failSilently) {
                 
-                this.getLogger().info("Failed to upload to Diluv. Check logs for more info.");
-                this.getLogger().error("Diluv upload failed silently.", e);
+                this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
+                this.getLogger().error("Modrinth upload failed silently.", e);
             }
             
             else {
@@ -278,36 +256,39 @@ public class TaskModrinthUpload extends DefaultTask {
      * Uploads a file using the provided configuration.
      * 
      * @param endpoint The upload endpoint.
-     * @param file The file to upload.
+     * @param files The files to upload.
      * @throws IOException Whenever something goes wrong wit uploading the file.
      */
-    public void upload (URI endpoint, File file) throws IOException {
-        
-        this.getProject().getLogger().debug("Uploading {} to {}.", file.getPath(), this.getUploadEndpoint());
-        
+    public void upload (URI endpoint, List<File> files) throws IOException {
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
         final HttpPost post = new HttpPost(endpoint);
         
-        post.addHeader("Authorization", "Bearer " + this.token);
+        post.addHeader("Authorization", this.token);
         
         final MultipartEntityBuilder form = MultipartEntityBuilder.create();
-        form.addBinaryBody("file", file);
-        form.addTextBody("filename", file.getName());
-        
-        final RequestData data = new RequestData();
-        data.setVersion(this.projectVersion);
-        data.setChangelog(this.changelog);
-        data.setReleaseType(this.releaseType);
-        data.setClassifier(this.classifier);
-        data.getGameVersions().add(this.gameVersion);
-        
-        for (Entry<Long, String> relation : this.projectRelations.entrySet()) {
-            
-            data.getDependencies().add(new FileDependency(relation.getKey(), relation.getValue()));
+
+        List<String> fileParts = new ArrayList<>();
+
+        for (int i = 0; i < files.size(); i++) {
+            fileParts.add(String.valueOf(i));
         }
         
-        form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
+        final RequestData data = new RequestData();
+        data.setVersionNumber(this.versionNumber);
+        data.setVersionTitle(this.versionName);
+        data.setChangelog(this.changelog);
+        data.setReleaseType(this.releaseType);
+        data.setGameVersions(this.gameVersions);
+        data.setLoaders(this.loaders);
+        data.setFileParts(fileParts);
         
+        form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
+
+        for (int i = 0; i < files.size(); i++) {
+            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), this.getUploadEndpoint());
+            form.addBinaryBody(String.valueOf(i), files.get(i));
+        }
+
         post.setEntity(form.build());
         
         try {
@@ -318,30 +299,24 @@ public class TaskModrinthUpload extends DefaultTask {
             if (status == 200) {
                 
                 this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-                this.getProject().getLogger().lifecycle("Sucessfully uploaded {} to {} as file id {}.", file.getName(), this.projectId, this.uploadInfo.getId());
+                this.getProject().getLogger().lifecycle("Successfully uploaded version to {} as version id {}.", this.projectId, this.uploadInfo.getId());
             }
             
             else {
                 
                 this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-                this.getProject().getLogger().error("Upload failed! Status: {} Reson: {}", status, this.errorInfo.getMessage());
-                throw new GradleException("Upload failed! Status: " + status + " Reson: " + this.errorInfo.getMessage());
+                this.getProject().getLogger().error("Upload failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
+                throw new GradleException("Upload failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
             }
         }
         
         catch (final IOException e) {
             
-            this.getProject().getLogger().error("Failure to upload file!", e);
+            this.getProject().getLogger().error("Failure to upload files!", e);
             throw e;
         }
     }
-    
-    @Override
-    public String toString () {
-        
-        return "TaskDiluvUpload [apiURL=" + this.apiURL + ", token=" + (this.token != null) + ", projectId=" + this.projectId + ", projectVersion=" + this.projectVersion + ", changelog=" + this.changelog + ", uploadFile=" + this.uploadFile + ", releaseType=" + this.releaseType + ", classifier=" + this.classifier + ", gameVersion=" + this.gameVersion + "]";
-    }
-    
+
     /**
      * Provides the upload API endpoint to use.
      * 
@@ -349,7 +324,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     private String getUploadEndpoint () {
         
-        return this.apiURL + "/v1/projects/" + this.projectId + "/files";
+        return this.apiURL + "/v1/version";
     }
     
     /**
@@ -384,7 +359,7 @@ public class TaskModrinthUpload extends DefaultTask {
             
             return ((AbstractArchiveTask) in).getArchivePath();
         }
-        
+
         // Fallback to Gradle's built in file resolution mechanics.
         return project.file(in);
     }

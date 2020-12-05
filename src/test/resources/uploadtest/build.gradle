@@ -15,20 +15,17 @@ buildscript {
 
 apply plugin: 'java'
     
-import com.diluv.diluvgradle.TaskDiluvUpload
+import com.modrinth.minotaur.TaskModrinthUpload
 
 version = '1.0.924943'
 
-task testPlugin (type: TaskDiluvUpload){
+task testPlugin (type: TaskModrinthUpload){
     
     apiURL = 'http://127.0.0.1:4567'
     token = "C_RxaYIzXLYxKXD8itdhMUB6J6rKLcvPWpinbpH0ezc"
     projectId = 1
     changelog = 'The changelog for my file.'
     uploadFile = jar
-    gameVersion = '1.12.2'
-	
-	addDependency(2);
-	addOptionalDependency(3);
-	addIncompatibility(4);
+    addGameVersion('1.12.2')
+    addLoader('forge')
 }

@@ -4,31 +4,20 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class ResponseError {
-    
-    @Expose
-    @SerializedName("type")
-    private String type;
-    
+
     @Expose
     @SerializedName("error")
     private String error;
     
     @Expose
-    @SerializedName("message")
-    private String message;
+    @SerializedName("description")
+    private String description;
     
-    public String getType () {
-        
-        return this.type;
-    }
-    
-    public String getError () {
-        
+    public String getError() {
         return this.error;
     }
     
-    public String getMessage () {
-        
-        return this.message;
+    public String getDescription() {
+        return this.description;
     }
 }
