@@ -28,7 +28,7 @@ buildscript {
 The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
 
 ```groovy
-import TaskModrinthUpload
+import com.modrinth.minotaur.TaskModrinthUpload
 
 task publishModrinth (type: TaskModrinthUpload){
 
@@ -36,7 +36,7 @@ task publishModrinth (type: TaskModrinthUpload){
     projectId = 'ssUbhMkL'
     versionNumber = '1.0.0'
     uploadFile = jar // This is the java jar task
-    addLoader('1.16.2')
+    addGameVersion('1.16.2')
     addLoader('fabric')
 }
 ```
