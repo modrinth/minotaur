@@ -34,9 +34,10 @@ task publishModrinth (type: TaskModrinthUpload){
 
     token = 'secret' // Use an environment property!
     projectId = 'ssUbhMkL'
-    projectVersion = '1.0.0'
+    versionNumber = '1.0.0'
     uploadFile = jar // This is the java jar task
-    gameVersion = '1.12.2'
+    addLoader('1.16.2')
+    addLoader('fabric')
 }
 ```
 
