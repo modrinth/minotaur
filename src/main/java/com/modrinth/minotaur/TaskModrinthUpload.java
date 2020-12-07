@@ -78,7 +78,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     public Object uploadFile;
 
-    public Collection<Object> additionalFiles;
+    public Collection<Object> additionalFiles = new ArrayList<>();
     
     /**
      * The release type for the project.
@@ -274,6 +274,7 @@ public class TaskModrinthUpload extends DefaultTask {
         }
         
         final RequestData data = new RequestData();
+        data.setProjectId(this.projectId);
         data.setVersionNumber(this.versionNumber);
         data.setVersionTitle(this.versionName);
         data.setChangelog(this.changelog);

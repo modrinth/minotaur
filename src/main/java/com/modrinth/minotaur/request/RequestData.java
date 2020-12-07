@@ -48,7 +48,11 @@ public class RequestData {
     @Expose
     @SerializedName("featured")
     private boolean featured = false;
-    
+
+    public void setProjectId(String id) {
+        this.projectId = id;
+    }
+
     public void setVersionNumber(String version) {
         this.versionNumber = version;
     }
