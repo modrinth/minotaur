@@ -55,8 +55,8 @@ task publishModrinth (type: TaskModrinthUpload){
 | releaseType                      | false    | The release status of the file. Defaults to "alpha".                                |
 | failSilently                     | false    | When true an upload failure will not fail your build.                               |
 | addGameVersion(version)          | true     | Adds a game version that this file supports. At least one is needed.                |
-| addLoader(loader)                | true     | Allows supported mod loaders to be specified for the file.                           |
-| addFile(file)                    | false    | Allows supported mod loaders to be specified for the file.                          |
+| addLoader(loader)                | true     | Allows supported mod loaders to be specified for the file.                          |
+| addFile(file)                    | false    | Method to add additional files to be uploaded to a version.                         |
 
 **Note:** In some scenarios the `gameVersion` property can be detected automatically. For example the ForgeGradle and LoomGradle environments. For best results you should set this property manually.
 
