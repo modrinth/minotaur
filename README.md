@@ -30,13 +30,16 @@ The next step is to create a new task for uploading to Modrinth. This task allow
 ```groovy
 import com.modrinth.minotaur.TaskModrinthUpload
 
-task publishModrinth (type: TaskModrinthUpload){
+task publishModrinth (type: TaskModrinthUpload){ // Make sure it runs after build!
+    onlyIf {
+        System.getenv("MODRINTH") // Only attempt to run this task if the MODRINTH variable is set, otherwise SKIP it
+    }
 
-    token = 'secret' // Use an environment property!
+    token = System.getenv("MODRINTH") // An environment property called MODRINTH that is your token, set via Gradle CLI, GitHub Actions, Idea Run Configuration, or other
     projectId = 'ssUbhMkL'
-    versionNumber = '1.0.0'
-    uploadFile = jar // This is the java jar task
-    addGameVersion('1.16.2')
+    versionNumber = '1.0.0' // Will fail if Modrinth has this version already
+    uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar'
+    addGameVersion('1.16.2') // Call this multiple times to add multiple game versions. There are tools that can help you generate the list of versions
     addLoader('fabric')
 }
 ```
