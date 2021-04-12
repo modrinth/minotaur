@@ -30,15 +30,17 @@ The next step is to create a new task for uploading to Modrinth. This task allow
 ```groovy
 import com.modrinth.minotaur.TaskModrinthUpload
 
-task publishModrinth (type: TaskModrinthUpload){
+task publishModrinth (type: TaskModrinthUpload){ // Make sure it runs after build!
+    onlyIf {
+        System.getenv("MODRINTH") // Only attempt to run this task if the MODRINTH variable is set, otherwise SKIP it
+    }
 
-    token = 'secret' // Use an environment property!
+    token = System.getenv("MODRINTH") // An environment property called MODRINTH that is your token, set via Gradle CLI, GitHub Actions, Idea Run Configuration, or other
     projectId = 'ssUbhMkL'
-    versionNumber = '1.0.0'
-    // This is the java jar task
-    uploadFile = jar       // <-- use this for Forge
-    uploadFile = remapJar  // <-- use this for Fabric
-    addGameVersion('1.16.2')
+    versionNumber = '1.0.0' // Will fail if Modrinth has this version already
+    // On fabric, use 'remapJar' instead of 'jar'
+    uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar' 
+    addGameVersion('1.16.2') // Call this multiple times to add multiple game versions. There are tools that can help you generate the list of versions
     addLoader('fabric')
 }
 ```
@@ -54,13 +56,15 @@ task publishModrinth (type: TaskModrinthUpload){
 | versionName                      | false    | The name of the version.                                                            |
 | changelog                        | false    | The changelog for the file. Allows Markdown formatting.                             |
 | uploadFile                       | true     | The file to upload. Can be an actual file or a file task.                           |
-| releaseType                      | false    | The release status of the file. Defaults to "alpha".                                |
+| versionType                      | false    | The version type of the version. Defaults to "RELEASE".                             |
 | failSilently                     | false    | When true an upload failure will not fail your build.                               |
-| addGameVersion(version)          | true     | Adds a game version that this file supports. At least one is needed.                |
-| addLoader(loader)                | true     | Allows supported mod loaders to be specified for the file.                           |
-| addFile(file)                    | false    | Allows supported mod loaders to be specified for the file.                          |
+| detectLoaders                    | false    | Disabling this will prevent the auto detection of mod loaders.                      |
+| addGameVersion(version)          | false     | Adds a game version that this file supports. At least one is needed.               |
+| addLoader(loader)                | false     | Allows supported mod loaders to be specified for the file.                         |
+| addFile(file)                    | false     | Method to add additional files to be uploaded to a version.                        |
+| addDependency(versionId, dependencyType) | false     | Adds a dependency to the uploaded version.                                 |
 
-**Note:** In some scenarios the `gameVersion` property can be detected automatically. For example the ForgeGradle and LoomGradle environments. For best results you should set this property manually.
+**Note:** In most scenarios the `gameVersion` and `loaders` property can be detected automatically. For example the ForgeGradle and LoomGradle environments.
 
 ### Additional Properties
 
@@ -75,8 +79,19 @@ task publishModrinth (type: TaskModrinthUpload){
 | Property            | Type        | Description                                             |
 |---------------------|-------------|---------------------------------------------------------|
 | id                  | String        | The ID for the uploaded version.                      |
-
-More properties coming soon!
+| modId               | String        | The ID of the mod this version is for.                |
+| authorId            | String        | The ID of the author who published this version       |
+| featured            | Boolean       | Whether the version is featured or not                |
+| name                | String        | The name of this version                              |
+| versionNumber       | String        | The version number. Ideally will follow semantic versioning |
+| changelog           | String        | The changelog for this version of the mod.            |
+| datePublished       | Date          | The date that this version was published.             |
+| downloads           | Integer       | The number of downloads this specific version has had.|
+| versionType         | VersionType   | The type of the release - `ALPHA`, `BETA`, or `RELEASE`.|
+| files               | List          | A list of files available for download for this version.|
+| gameVersions        | List          | A list of versions of Minecraft that this version of the mod supports.|
+| loaders             | List          | The loaders that this version works on                 |
+| dependency          | Dependency    | A list of mods that this version depends on.           |
 
 #### Error Info
 

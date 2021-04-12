@@ -27,7 +27,7 @@ public class RequestData {
     
     @Expose
     @SerializedName("release_channel")
-    private String releaseType;
+    private VersionType versionType;
 
     @Expose
     @SerializedName("game_versions")
@@ -39,7 +39,7 @@ public class RequestData {
     
     @Expose
     @SerializedName("dependencies")
-    private Collection<String> dependencies = new ArrayList<>();
+    private Collection<Dependency> dependencies = new ArrayList<>();
 
     @Expose
     @SerializedName("file_parts")
@@ -65,8 +65,8 @@ public class RequestData {
         this.changelog = changelog;
     }
     
-    public void setReleaseType(String releaseType) {
-        this.releaseType = releaseType;
+    public void setVersionType(VersionType versionType) {
+        this.versionType = versionType;
     }
 
     public void setGameVersions(Collection<String> gameVersions) {
@@ -80,4 +80,6 @@ public class RequestData {
     public void setFileParts(List<String> fileParts) {
         this.fileParts = fileParts;
     }
+
+    public void setDependencies(Collection<Dependency>  dependencies) { this.dependencies = dependencies; }
 }
