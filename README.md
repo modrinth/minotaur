@@ -38,7 +38,8 @@ task publishModrinth (type: TaskModrinthUpload){ // Make sure it runs after buil
     token = System.getenv("MODRINTH") // An environment property called MODRINTH that is your token, set via Gradle CLI, GitHub Actions, Idea Run Configuration, or other
     projectId = 'ssUbhMkL'
     versionNumber = '1.0.0' // Will fail if Modrinth has this version already
-    uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar'
+    // On fabric, use 'remapJar' instead of 'jar'
+    uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar' 
     addGameVersion('1.16.2') // Call this multiple times to add multiple game versions. There are tools that can help you generate the list of versions
     addLoader('fabric')
 }
