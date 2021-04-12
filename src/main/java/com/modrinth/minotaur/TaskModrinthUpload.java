@@ -9,6 +9,8 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 
+import com.modrinth.minotaur.request.Dependency;
+import com.modrinth.minotaur.request.VersionType;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import org.apache.http.HttpResponse;
@@ -23,6 +25,8 @@ import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.AppliedPlugin;
+import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
@@ -81,9 +85,9 @@ public class TaskModrinthUpload extends DefaultTask {
     public Collection<Object> additionalFiles = new ArrayList<>();
     
     /**
-     * The release type for the project.
+     * The version type for the project.
      */
-    public String releaseType = "release";
+    public VersionType versionType = VersionType.RELEASE;
 
     /**
      * The game versions of the game the version supports.
@@ -94,11 +98,22 @@ public class TaskModrinthUpload extends DefaultTask {
      * The mod loaders of the game the version supports.
      */
     public Set<String> loaders = new HashSet<>();
+
+    /**
+     * The dependencies of the version.
+     */
+    public Set<Dependency> dependencies = new HashSet<>();
     
     /**
      * Allows build to continue even if the upload failed.
      */
     public boolean failSilently = false;
+
+    /**
+     * If enabled the plugin will try to define loaders based on other plugins in the project
+     * environment.
+     */
+    public boolean detectLoaders = true;
     
     /**
      * The response from the API when the file was uploaded successfully.
@@ -136,6 +151,19 @@ public class TaskModrinthUpload extends DefaultTask {
         }
     }
 
+    /**
+     * Adds a dependency to the uploaded version. This determines things like
+     * dependencies and incompatibilities.
+     *
+     * @param versionId The version to add a dependency with.
+     * @param type The type of dependency to add.
+     */
+    private void addDependency(String versionId, Dependency.DependencyType type) {
+
+        this.dependencies.add(new Dependency(versionId, type));
+        this.getLogger().debug("Added {} dependency with version ID {}.", type, versionId);
+    }
+
     public void addFile(Object file) {
         additionalFiles.add(file);
     }
@@ -152,22 +180,20 @@ public class TaskModrinthUpload extends DefaultTask {
     
     @TaskAction
     public void apply () {
-        
         try {
-
             // Attempt to automatically resolve the game version if one wasn't specified.
             if (this.gameVersions.isEmpty()) {
+                this.detectGameVersionForge();
+                this.detectGameVersionFabric();
+            }
 
-                final String detectedVersion = detectGameVersion(this.getProject());
+            if (this.gameVersions.isEmpty()) {
+                throw new GradleException("Can not upload to Modrinth. No game versions specified.");
+            }
 
-                if (detectedVersion == null) {
-
-                    throw new GradleException("Can not upload to Modrinth. No game version specified.");
-                }
-
-                else {
-                    this.addGameVersion(detectedVersion);
-                }
+            if(this.loaders.isEmpty()) {
+                this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
+                this.addLoaderForPlugin("fabric-loom", "fabric");
             }
 
             if (this.loaders.isEmpty()) {
@@ -185,8 +211,7 @@ public class TaskModrinthUpload extends DefaultTask {
             
             // Set a default changelog if the dev hasn't provided one.
             if (this.changelog == null) {
-                
-                this.changelog = "The project has been updated to " + this.getProject() + ". No changelog was specified.";
+                this.changelog = "The project has been updated to " + this.versionName + ". No changelog was specified.";
             }
 
             List<File> filesToUpload = new ArrayList<>();
@@ -217,36 +242,27 @@ public class TaskModrinthUpload extends DefaultTask {
             try {
                 
                 final URI endpoint = new URI(this.getUploadEndpoint());
-                
                 try {
-                    
                     this.upload(endpoint, filesToUpload);
                 }
-                
                 catch (final IOException e) {
-                    
                     this.getProject().getLogger().error("Failed to upload the file!", e);
                     throw new GradleException("Failed to upload the file!", e);
                 }
             }
             
             catch (final URISyntaxException e) {
-                
                 this.getProject().getLogger().error("Invalid endpoint URI!", e);
                 throw new GradleException("Invalid endpoint URI!", e);
             }
         }
         
         catch (final Exception e) {
-            
             if (this.failSilently) {
-                
                 this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
                 this.getLogger().error("Modrinth upload failed silently.", e);
             }
-            
             else {
-                
                 throw e;
             }
         }
@@ -278,9 +294,10 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setVersionNumber(this.versionNumber);
         data.setVersionTitle(this.versionName);
         data.setChangelog(this.changelog);
-        data.setReleaseType(this.releaseType);
+        data.setVersionType(this.versionType);
         data.setGameVersions(this.gameVersions);
         data.setLoaders(this.loaders);
+        data.setDependencies(this.dependencies);
         data.setFileParts(fileParts);
         
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
@@ -364,52 +381,93 @@ public class TaskModrinthUpload extends DefaultTask {
         // Fallback to Gradle's built in file resolution mechanics.
         return project.file(in);
     }
-    
+
     /**
-     * Attempts to automatically detect a game version based on the script environment. This is
-     * intended as a fallback and should never override user specified data.
-     * 
-     * @param project The Gradle project to look through.
-     * @return A detected game version string. This will be null if nothing was found.
+     * Attempts to detect the game version by detecting ForgeGradle data in the build
+     * environment.
      */
-    @Nullable
-    private static String detectGameVersion (Project project) {
-        
-        String version = null;
-        
-        // ForgeGradle will store the game version here.
-        // https://github.com/MinecraftForge/ForgeGradle/blob/9252ffe1fa5c2acf133f35d169ba4ffc84e6a9fd/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L179
-        if (project.getExtensions().getExtraProperties().has("MC_VERSION")) {
-            
-            version = project.getExtensions().getExtraProperties().get("MC_VERSION").toString();
+    private void detectGameVersionForge () {
+
+        try {
+
+            final ExtraPropertiesExtension extraProps = this.getProject().getExtensions().getExtraProperties();
+
+            // ForgeGradle will store the game version here.
+            // https://github.com/MinecraftForge/ForgeGradle/blob/9252ffe1fa5c2acf133f35d169ba4ffc84e6a9fd/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L179
+            if (extraProps.has("MC_VERSION")) {
+
+                final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
+
+                if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
+
+                    this.getLogger().debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
+                    this.addGameVersion(forgeGameVersion);
+                }
+            }
         }
-        
-        else {
-            
-            // Loom/Fabric Gradle detection.
+
+        catch (final Exception e) {
+
+            this.getLogger().debug("Failed to detect ForgeGradle game version.", e);
+        }
+    }
+
+    /**
+     * Attempts to detect the game version by detecting LoomGradle data in the build
+     * environment.
+     */
+    private void detectGameVersionFabric() {
+        // Loom/Fabric Gradle detection.
+        try {
+            // Using reflection because loom isn't always available.
+            final Class<?> loomType = Class.forName("net.fabricmc.loom.LoomGradleExtension");
+            final Method getProvider = loomType.getMethod("getMinecraftProvider");
+
+            final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.providers.MinecraftProvider");
+            final Method getVersion = minecraftProvider.getMethod("getMinecraftVersion");
+
+            final Object loomExt = this.getProject().getExtensions().getByType(loomType);
+            final Object loomProvider = getProvider.invoke(loomExt);
+            final Object loomVersion = getVersion.invoke(loomProvider);
+
+            final String loomGameVersion = loomVersion.toString();
+
+            if (loomGameVersion != null && !loomGameVersion.isEmpty()) {
+
+                this.getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
+                this.addGameVersion(loomGameVersion);
+            }
+        }
+        catch (final Exception e) {
+            this.getLogger().debug("Failed to detect Loom game version.", e);
+        }
+    }
+
+    /**
+     * Applies a mod loader automatically if a plugin with the specified name has been applied.
+     *
+     * @param pluginName The plugin to search for.
+     * @param loaderName The mod loader to apply.
+     */
+    private void addLoaderForPlugin(String pluginName, String loaderName) {
+        if (this.detectLoaders) {
             try {
-                
-                // Using reflection because loom isn't always available.
-                final Class<?> loomType = Class.forName("net.fabricmc.loom.LoomGradleExtension");
-                final Method getProvider = loomType.getMethod("getMinecraftProvider");
-                
-                final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.providers.MinecraftProvider");
-                final Method getVersion = minecraftProvider.getMethod("getMinecraftVersion");
-                
-                final Object loomExt = project.getExtensions().getByType(loomType);
-                final Object loomProvider = getProvider.invoke(loomExt);
-                final Object loomVersion = getVersion.invoke(loomProvider);
-                
-                version = loomVersion.toString();
+                final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
+
+                if (plugin != null) {
+
+                    this.addLoader(loaderName);
+                    this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
+                }
+
+                else {
+
+                    this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
+                }
             }
-            
             catch (final Exception e) {
-                
-                project.getLogger().debug("Failed to detect loom game version.", e);
+                this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
             }
         }
-        
-        project.getLogger().debug("Using fallback game version {}.", version);
-        return version;
     }
 }
