@@ -158,7 +158,7 @@ public class TaskModrinthUpload extends DefaultTask {
      * @param versionId The version to add a dependency with.
      * @param type The type of dependency to add.
      */
-    private void addDependency(String versionId, Dependency.DependencyType type) {
+    public void addDependency(String versionId, Dependency.DependencyType type) {
 
         this.dependencies.add(new Dependency(versionId, type));
         this.getLogger().debug("Added {} dependency with version ID {}.", type, versionId);
