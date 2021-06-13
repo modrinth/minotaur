@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath group: 'com.modrinth.minotaur', name: 'Minotaur', version: '1.0.0'
+        classpath group: 'com.modrinth.minotaur', name: 'Minotaur', version: '1.2.1'
     }
 }
 
