@@ -52,7 +52,7 @@ public class TaskModrinthUpload extends DefaultTask {
     public String apiURL = "https://api.modrinth.com/api";
     
     /**
-     * The API token used to communicate with Modrinth. Make sure you keep this public!
+     * The API token used to communicate with Modrinth. Make sure you keep this private!
      */
     public String token;
     
