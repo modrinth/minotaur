@@ -4,6 +4,7 @@ A Gradle plugin for uploading build artifacts directly to Modrinth.
 ## Usage Guide
 To use this plugin you must add it to your build script. This can be done using the plugins DSL or added to the classpath directly for legacy scripts.
 
+### Groovy
 **Plugin DSL**    
 ```gradle
 plugins {
@@ -42,6 +43,33 @@ task publishModrinth (type: TaskModrinthUpload){ // Make sure it runs after buil
     uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar' 
     addGameVersion('1.16.2') // Call this multiple times to add multiple game versions. There are tools that can help you generate the list of versions
     addLoader('fabric')
+}
+```
+### Kotlin
+**Plugin DSL**    
+```kts
+plugins {
+    id("com.modrinth.minotaur") version "1.2.1"
+}
+```
+
+The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
+
+```groovy
+import com.modrinth.minotaur.TaskModrinthUpload
+
+tasks.register("publishModrinth", TaskModrinthUpload::class) { // Make sure it runs after build!
+    onlyIf {
+        System.getenv("MODRINTH") != null // Only attempt to run this task if the MODRINTH variable is set, otherwise SKIP it
+    }
+
+    token = System.getenv("MODRINTH") // An environment property called MODRINTH that is your token, set via Gradle CLI, GitHub Actions, Idea Run Configuration, or other
+    projectId = "ssUbhMkL"
+    versionNumber = "1.0.0" // Will fail if Modrinth has this version already
+    // On fabric, use 'remapJar' instead of 'jar'
+    uploadFile = jar // This is the java jar task. If it can't find the jar, try 'jar.outputs.getFiles().asPath' in place of 'jar' 
+    addGameVersion("1.16.2") // Call this multiple times to add multiple game versions. There are tools that can help you generate the list of versions
+    addLoader("fabric")
 }
 ```
 
