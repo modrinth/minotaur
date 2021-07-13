@@ -55,7 +55,7 @@ plugins {
 
 The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
 
-```groovy
+```kts
 import com.modrinth.minotaur.TaskModrinthUpload
 
 tasks.register("publishModrinth", TaskModrinthUpload::class) { // Make sure it runs after build!
