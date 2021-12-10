@@ -4,21 +4,20 @@ plugins {
     id "java-gradle-plugin"
 }
 
-version = "${project_version}"
-group = 'com.modrinth.minotaur'
-archivesBaseName = 'Minotaur'
+version = project_version
+group = group
+archivesBaseName = archivesBaseName
 description = 'Modrinth plugin for publishing builds to the website!'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
 dependencies {
-    compile gradleApi()
+    compileOnly gradleApi()
 	
     implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
@@ -69,21 +68,9 @@ jar {
     }
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    description = 'Creates a JAR containing the source code.'
-    from sourceSets.main.allSource
-    archiveClassifier = 'sources'
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    description = 'Creates a JAR containing the JavaDocs.'
-    from javadoc.destinationDir
-    archiveClassifier = 'javadoc'
-}
-
-artifacts {
-    archives sourcesJar
-    archives javadocJar
+java {
+  withSourcesJar()
+  withJavadocJar()
 }
 
 static String getBuildNumber() {

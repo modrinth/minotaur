@@ -15,7 +15,7 @@ public class Dependency {
     /**
      * Creates a new project relationship.
      *
-     * @param versionId The ID of the project version to create a dependency with.
+     * @param versionId      The ID of the project version to create a dependency with.
      * @param dependencyType The type of dependency being created.
      */
     public Dependency(String versionId, DependencyType dependencyType) {
@@ -25,12 +25,10 @@ public class Dependency {
     }
 
     public String getVersionId() {
-
         return this.versionId;
     }
 
-    public DependencyType getDependencyType () {
-
+    public DependencyType getDependencyType() {
         return this.dependencyType;
     }
 
@@ -51,6 +49,6 @@ public class Dependency {
          * The version is not compatible with the project and will not work when both are used.
          */
         @SerializedName("incompatible")
-        INCOMPATIBLE;
+        INCOMPATIBLE
     }
 }

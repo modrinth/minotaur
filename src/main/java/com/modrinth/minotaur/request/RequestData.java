@@ -1,14 +1,13 @@
 package com.modrinth.minotaur.request;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-
 public class RequestData {
-
     @Expose
     @SerializedName("mod_id")
     private String projectId;
@@ -20,11 +19,11 @@ public class RequestData {
     @Expose
     @SerializedName("version_title")
     private String versionTitle;
-    
+
     @Expose
     @SerializedName("version_body")
     private String changelog;
-    
+
     @Expose
     @SerializedName("release_channel")
     private VersionType versionType;
@@ -36,7 +35,7 @@ public class RequestData {
     @Expose
     @SerializedName("loaders")
     private Collection<String> loaders = new ArrayList<>();
-    
+
     @Expose
     @SerializedName("dependencies")
     private Collection<Dependency> dependencies = new ArrayList<>();
@@ -60,11 +59,11 @@ public class RequestData {
     public void setVersionTitle(String title) {
         this.versionTitle = title;
     }
-    
+
     public void setChangelog(String changelog) {
         this.changelog = changelog;
     }
-    
+
     public void setVersionType(VersionType versionType) {
         this.versionType = versionType;
     }
@@ -81,5 +80,7 @@ public class RequestData {
         this.fileParts = fileParts;
     }
 
-    public void setDependencies(Collection<Dependency>  dependencies) { this.dependencies = dependencies; }
+    public void setDependencies(Collection<Dependency> dependencies) {
+        this.dependencies = dependencies;
+    }
 }

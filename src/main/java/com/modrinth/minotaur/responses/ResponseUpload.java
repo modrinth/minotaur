@@ -1,14 +1,14 @@
 package com.modrinth.minotaur.responses;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
-
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.modrinth.minotaur.request.Dependency;
 import com.modrinth.minotaur.request.VersionType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * This class defines a POJO that represents the API response for versions that have been
@@ -37,7 +37,7 @@ public class ResponseUpload {
     private String authorId;
 
     /**
-     *  Whether the version is featured or not
+     * Whether the version is featured or not
      */
     @Expose
     @SerializedName("featured")
@@ -79,7 +79,7 @@ public class ResponseUpload {
     private int downloads;
 
     /**
-     *  The type of the release - `Alpha`, `Beta`, or `Release`.
+     * The type of the release - `Alpha`, `Beta`, or `Release`.
      */
     @Expose
     @SerializedName("version_type")
@@ -113,7 +113,7 @@ public class ResponseUpload {
     @SerializedName("dependencies")
     private Collection<Dependency> dependencies = new ArrayList<>();
 
-    public String getId () {
+    public String getId() {
         return this.id;
     }
 
@@ -172,7 +172,7 @@ public class ResponseUpload {
     /**
      * A single mod file, with a url for the file and the file's hash
      */
-    public class VersionFile {
+    public static class VersionFile {
         /**
          * A map of hashes of the file.  The key is the hashing algorithm
          * and the value is the string version of the hash.
