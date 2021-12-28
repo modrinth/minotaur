@@ -29,42 +29,36 @@ The next step is to create a new task for uploading to Modrinth. This task allow
 
 ```groovy
 modrinth {
-    // Only attempt to run the Modrinth task if the MODRINTH_TOKEN environment property is set, otherwise throw an exception
-    if (System.getenv("MODRINTH_TOKEN") == null) throw new GradleException("MODRINTH_TOKEN not set!")
-    apiUrl = "https://test-api.modrinth.com/v2"
-    token = System.getenv("MODRINTH_TOKEN")
+    token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "AABBCCDD"
-    versionNumber = versionName = "1.0.0" // Will fail if Modrinth has this version already
+    versionNumber = "1.0.0" // Will fail if Modrinth has this version already
     versionType = com.modrinth.minotaur.request.VersionType.RELEASE
-    changelog = "test"
     uploadFile = jar // With Fabric Loom, use `remapJar` instead of `jar`
-    gameVersions = ["1.18", "1.18.1"]
-    loaders = ["fabric"]
-    failSilently = false
-    detectLoaders = true
+    gameVersions = ["1.18", "1.18.1"] // Must be an array, even with only one version
+    loaders = ["fabric"] // Must also be an array
 }
 ```
 
 ### Available Properties
 
-| Property        | Required | Description                                                                         |
-|-----------------|----------|-------------------------------------------------------------------------------------|
-| apiURL          | false    | The API endpoint URL to use for uploading files. Defaults to official Modrinth API. |
-| token           | true     | A valid API token for the Modrinth API.                                             |
-| projectId       | true     | The ID of the project to upload to.                                                 |
-| versionNumber   | true     | The version number of the version.                                                  |
-| versionName     | false    | The name of the version.                                                            |
-| changelog       | false    | The changelog for the file. Allows Markdown formatting.                             |
-| uploadFile      | true     | The file to upload. Can be an actual file or a file task.                           |
-| versionType     | false    | The version type of the version. Defaults to "RELEASE".                             |
-| failSilently    | false    | When true an upload failure will not fail your build.                               |
-| detectLoaders   | false    | Disabling this will prevent the auto detection of mod loaders.                      |
-| gameVersions    | true     | Adds a game version that this file supports. At least one is needed.                |
-| loaders         | false    | Allows supported mod loaders to be specified for the file.                          |
-| additionalFiles | false    | Method to add additional files to be uploaded to a version.                         | // TODO this isn't how this works
-| addDependency   | false    | Adds a dependency to the uploaded version.                                          | // TODO "
+| Property        | Required | Description                                               | Default                                                                    |
+|-----------------|----------|-----------------------------------------------------------|----------------------------------------------------------------------------|
+| apiURL          | false    | The API endpoint URL to use for uploading files.          | `https://api.modrinth.com/v2`                                              |
+| token           | false    | A valid API token for the Modrinth API.                   | `MODRINTH_TOKEN` environment variable                                      |
+| projectId       | true     | The ID of the project to upload to.                       |                                                                            |
+| versionNumber   | true     | The version number of the version.                        |                                                                            |
+| versionName     | false    | The name of the version. Defaults to the version number.  | `versionNumber`                                                            |
+| changelog       | false    | The changelog for the file. Allows Markdown formatting.   | `The project has been updated to projectName. No changelog was specified.` |
+| uploadFile      | true     | The file to upload. Can be an actual file or a file task. |                                                                            |
+| additionalFiles | false    | Array of additional files to be uploaded to a version.    | // TODO this isn't how this works                                          |
+| versionType     | false    | The stability level of the version.                       | `RELEASE`                                                                  |
+| gameVersions    | true     | An array of game versions that this version supports.     | `MC_VERSION` on FG, `MinecraftProvider.minecraftVersion()` on Loom         |
+| loaders         | true     | An array of mod loaders that this version supports.       | `forge` if using FG, `fabric` if using Loom                                |
+| dependencies    | false    | Dependencies of the uploaded version.                     | // TODO this isn't how this works                                          |
+| failSilently    | false    | When true an upload failure will not fail your build.     | `false`                                                                    |
+| detectLoaders   | false    | Whether mod loaders will be automatically detected.       | `true`                                                                     |
 
-**Note:** In most scenarios the `gameVersion` and `loaders` property can be detected automatically. For example the ForgeGradle and LoomGradle environments.
+**Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
 ### Additional Properties
 // TODO
@@ -81,7 +75,7 @@ modrinth {
 | Property      | Type        | Description                                                            |
 |---------------|-------------|------------------------------------------------------------------------|
 | id            | String      | The ID for the uploaded version.                                       |
-| modId         | String      | The ID of the mod this version is for.                                 |
+| projectId     | String      | The ID of the mod this version is for.                                 |
 | authorId      | String      | The ID of the author who published this version                        |
 | featured      | Boolean     | Whether the version is featured or not                                 |
 | name          | String      | The name of this version                                               |

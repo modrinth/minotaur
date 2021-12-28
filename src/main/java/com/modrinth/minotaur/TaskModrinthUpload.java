@@ -58,8 +58,7 @@ public class TaskModrinthUpload extends DefaultTask {
     public ResponseError errorInfo = null;
 
     /**
-     * Checks if the upload was successful or not. This is provided as a small helper for use
-     * in the build script.
+     * Checks if the upload was successful or not. This is provided as a small helper for use in the build script.
      *
      * @return Whether the file was successfully uploaded.
      */
@@ -77,7 +76,7 @@ public class TaskModrinthUpload extends DefaultTask {
             }
 
             if (extension.getGameVersions().get().isEmpty()) {
-                throw new GradleException("Can not upload to Modrinth. No game versions specified.");
+                throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
             }
 
             if (extension.getLoaders().get().isEmpty()) {
@@ -86,16 +85,8 @@ public class TaskModrinthUpload extends DefaultTask {
             }
 
             if (extension.getLoaders().get().isEmpty()) {
-                throw new GradleException("Unable upload to Modrinth: no loaders specified!");
+                throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
             }
-
-            // Use project version if no version is specified.
-            extension.getVersionNumber().get();
-
-            extension.getVersionName().get();
-
-            // Set a default changelog if the dev hasn't provided one.
-            extension.getChangelog().get();
 
             List<File> filesToUpload = new ArrayList<>();
 
@@ -215,15 +206,14 @@ public class TaskModrinthUpload extends DefaultTask {
      * Attempts to resolve a file using an arbitrary object provided by a user defined gradle
      * task.
      *
-     * @param project  The project instance. This is used as a last resort to resolve the file
-     *                 using Gradle's built-in handling.
+     * @param project  The project instance. This is used as a last resort to resolve the file using Gradle's built-in
+     *                 handling.
      * @param in       The arbitrary input object from the user.
-     * @return A file handle for the resolved input. If the input can not be resolved this will
-     * be null or the fallback.
+     * @return A file handle for the resolved input. If the input can not be resolved this will be null or the fallback.
      */
     @Nullable
     private static File resolveFile(Project project, Object in) {
-        // If input or project is null shortcut to the fallback.
+        // If input or project is null we can't really do anything...
         if (in == null || project == null) {
             return null;
         }
@@ -233,8 +223,7 @@ public class TaskModrinthUpload extends DefaultTask {
             return (File) in;
         }
 
-        // Grabs the file from an archive task. Allows build scripts to do things like the jar
-        // task directly.
+        // Grabs the file from an archive task. Allows build scripts to do things like the jar task directly.
         else if (in instanceof AbstractArchiveTask) {
             return ((AbstractArchiveTask) in).getArchiveFile().get().getAsFile();
         }
@@ -244,15 +233,14 @@ public class TaskModrinthUpload extends DefaultTask {
     }
 
     /**
-     * Attempts to detect the game version by detecting ForgeGradle data in the build
-     * environment.
+     * Attempts to detect the game version by detecting ForgeGradle data in the build environment.
      */
-    private void detectGameVersionForge() {
+    public void detectGameVersionForge() {
         try {
             final ExtraPropertiesExtension extraProps = this.getProject().getExtensions().getExtraProperties();
 
             // ForgeGradle will store the game version here.
-            // https://github.com/MinecraftForge/ForgeGradle/blob/9252ffe1fa5c2acf133f35d169ba4ffc84e6a9fd/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L179
+            // https://github.com/MinecraftForge/ForgeGradle/blob/7ca294b2c1f57be675c11a6164bc2e07a41802f1/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
             if (extraProps.has("MC_VERSION")) {
                 //noinspection ConstantConditions
                 final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
@@ -268,18 +256,17 @@ public class TaskModrinthUpload extends DefaultTask {
     }
 
     /**
-     * Attempts to detect the game version by detecting LoomGradle data in the build
-     * environment.
+     * Attempts to detect the game version by detecting Loom data in the build environment.
      */
-    private void detectGameVersionFabric() {
+    public void detectGameVersionFabric() {
         // Loom/Fabric Gradle detection.
         try {
             // Using reflection because loom isn't always available.
             final Class<?> loomType = Class.forName("net.fabricmc.loom.LoomGradleExtension");
             final Method getProvider = loomType.getMethod("getMinecraftProvider");
 
-            final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.providers.MinecraftProvider");
-            final Method getVersion = minecraftProvider.getMethod("getMinecraftVersion");
+            final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.configuration.providers.MinecraftProviderImpl");
+            final Method getVersion = minecraftProvider.getMethod("minecraftVersion");
 
             final Object loomExt = this.getProject().getExtensions().getByType(loomType);
             final Object loomProvider = getProvider.invoke(loomExt);

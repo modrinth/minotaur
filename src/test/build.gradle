@@ -3,7 +3,7 @@ plugins {
     id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
 }
 
-version = "1.0.12345"
+version = "1.0.12345.1"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -20,21 +20,10 @@ idea {
 }
 
 modrinth {
-    if (System.getenv("MODRINTH_TOKEN") == null) throw new GradleException("MODRINTH_TOKEN not set!") // TODO better way to do this
-    apiUrl = "https://test-api.modrinth.com/v2" // TODO set this to prod by default
-    token = System.getenv("MODRINTH_TOKEN") // TODO set this as default
+    apiUrl = "https://test-api.modrinth.com/v2"
     projectId = "VPU6VYVP"
-    versionNumber = versionName = version // TODO allow this to be determined by Gradle; make versionName be versionNumber by default
-    versionType = com.modrinth.minotaur.request.VersionType.RELEASE // TODO set release by default; allow this to be a string
-    changelog = "test" // TODO set default
-    uploadFile = remapJar // TODO set default
+    versionNumber = version
+    uploadFile = remapJar
     gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
-    loaders = ["fabric"] // TODO allow this to be done by detectLoaders
-    //noinspection GroovyAssignabilityCheck
-    dependencies = [
-            {"P7dR8mSH", com.modrinth.minotaur.request.Dependency.DependencyType.REQUIRED},
-            {"1qsZV7U7", com.modrinth.minotaur.request.Dependency.DependencyType.UNSUPPORTED, true}
-    ] // TODO HOW EVEN DO DEPENDENCIES??
-    failSilently = false // TODO set this as default
-    detectLoaders = true // TODO set this as default
+    loaders = ["fabric"]
 }

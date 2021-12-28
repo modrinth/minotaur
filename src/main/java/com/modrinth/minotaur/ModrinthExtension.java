@@ -14,26 +14,26 @@ public class ModrinthExtension {
     private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog;
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
-    private final Property<VersionType> versionType;
+    private final Property<VersionType> versionType; // TODO allow this to be a string
     private final ListProperty<String> gameVersions, loaders;
     private final ListProperty<Dependency> dependencies;
     private final Property<Boolean> failSilently, detectLoaders;
 
     public ModrinthExtension(Project project) {
-        apiUrl = project.getObjects().property(String.class);
-        token = project.getObjects().property(String.class);
+        apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
+        token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
         projectId = project.getObjects().property(String.class);
-        versionNumber = project.getObjects().property(String.class);
-        versionName = project.getObjects().property(String.class);
-        changelog = project.getObjects().property(String.class);
+        versionNumber = project.getObjects().property(String.class); // TODO allow this to be set by Gradle
+        versionName = project.getObjects().property(String.class).convention(versionNumber);
+        changelog = project.getObjects().property(String.class).convention("The project has been updated to " + versionName + ". No changelog was specified.");
         uploadFile = project.getObjects().property(Object.class);
         additionalFiles = project.getObjects().listProperty(Object.class);
-        versionType = project.getObjects().property(VersionType.class);
-        gameVersions = project.getObjects().listProperty(String.class);
-        loaders = project.getObjects().listProperty(String.class);
-        dependencies = project.getObjects().listProperty(Dependency.class);
-        failSilently = project.getObjects().property(Boolean.class);
-        detectLoaders = project.getObjects().property(Boolean.class);
+        versionType = project.getObjects().property(VersionType.class).convention(VersionType.RELEASE);
+        gameVersions = project.getObjects().listProperty(String.class); // TODO fix Fabric detection
+        loaders = project.getObjects().listProperty(String.class); // TODO fix game version and loader detection, for some reason it just never happens
+        dependencies = project.getObjects().listProperty(Dependency.class); // TODO document how to even do this
+        failSilently = project.getObjects().property(Boolean.class).convention(false);
+        detectLoaders = project.getObjects().property(Boolean.class).convention(true);
     }
 
     /**
