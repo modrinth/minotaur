@@ -57,10 +57,6 @@ public class TaskModrinthUpload extends DefaultTask {
     @Nullable
     public ResponseError errorInfo = null;
 
-    public TaskModrinthUpload() {
-        this.mustRunAfter(this.getProject().getTasks().getByName("build"));
-    }
-
     /**
      * Checks if the upload was successful or not. This is provided as a small helper for use
      * in the build script.
@@ -194,7 +190,7 @@ public class TaskModrinthUpload extends DefaultTask {
 
             if (status == 200) {
                 this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-                this.getProject().getLogger().lifecycle("Successfully uploaded version to {} as version id {}.", extension.getProjectId().get(), this.uploadInfo.getId());
+                this.getProject().getLogger().lifecycle("Successfully uploaded version {} to {} as version ID {}.", this.uploadInfo.getVersionNumber(), extension.getProjectId().get(), this.uploadInfo.getId());
             } else {
                 this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
                 this.getProject().getLogger().error("Upload failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
@@ -240,7 +236,7 @@ public class TaskModrinthUpload extends DefaultTask {
         // Grabs the file from an archive task. Allows build scripts to do things like the jar
         // task directly.
         else if (in instanceof AbstractArchiveTask) {
-            return ((AbstractArchiveTask) in).getArchivePath();
+            return ((AbstractArchiveTask) in).getArchiveFile().get().getAsFile();
         }
 
         // Fallback to Gradle's built-in file resolution mechanics.
@@ -258,6 +254,7 @@ public class TaskModrinthUpload extends DefaultTask {
             // ForgeGradle will store the game version here.
             // https://github.com/MinecraftForge/ForgeGradle/blob/9252ffe1fa5c2acf133f35d169ba4ffc84e6a9fd/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L179
             if (extraProps.has("MC_VERSION")) {
+                //noinspection ConstantConditions
                 final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
 
                 if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {

@@ -30,6 +30,11 @@ modrinth {
     uploadFile = remapJar // TODO set default
     gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
     loaders = ["fabric"] // TODO allow this to be done by detectLoaders
+    //noinspection GroovyAssignabilityCheck
+    dependencies = [
+            {"P7dR8mSH", com.modrinth.minotaur.request.Dependency.DependencyType.REQUIRED},
+            {"1qsZV7U7", com.modrinth.minotaur.request.Dependency.DependencyType.UNSUPPORTED, true}
+    ] // TODO HOW EVEN DO DEPENDENCIES??
     failSilently = false // TODO set this as default
     detectLoaders = true // TODO set this as default
 }

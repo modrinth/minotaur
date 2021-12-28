@@ -11,9 +11,10 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * This class defines a POJO that represents the API response for versions that have been
- * successfully uploaded to Modrinth.
+ * This class defines a POJO that represents the API response for versions that have been successfully uploaded to
+ * Modrinth.
  */
+@SuppressWarnings("unused")
 public class ResponseUpload {
     /**
      * The ID of the version, encoded as a base62 string.
@@ -26,8 +27,8 @@ public class ResponseUpload {
      * The ID of the mod this version is for.
      */
     @Expose
-    @SerializedName("mod_id")
-    private String modId;
+    @SerializedName("project_id")
+    private String projectId;
 
     /**
      * The ID of the author who published this version
@@ -117,8 +118,8 @@ public class ResponseUpload {
         return this.id;
     }
 
-    public String getModId() {
-        return this.modId;
+    public String getProjectId() {
+        return this.projectId;
     }
 
     public String getAuthorId() {
@@ -170,30 +171,33 @@ public class ResponseUpload {
     }
 
     /**
-     * A single mod file, with a url for the file and the file's hash
+     * A single version file.
      */
     public static class VersionFile {
         /**
-         * A map of hashes of the file.  The key is the hashing algorithm
-         * and the value is the string version of the hash.
+         * A map of hashes of the file. The key is the hashing algorithm and the value is the string version of the
+         * hash.
          */
         @Expose
         @SerializedName("hashes")
         private Map<String, String> hashes;
+
         /**
          * A direct link to the file for downloading it.
          */
         @Expose
         @SerializedName("url")
         private String url;
+
         /**
          * The filename of the file.
          */
         @Expose
         @SerializedName("filename")
         private String filename;
+
         /**
-         * Whether the file is the primary file of a version
+         * Whether the file is the primary file of the version.
          */
         @Expose
         @SerializedName("primary")

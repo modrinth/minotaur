@@ -2,6 +2,7 @@ package com.modrinth.minotaur.request;
 
 import com.google.gson.annotations.SerializedName;
 
+@SuppressWarnings("unused")
 public enum VersionType {
     /**
      * The version is in a stable state.
@@ -9,7 +10,7 @@ public enum VersionType {
     @SerializedName("release")
     RELEASE,
     /**
-     * The version is in a experimental state which may have bugs.
+     * The version is in an experimental state which may have bugs.
      */
     @SerializedName("beta")
     BETA,
