@@ -1,0 +1,34 @@
+plugins {
+    id "fabric-loom" version "0.10-SNAPSHOT"
+    id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
+}
+
+version = "1.0.12345"
+group = "com.modrinth.minotaur"
+
+dependencies {
+    minecraft "com.mojang:minecraft:1.17.1"
+    mappings "net.fabricmc:yarn:1.17.1+build.65:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.12.12"
+}
+
+idea {
+    module {
+        downloadJavadoc = false
+        downloadSources = false
+    }
+}
+
+modrinth {
+    apiUrl = "https://test-api.modrinth.com/v2"
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "VPU6VYVP"
+    versionNumber = versionName = version
+    versionType = com.modrinth.minotaur.request.VersionType.RELEASE
+    changelog = "test"
+    uploadFile = remapJar
+    gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
+    loaders = ["fabric"]
+    failSilently = false
+    detectLoaders = true
+}
