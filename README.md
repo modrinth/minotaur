@@ -41,22 +41,22 @@ modrinth {
 
 ### Available Properties
 
-| Property        | Required | Description                                               | Default                                                                    |
-|-----------------|----------|-----------------------------------------------------------|----------------------------------------------------------------------------|
-| apiURL          | false    | The API endpoint URL to use for uploading files.          | `https://api.modrinth.com/v2`                                              |
-| token           | false    | A valid API token for the Modrinth API.                   | `MODRINTH_TOKEN` environment variable                                      |
-| projectId       | true     | The ID of the project to upload to.                       |                                                                            |
-| versionNumber   | true     | The version number of the version.                        |                                                                            |
-| versionName     | false    | The name of the version. Defaults to the version number.  | `versionNumber`                                                            |
-| changelog       | false    | The changelog for the file. Allows Markdown formatting.   | `The project has been updated to projectName. No changelog was specified.` |
-| uploadFile      | true     | The file to upload. Can be an actual file or a file task. |                                                                            |
-| additionalFiles | false    | Array of additional files to be uploaded to a version.    | // TODO this isn't how this works                                          |
-| versionType     | false    | The stability level of the version.                       | `RELEASE`                                                                  |
-| gameVersions    | true     | An array of game versions that this version supports.     | `MC_VERSION` on FG, `MinecraftProvider.minecraftVersion()` on Loom         |
-| loaders         | true     | An array of mod loaders that this version supports.       | `forge` if using FG, `fabric` if using Loom                                |
-| dependencies    | false    | Dependencies of the uploaded version.                     | // TODO this isn't how this works                                          |
-| failSilently    | false    | When true an upload failure will not fail your build.     | `false`                                                                    |
-| detectLoaders   | false    | Whether mod loaders will be automatically detected.       | `true`                                                                     |
+| Property        | Required | Description                                               | Default                                                            |
+|-----------------|----------|-----------------------------------------------------------|--------------------------------------------------------------------|
+| apiURL          | false    | The API endpoint URL to use for uploading files.          | `https://api.modrinth.com/v2`                                      |
+| token           | false    | A valid API token for the Modrinth API.                   | `MODRINTH_TOKEN` environment variable                              |
+| projectId       | true     | The ID of the project to upload to.                       |                                                                    |
+| versionNumber   | true     | The version number of the version.                        |                                                                    |
+| versionName     | false    | The name of the version. Defaults to the version number.  | `versionNumber`                                                    |
+| changelog       | false    | The changelog for the file. Allows Markdown formatting.   | `No changelog was specified.`                                      |
+| uploadFile      | true     | The file to upload. Can be an actual file or a file task. |                                                                    |
+| additionalFiles | false    | Array of additional files to be uploaded to a version.    | // TODO this isn't how this works                                  |
+| versionType     | false    | The stability level of the version.                       | `RELEASE`                                                          |
+| gameVersions    | true     | An array of game versions that this version supports.     | `MC_VERSION` on FG, `MinecraftProvider.minecraftVersion()` on Loom |
+| loaders         | true     | An array of mod loaders that this version supports.       | `forge` if using FG, `fabric` if using Loom                        |
+| dependencies    | false    | Dependencies of the uploaded version.                     | // TODO this isn't how this works                                  |
+| failSilently    | false    | When true an upload failure will not fail your build.     | `false`                                                            |
+| detectLoaders   | false    | Whether mod loaders will be automatically detected.       | `true`                                                             |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 

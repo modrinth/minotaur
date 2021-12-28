@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
+    }
+}
+
+plugins {
+    id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
+    id "java"
+    id "idea"
+}
+
+version = "1.0.12345-fg"
+group = "com.modrinth.minotaur"
+
+repositories {
+    mavenCentral()
+}
+
+minecraft {
+    mappings channel: "official", version: "1.17.1"
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.17.1-37.0.12"
+}
+
+idea {
+    module {
+        downloadJavadoc = false
+        downloadSources = false
+    }
+}
+
+modrinth {
+    apiUrl = "https://test-api.modrinth.com/v2"
+    projectId = "VPU6VYVP"
+    versionNumber = version
+    uploadFile = jar
+    //gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
+}

@@ -3,7 +3,7 @@ plugins {
     id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
 }
 
-version = "1.0.12345.1"
+version = "1.0.12345.5"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -25,5 +25,4 @@ modrinth {
     versionNumber = version
     uploadFile = remapJar
     gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
-    loaders = ["fabric"]
 }

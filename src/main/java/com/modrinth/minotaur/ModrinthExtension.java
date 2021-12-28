@@ -5,6 +5,7 @@ import com.modrinth.minotaur.request.VersionType;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the `modrinth {...}'
@@ -24,14 +25,14 @@ public class ModrinthExtension {
         token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
         projectId = project.getObjects().property(String.class);
         versionNumber = project.getObjects().property(String.class); // TODO allow this to be set by Gradle
-        versionName = project.getObjects().property(String.class).convention(versionNumber);
-        changelog = project.getObjects().property(String.class).convention("The project has been updated to " + versionName + ". No changelog was specified.");
+        versionName = project.getObjects().property(String.class).convention(getVersionNumber());
+        changelog = project.getObjects().property(String.class).convention("No changelog was specified.");
         uploadFile = project.getObjects().property(Object.class);
-        additionalFiles = project.getObjects().listProperty(Object.class);
+        additionalFiles = project.getObjects().listProperty(Object.class).empty();
         versionType = project.getObjects().property(VersionType.class).convention(VersionType.RELEASE);
-        gameVersions = project.getObjects().listProperty(String.class); // TODO fix Fabric detection
-        loaders = project.getObjects().listProperty(String.class); // TODO fix game version and loader detection, for some reason it just never happens
-        dependencies = project.getObjects().listProperty(Dependency.class); // TODO document how to even do this
+        gameVersions = project.getObjects().listProperty(String.class).empty();
+        loaders = project.getObjects().listProperty(String.class).empty();
+        dependencies = project.getObjects().listProperty(Dependency.class).empty(); // TODO document how to even do this
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
     }
