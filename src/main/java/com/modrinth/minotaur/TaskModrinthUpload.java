@@ -235,7 +235,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Attempts to detect the game version by detecting ForgeGradle data in the build environment.
      */
-    public void detectGameVersionForge() {
+    private void detectGameVersionForge() {
         try {
             final ExtraPropertiesExtension extraProps = this.getProject().getExtensions().getExtraProperties();
 
@@ -258,7 +258,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Attempts to detect the game version by detecting Loom data in the build environment.
      */
-    public void detectGameVersionFabric() {
+    private void detectGameVersionFabric() {
         // Loom/Fabric Gradle detection.
         try {
             // Using reflection because loom isn't always available.
