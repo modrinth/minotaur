@@ -6,6 +6,7 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
+// TODO Add javadocs!
 public class ModrinthExtension {
     private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog;
     private final Property<Object> uploadFile;

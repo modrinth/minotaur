@@ -20,15 +20,16 @@ idea {
 }
 
 modrinth {
-    apiUrl = "https://test-api.modrinth.com/v2"
-    token = System.getenv("MODRINTH_TOKEN")
+    if (System.getenv("MODRINTH_TOKEN") == null) throw new GradleException("MODRINTH_TOKEN not set!") // TODO better way to do this
+    apiUrl = "https://test-api.modrinth.com/v2" // TODO set this to prod by default
+    token = System.getenv("MODRINTH_TOKEN") // TODO set this as default
     projectId = "VPU6VYVP"
-    versionNumber = versionName = version
-    versionType = com.modrinth.minotaur.request.VersionType.RELEASE
-    changelog = "test"
-    uploadFile = remapJar
+    versionNumber = versionName = version // TODO allow this to be determined by Gradle; make versionName be versionNumber by default
+    versionType = com.modrinth.minotaur.request.VersionType.RELEASE // TODO set release by default; allow this to be a string
+    changelog = "test" // TODO set default
+    uploadFile = remapJar // TODO set default
     gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
-    loaders = ["fabric"]
-    failSilently = false
-    detectLoaders = true
+    loaders = ["fabric"] // TODO allow this to be done by detectLoaders
+    failSilently = false // TODO set this as default
+    detectLoaders = true // TODO set this as default
 }

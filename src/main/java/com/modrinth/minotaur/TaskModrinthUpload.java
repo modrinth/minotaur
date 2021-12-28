@@ -103,7 +103,7 @@ public class TaskModrinthUpload extends DefaultTask {
 
             List<File> filesToUpload = new ArrayList<>();
 
-            final File file = resolveFile(this.getProject(), extension.getUploadFile().get(), null);
+            final File file = resolveFile(this.getProject(), extension.getUploadFile().get());
 
             // Ensure the file actually exists before trying to upload it.
             if (file == null || !file.exists()) {
@@ -114,7 +114,7 @@ public class TaskModrinthUpload extends DefaultTask {
             filesToUpload.add(file);
 
             for (Object fileObject : extension.getAdditionalFiles().get()) {
-                final File resolvedFile = resolveFile(this.getProject(), fileObject, null);
+                final File resolvedFile = resolveFile(this.getProject(), fileObject);
 
                 // Ensure the file actually exists before trying to upload it.
                 if (resolvedFile == null || !resolvedFile.exists()) {
@@ -222,15 +222,14 @@ public class TaskModrinthUpload extends DefaultTask {
      * @param project  The project instance. This is used as a last resort to resolve the file
      *                 using Gradle's built-in handling.
      * @param in       The arbitrary input object from the user.
-     * @param fallback A fallback file to use. This can be null.
      * @return A file handle for the resolved input. If the input can not be resolved this will
      * be null or the fallback.
      */
     @Nullable
-    private static File resolveFile(Project project, Object in, @Nullable File fallback) {
+    private static File resolveFile(Project project, Object in) {
         // If input or project is null shortcut to the fallback.
         if (in == null || project == null) {
-            return fallback;
+            return null;
         }
 
         // If the file is a Java file handle no additional handling is needed.
