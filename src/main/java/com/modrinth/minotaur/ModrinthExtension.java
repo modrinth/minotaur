@@ -1,21 +1,19 @@
 package com.modrinth.minotaur;
 
-import com.modrinth.minotaur.request.Dependency;
+import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.request.VersionType;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.provider.Provider;
 
 /**
- * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the `modrinth {...}'
- * block in the buildscript.
+ * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
+ * {...}} block in the buildscript.
  */
 public class ModrinthExtension {
-    private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog;
+    private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType;
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
-    private final Property<VersionType> versionType; // TODO allow this to be a string
     private final ListProperty<String> gameVersions, loaders;
     private final ListProperty<Dependency> dependencies;
     private final Property<Boolean> failSilently, detectLoaders;
@@ -24,12 +22,12 @@ public class ModrinthExtension {
         apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
         token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
         projectId = project.getObjects().property(String.class);
-        versionNumber = project.getObjects().property(String.class); // TODO allow this to be set by Gradle
-        versionName = project.getObjects().property(String.class).convention(getVersionNumber());
+        versionNumber = project.getObjects().property(String.class);
+        versionName = project.getObjects().property(String.class);
         changelog = project.getObjects().property(String.class).convention("No changelog was specified.");
-        uploadFile = project.getObjects().property(Object.class);
+        uploadFile = project.getObjects().property(Object.class).convention(project.getTasks().getByName("jar"));
         additionalFiles = project.getObjects().listProperty(Object.class).empty();
-        versionType = project.getObjects().property(VersionType.class).convention(VersionType.RELEASE);
+        versionType = project.getObjects().property(String.class).convention("release");
         gameVersions = project.getObjects().listProperty(String.class).empty();
         loaders = project.getObjects().listProperty(String.class).empty();
         dependencies = project.getObjects().listProperty(Dependency.class).empty(); // TODO document how to even do this
@@ -100,7 +98,7 @@ public class ModrinthExtension {
     /**
      * @return The version type for the project. See {@link VersionType}.
      */
-    public Property<VersionType> getVersionType() {
+    public Property<String> getVersionType() {
         return this.versionType;
     }
 

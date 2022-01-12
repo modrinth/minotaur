@@ -2,6 +2,7 @@ package com.modrinth.minotaur.request;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.modrinth.minotaur.dependencies.Dependency;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +27,7 @@ public class RequestData {
 
     @Expose
     @SerializedName("release_channel")
-    private VersionType versionType;
+    private String versionType;
 
     @Expose
     @SerializedName("game_versions")
@@ -64,7 +65,7 @@ public class RequestData {
         this.changelog = changelog;
     }
 
-    public void setVersionType(VersionType versionType) {
+    public void setVersionType(String versionType) {
         this.versionType = versionType;
     }
 

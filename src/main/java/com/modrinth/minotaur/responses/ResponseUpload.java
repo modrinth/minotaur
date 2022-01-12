@@ -2,7 +2,7 @@ package com.modrinth.minotaur.responses;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.modrinth.minotaur.request.Dependency;
+import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.request.VersionType;
 
 import java.util.ArrayList;

@@ -14,6 +14,8 @@ plugins {
     id "idea"
 }
 
+apply plugin: 'net.minecraftforge.gradle'
+
 version = "1.0.12345-fg"
 group = "com.modrinth.minotaur"
 
@@ -22,11 +24,11 @@ repositories {
 }
 
 minecraft {
-    mappings channel: "official", version: "1.17.1"
+    mappings channel: "official", version: "1.18.1"
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.17.1-37.0.12"
+    minecraft "net.minecraftforge:forge:1.18.1-39.0.9"
 }
 
 idea {
@@ -36,10 +38,19 @@ idea {
     }
 }
 
+
+import com.modrinth.minotaur.dependencies.DependencyType
+import com.modrinth.minotaur.dependencies.ModDependency
+import com.modrinth.minotaur.dependencies.VersionDependency
+
 modrinth {
-    apiUrl = "https://test-api.modrinth.com/v2"
-    projectId = "VPU6VYVP"
-    versionNumber = version
+    apiUrl = "https://staging-api.modrinth.com/v2"
+    projectId = "COR7NNIz"
     uploadFile = jar
-    //gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
+    versionType = "beta"
+    gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
+    dependencies = [
+            new ModDependency("tsi4hUoN", "optional"),
+            new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
+    ]
 }
