@@ -1,26 +1,26 @@
 # [Minotaur](https://plugins.gradle.org/plugin/com.modrinth.minotaur)
+
 A Gradle plugin for uploading build artifacts directly to Modrinth.
 
 ## Usage Guide
-To use this plugin you must add it to your build script. This can be done using the plugins DSL or added to the classpath directly for legacy scripts.
 
-**Plugin DSL**    
-```gradle
+To use this plugin you must add it to your Gradle build script.
+
+### Groovy
+
+<details open="open"><summary>Groovy DSL</summary>
+
+```groovy
+// build.gradle
 plugins {
     id "com.modrinth.minotaur" version "2.+"
 }
-```
 
-**Legacy**
-```gradle
-buildscript {
+// settings.gradle
+// This is probably already present.
+pluginManagement {
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath group: 'gradle.plugin.com.modrinth.minotaur', name: 'Minotaur', version: '2.+', changing: true
+        gradlePluginPortal()
     }
 }
 ```
@@ -38,10 +38,52 @@ modrinth {
     gameVersions = ["1.18", "1.18.1"] // Must be an array, even with only one version
     loaders = ["fabric"] // Must also be an array - no need to specify if you're using Fabric Loom or ForgeGradle
     dependencies = [ // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
-            new ModDependency("P7dR8mSH", "required"), // Creates a new required dependency on Fabric API
+            new ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
     ]
 }
 ```
+
+</details>
+
+### Kotlin
+
+<details><summary>Kotlin DSL</summary>
+
+```kotlin
+// build.gradle.kts
+plugins {
+    id("com.modrinth.minotaur") version "2.+"
+}
+
+
+// settings.gradle.kts
+// This is probably already present.
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+```
+
+The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
+
+```kotlin
+import com.modrinth.minotaur.dependencies.ModDependency
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+    projectId = "AABBCCDD"
+    versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
+    versionType = "release" // This is the default
+    uploadFile = jar // With Fabric Loom, use `remapJar` instead of `jar`
+    gameVersions = arrayOf("1.18", "1.18.1") // Must be an array, even with only one version
+    loaders = arrayOf("fabric") // Must also be an array - no need to specify if you're using Fabric Loom or ForgeGradle
+    dependencies = arrayOf( // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
+        ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
+    )
+}
+```
+
+</details>
 
 ### Available Properties
 
@@ -64,8 +106,17 @@ modrinth {
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
+## Development Information
+
+This section contains information useful to those working on the plugin directly or creating their own custom versions of our plugin. If you want to just use Minotaur in your build pipeline you will not need to know or understand any of this.
+
+### Local Usage
+
+If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.
+
 ### Additional Properties
-// TODO
+
+These will only be accessible if you're creating your own `TaskModrinthUpload`.
 
 | Name                  | Description                                                                                         |
 |-----------------------|-----------------------------------------------------------------------------------------------------|
@@ -74,7 +125,6 @@ modrinth {
 | wasUploadSuccessful() | Checks if the upload was successful or not. Should be used before accessing uploadInfo or errorInfo |
 
 #### Upload Info
-// TODO
 
 | Property      | Type        | Description                                                            |
 |---------------|-------------|------------------------------------------------------------------------|
@@ -94,32 +144,8 @@ modrinth {
 | dependency    | Dependency  | A list of mods that this version depends on.                           |
 
 #### Error Info
-// TODO
 
 | Property    | Type   | Description                                                          |
 |-------------|--------|----------------------------------------------------------------------|
 | error       | String | The type of error that occurred, for example an authorization error. |
 | description | String | The error message from the API.                                      |
-
-## Development Information
-This section contains information useful to those working on the plugin directly or creating their own custom versions of our plugin. If you want to just use Minotaur in your build pipeline you will not need to know or understand any of this.
-
-### Local Usage
-If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.
-
-### Direct File Usage
-In some cases you may want to use the JAR file directly in your script rather than pulling from a repository. This is generally not recommended but may be unavoidable in some circumstances. If you do this make sure you add all of our dependencies to your classpath. Using the file directly will not use our pom file and will not pull these dependencies in for you.
-
-```groovy
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath files { file('../../../../build/libs').listFiles()}
-        classpath group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.2'
-        classpath group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
-        classpath group: 'com.google.code.gson', name: 'gson', version: '2.6.2'
-    }
-}
-```

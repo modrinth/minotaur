@@ -2,7 +2,7 @@ package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.modrinth.minotaur.request.RequestData;
+import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import org.apache.http.HttpResponse;
@@ -46,26 +46,42 @@ public class TaskModrinthUpload extends DefaultTask {
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
 
     /**
-     * The response from the API when the file was uploaded successfully.
+     * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
+     * creating their upload task.
      */
     @Nullable
     public ResponseUpload uploadInfo = null;
 
     /**
-     * The response from the API when the file failed to upload.
+     * The response from the API when the file failed to upload. Provided as a utility for those manually creating their
+     * upload task.
      */
     @Nullable
     public ResponseError errorInfo = null;
 
     /**
-     * Checks if the upload was successful or not. This is provided as a small helper for use in the build script.
+     * Checks if the upload was successful or not. Provided as a utility for those manually creating their upload task.
      *
      * @return Whether the file was successfully uploaded.
      */
+    @SuppressWarnings("unused")
     public boolean wasUploadSuccessful() {
         return this.uploadInfo != null && this.errorInfo == null;
     }
 
+    /**
+     * Defines what to do when the Modrinth upload task is invoked.
+     * <ol>
+     *   <li>Attempts to automatically resolve the game version if one wasn't specified, throwing an exception if there
+     *   are still none</li>
+     *   <li>Attempts to automatically resolve the loader if one wasn't specified, throwing an exception if there still
+     *   isn't one</li>
+     *   <li>Resolves each file or task to be uploaded, ensuring they're all valid</li>
+     *   <li>Uploads these files to the Modrinth API under a new version</li>
+     * </ol>
+     * This is all in a try/catch block so that, if {@link ModrinthExtension#getFailSilently()} is enabled, it won't
+     * fail the build if it fails to upload the version to Modrinth.
+     */
     @TaskAction
     public void apply() {
         try {
@@ -155,7 +171,7 @@ public class TaskModrinthUpload extends DefaultTask {
             fileParts.add(String.valueOf(i));
         }
 
-        final RequestData data = new RequestData();
+        final VersionData data = new VersionData();
         data.setProjectId(extension.getProjectId().get());
         data.setVersionNumber(extension.getVersionNumber().get());
         data.setVersionTitle(extension.getVersionName().get());
@@ -262,6 +278,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     static void detectGameVersionFabric(Project project) {
         // TODO this method does not work on Loom 0.6+
+        if (true) return;
         ModrinthExtension extension = project.getExtensions().getByType(ModrinthExtension.class);
         // Loom/Fabric Gradle detection.
         try {

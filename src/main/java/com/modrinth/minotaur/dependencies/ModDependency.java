@@ -3,6 +3,9 @@ package com.modrinth.minotaur.dependencies;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Class for making a dependency on a mod.
+ */
 @SuppressWarnings("unused")
 public class ModDependency extends Dependency {
 
@@ -36,7 +39,7 @@ public class ModDependency extends Dependency {
     }
 
     /**
-     * @return {@link ModDependency#projectId}
+     * @return {@link #projectId}
      */
     public String getProjectId() {
         return this.projectId;

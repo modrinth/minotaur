@@ -5,6 +5,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.Locale;
 
+/**
+ * Represents the superclass for {@link ModDependency} and {@link VersionDependency}.
+ */
 @SuppressWarnings("unused")
 public class Dependency {
 
@@ -35,6 +38,9 @@ public class Dependency {
         this.dependencyType = type;
     }
 
+    /**
+     * @return {@link #dependencyType}
+     */
     public String getDependencyType() {
         return this.dependencyType;
     }

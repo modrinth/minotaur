@@ -3,6 +3,9 @@ package com.modrinth.minotaur.dependencies;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Class for making a dependency on a specific version.
+ */
 @SuppressWarnings("unused")
 public class VersionDependency extends Dependency {
 
@@ -36,7 +39,7 @@ public class VersionDependency extends Dependency {
     }
 
     /**
-     * @return {@link com.modrinth.minotaur.dependencies.VersionDependency#versionId}
+     * @return {@link #versionId}
      */
     public String getVersionId() {
         return this.versionId;

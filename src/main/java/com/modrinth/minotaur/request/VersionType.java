@@ -2,6 +2,9 @@ package com.modrinth.minotaur.request;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * The enum representing the three version types available for versions.
+ */
 @SuppressWarnings("unused")
 public enum VersionType {
     /**

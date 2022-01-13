@@ -18,6 +18,9 @@ public class ModrinthExtension {
     private final ListProperty<Dependency> dependencies;
     private final Property<Boolean> failSilently, detectLoaders;
 
+    /**
+     * @param project The Gradle project that the extension is applied to
+     */
     public ModrinthExtension(Project project) {
         apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
         token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
@@ -30,7 +33,7 @@ public class ModrinthExtension {
         versionType = project.getObjects().property(String.class).convention("release");
         gameVersions = project.getObjects().listProperty(String.class).empty();
         loaders = project.getObjects().listProperty(String.class).empty();
-        dependencies = project.getObjects().listProperty(Dependency.class).empty(); // TODO document how to even do this
+        dependencies = project.getObjects().listProperty(Dependency.class).empty();
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
     }

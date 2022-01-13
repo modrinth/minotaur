@@ -114,58 +114,100 @@ public class ResponseUpload {
     @SerializedName("dependencies")
     private Collection<Dependency> dependencies = new ArrayList<>();
 
+    /**
+     * @return {@link #id}
+     */
     public String getId() {
         return this.id;
     }
 
+    /**
+     * @return {@link #projectId}
+     */
     public String getProjectId() {
         return this.projectId;
     }
 
+    /**
+     * @return {@link #authorId}
+     */
     public String getAuthorId() {
         return this.authorId;
     }
 
+    /**
+     * @return {@link #featured}
+     */
     public boolean isFeatured() {
         return this.featured;
     }
 
+    /**
+     * @return {@link #name}
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * @return {@link #versionNumber}
+     */
     public String getVersionNumber() {
         return this.versionNumber;
     }
 
+    /**
+     * @return {@link #changelog}
+     */
     public String getChangelog() {
         return this.changelog;
     }
 
+    /**
+     * @return {@link #datePublished}
+     */
     public Date getDatePublished() {
         return this.datePublished;
     }
 
+    /**
+     * @return {@link #downloads}
+     */
     public int getDownloads() {
         return this.downloads;
     }
 
+    /**
+     * @return {@link #versionType}
+     */
     public VersionType getVersionType() {
         return this.versionType;
     }
 
+    /**
+     * @return {@link #files}
+     */
     public Collection<VersionFile> getFiles() {
         return this.files;
     }
 
+    /**
+     * @return {@link #gameVersions}
+     */
     public Collection<String> getGameVersions() {
         return this.gameVersions;
     }
 
+    /**
+     * @return {@link #loaders}
+     */
     public Collection<String> getLoaders() {
         return this.loaders;
     }
 
+    /**
+     * @return {@link #dependencies}
+     */
     public Collection<Dependency> getDependencies() {
         return this.dependencies;
     }
@@ -203,18 +245,30 @@ public class ResponseUpload {
         @SerializedName("primary")
         private boolean primary;
 
+        /**
+         * @return {@link #hashes}
+         */
         public Map<String, String> getHashes() {
             return this.hashes;
         }
 
+        /**
+         * @return {@link #url}
+         */
         public String getUrl() {
             return this.url;
         }
 
+        /**
+         * @return {@link #filename}
+         */
         public String getFilename() {
             return this.filename;
         }
 
+        /**
+         * @return {@link #primary}
+         */
         public boolean isPrimary() {
             return this.primary;
         }

@@ -2,6 +2,9 @@ package com.modrinth.minotaur.dependencies;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * The enum representing the three types of dependencies supported by Modrinth.
+ */
 @SuppressWarnings("unused")
 public enum DependencyType {
     /**
