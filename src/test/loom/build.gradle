@@ -3,7 +3,7 @@ plugins {
     id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
 }
 
-version = "1.0.382"
+version = "1.0.387"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -19,6 +19,9 @@ idea {
     }
 }
 
+java {
+    withSourcesJar()
+}
 
 import com.modrinth.minotaur.dependencies.DependencyType
 import com.modrinth.minotaur.dependencies.ModDependency
@@ -27,7 +30,8 @@ import com.modrinth.minotaur.dependencies.VersionDependency
 modrinth {
     apiUrl = "https://staging-api.modrinth.com/v2"
     projectId = "COR7NNIz"
-    //uploadFile = remapJar
+    uploadFile = remapJar
+    additionalFiles = [sourcesJar]
     versionType = "beta"
     gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
     dependencies = [

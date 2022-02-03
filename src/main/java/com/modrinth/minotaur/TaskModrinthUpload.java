@@ -1,7 +1,6 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -21,6 +20,7 @@ import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.gradle.jvm.tasks.Jar;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -38,7 +38,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Constant gson instance used for deserializing the API responses when files are uploaded.
      */
-    private static final Gson GSON = new GsonBuilder().create();
+    private static final Gson GSON = new Gson();
 
     /**
      * The extension used for getting the data supplied in the buildscript.
@@ -95,7 +95,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
             }
 
-            if (extension.getLoaders().get().isEmpty()) {
+            if (extension.getLoaders().get().isEmpty() && extension.getDetectLoaders().get()) {
                 this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
                 this.addLoaderForPlugin("fabric-loom", "fabric");
             }
@@ -106,12 +106,13 @@ public class TaskModrinthUpload extends DefaultTask {
 
             List<File> filesToUpload = new ArrayList<>();
 
-            final File file = resolveFile(this.getProject(), extension.getUploadFile().get());
+            final Object primaryFile = extension.getUploadFile().get();
+            final File file = resolveFile(this.getProject(), primaryFile);
 
             // Ensure the file actually exists before trying to upload it.
             if (file == null || !file.exists()) {
-                this.getProject().getLogger().error("The upload file is missing or null. {}", extension.getUploadFile().get());
-                throw new GradleException("The upload file is missing or null. " + extension.getUploadFile().get());
+                this.getProject().getLogger().error("The upload file is missing or null. {}", primaryFile);
+                throw new GradleException("The upload file is missing or null. " + primaryFile);
             }
 
             filesToUpload.add(file);
@@ -215,7 +216,8 @@ public class TaskModrinthUpload extends DefaultTask {
      * @return The upload API endpoint.
      */
     private String getUploadEndpoint() {
-        return extension.getApiUrl().get() + "/version";
+        String apiUrl = extension.getApiUrl().get();
+        return apiUrl.endsWith("/") ? apiUrl + "version" : apiUrl + "/version";
     }
 
     /**
@@ -311,19 +313,17 @@ public class TaskModrinthUpload extends DefaultTask {
      * @param loaderName The mod loader to apply.
      */
     private void addLoaderForPlugin(String pluginName, String loaderName) {
-        if (extension.getDetectLoaders().get()) {
-            try {
-                final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
+        try {
+            final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
 
-                if (plugin != null) {
-                    extension.getLoaders().add(loaderName);
-                    this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
-                } else {
-                    this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
-                }
-            } catch (final Exception e) {
-                this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
+            if (plugin != null) {
+                extension.getLoaders().add(loaderName);
+                this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
+            } else {
+                this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
             }
+        } catch (final Exception e) {
+            this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
         }
     }
 }

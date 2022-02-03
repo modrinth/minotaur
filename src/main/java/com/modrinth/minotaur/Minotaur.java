@@ -2,9 +2,7 @@ package com.modrinth.minotaur;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.Task;
-
-import java.util.Collections;
+import org.gradle.api.tasks.TaskContainer;
 
 /**
  * The main class for Minotaur.
@@ -28,10 +26,12 @@ public class Minotaur implements Plugin<Project> {
         project.getExtensions().create("modrinth", ModrinthExtension.class, project);
 
         project.afterEvaluate(evaluatedProject -> {
-            final Task mainTask = evaluatedProject.getTasks().create("modrinth", TaskModrinthUpload.class);
-            mainTask.setGroup("publishing");
-            mainTask.setDescription("Upload project to Modrinth");
-            mainTask.setMustRunAfter(Collections.singleton(evaluatedProject.getTasks().getByName("build")));
+            TaskContainer tasks = evaluatedProject.getTasks();
+            tasks.register("modrinth", TaskModrinthUpload.class, task -> {
+                task.setGroup("publishing");
+                task.setDescription("Upload project to Modrinth");
+                task.dependsOn(tasks.named("build"));
+            });
 
             TaskModrinthUpload.detectGameVersionForge(evaluatedProject);
             TaskModrinthUpload.detectGameVersionFabric(evaluatedProject);

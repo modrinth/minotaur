@@ -34,9 +34,9 @@ modrinth {
     projectId = "AABBCCDD"
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default
-    uploadFile = jar // With Fabric Loom, use `remapJar` instead of `jar`
+    uploadFile = jar // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions = ["1.18", "1.18.1"] // Must be an array, even with only one version
-    loaders = ["fabric"] // Must also be an array - no need to specify if you're using Fabric Loom or ForgeGradle
+    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
     dependencies = [ // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
             new ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
     ]
@@ -74,9 +74,9 @@ modrinth {
     projectId = "AABBCCDD"
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default
-    uploadFile = jar // With Fabric Loom, use `remapJar` instead of `jar`
+    uploadFile = jar // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions = arrayOf("1.18", "1.18.1") // Must be an array, even with only one version
-    loaders = arrayOf("fabric") // Must also be an array - no need to specify if you're using Fabric Loom or ForgeGradle
+    loaders = arrayOf("fabric") // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
     dependencies = arrayOf( // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
         ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
     )
@@ -96,7 +96,7 @@ modrinth {
 | versionName     | false    | The name of the version.                                                  | `versionNumber`                                                    |
 | changelog       | false    | The changelog for the file. Allows Markdown formatting.                   | `No changelog was specified.`                                      |
 | uploadFile      | true     | The file to upload. Can be an actual file or a file task.                 |                                                                    |
-| additionalFiles | false    | An array of additional files to be uploaded to a version.                 | // TODO this isn't how this works                                  |
+| additionalFiles | false    | An array of additional files to be uploaded to a version.                 |                                                                    |
 | versionType     | false    | The stability level of the version. Can be `release`, `beta`, or `alpha`. | `release`                                                          |
 | gameVersions    | true     | An array of game versions that this version supports.                     | `MC_VERSION` on FG, `MinecraftProvider.minecraftVersion()` on Loom |
 | loaders         | false    | An array of mod loaders that this version supports.                       | `forge` if using FG, `fabric` if using Loom                        |
