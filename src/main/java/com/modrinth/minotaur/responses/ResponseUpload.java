@@ -1,19 +1,20 @@
 package com.modrinth.minotaur.responses;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.request.VersionType;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
-import com.modrinth.minotaur.request.Dependency;
-import com.modrinth.minotaur.request.VersionType;
-
 /**
- * This class defines a POJO that represents the API response for versions that have been
- * successfully uploaded to Modrinth.
+ * This class defines a POJO that represents the API response for versions that have been successfully uploaded to
+ * Modrinth.
  */
+@SuppressWarnings("unused")
 public class ResponseUpload {
     /**
      * The ID of the version, encoded as a base62 string.
@@ -26,8 +27,8 @@ public class ResponseUpload {
      * The ID of the mod this version is for.
      */
     @Expose
-    @SerializedName("mod_id")
-    private String modId;
+    @SerializedName("project_id")
+    private String projectId;
 
     /**
      * The ID of the author who published this version
@@ -37,7 +38,7 @@ public class ResponseUpload {
     private String authorId;
 
     /**
-     *  Whether the version is featured or not
+     * Whether the version is featured or not
      */
     @Expose
     @SerializedName("featured")
@@ -79,7 +80,7 @@ public class ResponseUpload {
     private int downloads;
 
     /**
-     *  The type of the release - `Alpha`, `Beta`, or `Release`.
+     * The type of the release - `Alpha`, `Beta`, or `Release`.
      */
     @Expose
     @SerializedName("version_type")
@@ -113,104 +114,161 @@ public class ResponseUpload {
     @SerializedName("dependencies")
     private Collection<Dependency> dependencies = new ArrayList<>();
 
-    public String getId () {
+    /**
+     * @return {@link #id}
+     */
+    public String getId() {
         return this.id;
     }
 
-    public String getModId() {
-        return this.modId;
+    /**
+     * @return {@link #projectId}
+     */
+    public String getProjectId() {
+        return this.projectId;
     }
 
+    /**
+     * @return {@link #authorId}
+     */
     public String getAuthorId() {
         return this.authorId;
     }
 
+    /**
+     * @return {@link #featured}
+     */
     public boolean isFeatured() {
         return this.featured;
     }
 
+    /**
+     * @return {@link #name}
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * @return {@link #versionNumber}
+     */
     public String getVersionNumber() {
         return this.versionNumber;
     }
 
+    /**
+     * @return {@link #changelog}
+     */
     public String getChangelog() {
         return this.changelog;
     }
 
+    /**
+     * @return {@link #datePublished}
+     */
     public Date getDatePublished() {
         return this.datePublished;
     }
 
+    /**
+     * @return {@link #downloads}
+     */
     public int getDownloads() {
         return this.downloads;
     }
 
+    /**
+     * @return {@link #versionType}
+     */
     public VersionType getVersionType() {
         return this.versionType;
     }
 
+    /**
+     * @return {@link #files}
+     */
     public Collection<VersionFile> getFiles() {
         return this.files;
     }
 
+    /**
+     * @return {@link #gameVersions}
+     */
     public Collection<String> getGameVersions() {
         return this.gameVersions;
     }
 
+    /**
+     * @return {@link #loaders}
+     */
     public Collection<String> getLoaders() {
         return this.loaders;
     }
 
+    /**
+     * @return {@link #dependencies}
+     */
     public Collection<Dependency> getDependencies() {
         return this.dependencies;
     }
 
     /**
-     * A single mod file, with a url for the file and the file's hash
+     * A single version file.
      */
-    public class VersionFile {
+    public static class VersionFile {
         /**
-         * A map of hashes of the file.  The key is the hashing algorithm
-         * and the value is the string version of the hash.
+         * A map of hashes of the file. The key is the hashing algorithm and the value is the string version of the
+         * hash.
          */
         @Expose
         @SerializedName("hashes")
         private Map<String, String> hashes;
+
         /**
          * A direct link to the file for downloading it.
          */
         @Expose
         @SerializedName("url")
         private String url;
+
         /**
          * The filename of the file.
          */
         @Expose
         @SerializedName("filename")
         private String filename;
+
         /**
-         * Whether the file is the primary file of a version
+         * Whether the file is the primary file of the version.
          */
         @Expose
         @SerializedName("primary")
         private boolean primary;
 
+        /**
+         * @return {@link #hashes}
+         */
         public Map<String, String> getHashes() {
             return this.hashes;
         }
 
+        /**
+         * @return {@link #url}
+         */
         public String getUrl() {
             return this.url;
         }
 
+        /**
+         * @return {@link #filename}
+         */
         public String getFilename() {
             return this.filename;
         }
 
+        /**
+         * @return {@link #primary}
+         */
         public boolean isPrimary() {
             return this.primary;
         }

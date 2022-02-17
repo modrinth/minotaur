@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment Info:**    
  - Gradle Version: 
- - DiluvGradle Version:
+ - Minotaur Version:
  - API: local/staging/production
 
 **Additional context**    

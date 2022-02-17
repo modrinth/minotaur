@@ -1,0 +1,56 @@
+buildscript {
+    repositories {
+        maven { url = 'https://files.minecraftforge.net/maven' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
+    }
+}
+
+plugins {
+    id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
+    id "java"
+    id "idea"
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+version = "1.0.12345-fg"
+group = "com.modrinth.minotaur"
+
+repositories {
+    mavenCentral()
+}
+
+minecraft {
+    mappings channel: "official", version: "1.18.1"
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:1.18.1-39.0.9"
+}
+
+idea {
+    module {
+        downloadJavadoc = false
+        downloadSources = false
+    }
+}
+
+
+import com.modrinth.minotaur.dependencies.DependencyType
+import com.modrinth.minotaur.dependencies.ModDependency
+import com.modrinth.minotaur.dependencies.VersionDependency
+
+modrinth {
+    apiUrl = "https://staging-api.modrinth.com/v2"
+    projectId = "COR7NNIz"
+    uploadFile = jar
+    versionType = "beta"
+    gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
+    dependencies = [
+            new ModDependency("tsi4hUoN", "optional"),
+            new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
+    ]
+}
