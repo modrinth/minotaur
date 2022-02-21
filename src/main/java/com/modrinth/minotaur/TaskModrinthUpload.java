@@ -19,6 +19,7 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.jvm.tasks.Jar;
 
@@ -244,6 +245,17 @@ public class TaskModrinthUpload extends DefaultTask {
         // Grabs the file from an archive task. Allows build scripts to do things like the jar task directly.
         else if (in instanceof AbstractArchiveTask) {
             return ((AbstractArchiveTask) in).getArchiveFile().get().getAsFile();
+        }
+
+        // Grabs the file from an archive task wrapped in a provider. Allows Kotlin DSL buildscripts to also specify
+        // the jar task directly, rather than having to call #get() before running.
+        else if (in instanceof TaskProvider<?>) {
+            Object provided = ((TaskProvider<?>) in).get();
+
+            // Check to see if the task provided is actually an AbstractArchiveTask.
+            if (provided instanceof AbstractArchiveTask) {
+                return ((AbstractArchiveTask) provided).getArchiveFile().get().getAsFile();
+            }
         }
 
         // Fallback to Gradle's built-in file resolution mechanics.
