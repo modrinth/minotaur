@@ -21,7 +21,6 @@ import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-import org.gradle.jvm.tasks.Jar;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -183,6 +182,7 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setLoaders(extension.getLoaders().get());
         data.setDependencies(extension.getDependencies().get());
         data.setFileParts(fileParts);
+        data.setPrimaryFile("0"); // The primary file will always be of the first index in the list
 
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
