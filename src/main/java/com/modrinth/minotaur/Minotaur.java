@@ -40,7 +40,9 @@ public class Minotaur implements Plugin<Project> {
             if (extension.getVersionNumber().getOrNull() == null) {
                 extension.getVersionNumber().set(evaluatedProject.getVersion().toString());
             }
-            extension.getVersionName().set(extension.getVersionNumber().get());
+            if (extension.getVersionName().getOrNull() == null) {
+                extension.getVersionName().set(extension.getVersionNumber().get());
+            }
         });
 
         project.getLogger().debug("Successfully applied the Modrinth plugin!");

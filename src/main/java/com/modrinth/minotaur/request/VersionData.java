@@ -82,6 +82,10 @@ public class VersionData {
     @SerializedName("featured")
     private boolean featured = false;
 
+    @Expose
+    @SerializedName("primary_file")
+    private String primaryFile;
+
     /**
      * @param id Value to set {@link #projectId} to
      */
@@ -143,5 +147,12 @@ public class VersionData {
      */
     public void setDependencies(Collection<Dependency> dependencies) {
         this.dependencies = dependencies;
+    }
+
+    /**
+     * @param primaryFile Value to set {@link #primaryFile} to
+     */
+    public void setPrimaryFile(String primaryFile) {
+        this.primaryFile = primaryFile;
     }
 }
