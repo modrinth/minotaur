@@ -16,7 +16,7 @@ public class ModrinthExtension {
     private final ListProperty<Object> additionalFiles;
     private final ListProperty<String> gameVersions, loaders;
     private final ListProperty<Dependency> dependencies;
-    private final Property<Boolean> failSilently, detectLoaders;
+    private final Property<Boolean> failSilently, detectLoaders, debugMode;
 
     /**
      * @param project The Gradle project that the extension is applied to
@@ -36,6 +36,7 @@ public class ModrinthExtension {
         dependencies = project.getObjects().listProperty(Dependency.class).empty();
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
+        debugMode = project.getObjects().property(Boolean.class).convention(false);
     }
 
     /**
@@ -138,5 +139,12 @@ public class ModrinthExtension {
      */
     public Property<Boolean> getDetectLoaders() {
         return this.detectLoaders;
+    }
+
+    /**
+     * @return Whether the plugin is in debug mode. Debug mode does not actually upload any files.
+     */
+    public Property<Boolean> getDebugMode() {
+        return this.debugMode;
     }
 }

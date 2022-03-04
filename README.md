@@ -105,6 +105,7 @@ modrinth {
 | dependencies    | false    | Dependencies of the uploaded version.                                     |                                                                    |
 | failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                                            |
 | detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
+| detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 

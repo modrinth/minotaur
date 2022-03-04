@@ -1,6 +1,6 @@
 plugins {
     id "fabric-loom" version "0.10-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.0.0-SNAPSHOT"
+    id "com.modrinth.minotaur" version "2.0.1"
 }
 
 version = "1.0.387"
@@ -38,4 +38,5 @@ modrinth {
             new ModDependency("tsi4hUoN", "optional"),
             new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
     ]
+    debugMode = true
 }

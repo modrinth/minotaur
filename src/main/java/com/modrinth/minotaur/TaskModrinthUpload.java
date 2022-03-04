@@ -184,6 +184,12 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setFileParts(fileParts);
         data.setPrimaryFile("0"); // The primary file will always be of the first index in the list
 
+        if (extension.getDebugMode().get()) {
+            this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", GSON.toJson(data));
+            this.getProject().getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
+            return;
+        }
+
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
         for (int i = 0; i < files.size(); i++) {
