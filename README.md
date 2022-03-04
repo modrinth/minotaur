@@ -70,15 +70,17 @@ The next step is to create a new task for uploading to Modrinth. This task allow
 ```kotlin
 import com.modrinth.minotaur.dependencies.ModDependency
 modrinth {
-    token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
-    projectId = "AABBCCDD"
-    versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType = "release" // This is the default
-    uploadFile = jar // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = arrayOf("1.18", "1.18.1") // Must be an array, even with only one version
-    loaders = arrayOf("fabric") // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
-    dependencies = arrayOf( // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
-        ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
+    token.set(System.getenv("MODRINTH_TOKEN")) // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+    projectId.set("AABBCCDD")
+    versionNumber.set("1.0.0") // You don't need to set this manually. Will fail if Modrinth has this version already
+    versionType.set("release") // This is the default
+    uploadFile.set(jar) // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
+    gameVersions.addAll(arrayOf("1.18", "1.18.1")) // Must be an array, even with only one version
+    loaders.add("fabric") // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
+    dependencies.set( // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
+        mutableListOf(
+            ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
+        )
     )
 }
 ```
@@ -103,6 +105,7 @@ modrinth {
 | dependencies    | false    | Dependencies of the uploaded version.                                     |                                                                    |
 | failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                                            |
 | detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
+| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `true`                                                             |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
