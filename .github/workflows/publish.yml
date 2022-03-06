@@ -1,14 +1,12 @@
-name: CI
+name: Publish
 
 on:
   push:
-    branches:
-      - master
     tags:
       - 'v*.*.*'
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
