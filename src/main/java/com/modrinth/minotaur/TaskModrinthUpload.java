@@ -1,6 +1,7 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
+import com.modrinth.minotaur.compat.FabricLoomCompatibility;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -25,7 +26,6 @@ import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -72,10 +72,8 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Defines what to do when the Modrinth upload task is invoked.
      * <ol>
-     *   <li>Attempts to automatically resolve the game version if one wasn't specified, throwing an exception if there
-     *   are still none</li>
-     *   <li>Attempts to automatically resolve the loader if one wasn't specified, throwing an exception if there still
-     *   isn't one</li>
+     *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
+     *   things still don't have anything set</li>
      *   <li>Resolves each file or task to be uploaded, ensuring they're all valid</li>
      *   <li>Uploads these files to the Modrinth API under a new version</li>
      * </ol>
@@ -84,11 +82,22 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     @TaskAction
     public void apply() {
+        this.getLogger().lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
         try {
+            // Add version number if it's null
+            if (extension.getVersionNumber().getOrNull() == null) {
+                extension.getVersionNumber().set(this.getProject().getVersion().toString());
+            }
+
+            // Add version name if it's null
+            if (extension.getVersionName().getOrNull() == null) {
+                extension.getVersionName().set(extension.getVersionNumber().get());
+            }
+
             // Attempt to automatically resolve the game version if one wasn't specified.
             if (extension.getGameVersions().get().isEmpty()) {
-                detectGameVersionForge(this.getProject());
-                detectGameVersionFabric(this.getProject());
+                this.detectGameVersionForge();
+                this.detectGameVersionFabric();
             }
 
             if (extension.getGameVersions().get().isEmpty()) {
@@ -271,9 +280,11 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Attempts to detect the game version by detecting ForgeGradle data in the build environment.
      */
-    static void detectGameVersionForge(Project project) {
+    private void detectGameVersionForge() {
         // TODO confirm this actually works
+        Project project = this.getProject();
         ModrinthExtension extension = project.getExtensions().getByType(ModrinthExtension.class);
+
         try {
             final ExtraPropertiesExtension extraProps = project.getExtensions().getExtraProperties();
 
@@ -285,7 +296,10 @@ public class TaskModrinthUpload extends DefaultTask {
 
                 if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
                     project.getLogger().debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
-                    extension.getGameVersions().add(forgeGameVersion);
+                    if (extension.getGameVersions().get().isEmpty()) {
+                        project.getLogger().debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
+                        extension.getGameVersions().add(forgeGameVersion);
+                    }
                 }
             }
         } catch (final Exception e) {
@@ -296,31 +310,24 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Attempts to detect the game version by detecting Loom data in the build environment.
      */
-    static void detectGameVersionFabric(Project project) {
-        // TODO this method does not work on Loom 0.6+
-        if (true) return;
-        ModrinthExtension extension = project.getExtensions().getByType(ModrinthExtension.class);
-        // Loom/Fabric Gradle detection.
-        try {
-            // Using reflection because loom isn't always available.
-            final Class<?> loomType = Class.forName("net.fabricmc.loom.LoomGradleExtension");
-            final Method getProvider = loomType.getMethod("getMinecraftProvider");
+    private void detectGameVersionFabric() {
+        Project project = this.getProject();
+        ModrinthExtension extension = this.getProject().getExtensions().getByType(ModrinthExtension.class);
 
-            final Class<?> minecraftProvider = Class.forName("net.fabricmc.loom.configuration.providers.MinecraftProviderImpl");
-            final Method getVersion = minecraftProvider.getMethod("minecraftVersion");
-
-            final Object loomExt = project.getExtensions().getByType(loomType);
-            final Object loomProvider = getProvider.invoke(loomExt);
-            final Object loomVersion = getVersion.invoke(loomProvider);
-
-            final String loomGameVersion = loomVersion.toString();
-
-            if (loomGameVersion != null && !loomGameVersion.isEmpty()) {
-                project.getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
-                extension.getGameVersions().add(loomGameVersion);
+        if (project.getPluginManager().findPlugin("fabric-loom") != null) {
+            try {
+                String loomGameVersion = FabricLoomCompatibility.detectGameVersion(project);
+                if (extension.getGameVersions().get().isEmpty()) {
+                    project.getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
+                    extension.getGameVersions().add(loomGameVersion);
+                } else {
+                    project.getLogger().debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
+                }
+            } catch (final Exception e) {
+                project.getLogger().debug("Failed to detect Loom game version.", e);
             }
-        } catch (final Exception e) {
-            project.getLogger().debug("Failed to detect Loom game version.", e);
+        } else {
+            project.getLogger().debug("Fabric Loom is not present; no game versions were added.");
         }
     }
 

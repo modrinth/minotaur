@@ -1,9 +1,9 @@
 plugins {
-    id "fabric-loom" version "0.10-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.0.1"
+    id "fabric-loom" version "0.11-SNAPSHOT"
+    id "com.modrinth.minotaur" version "2.0.2-SNAPSHOT"
 }
 
-version = "1.0.387"
+version = "1.0.368"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -33,10 +33,13 @@ modrinth {
     uploadFile = remapJar
     additionalFiles = [sourcesJar]
     versionType = "beta"
-    gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
     dependencies = [
             new ModDependency("tsi4hUoN", "optional"),
             new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
     ]
     debugMode = true
+}
+
+tasks.modrinth.doLast {
+    println tasks.modrinth.uploadInfo.id
 }
