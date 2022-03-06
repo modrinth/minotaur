@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
 }
 
-version = '2.0.1'
+version = '2.0.2'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -17,10 +17,19 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
+    maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net"
+        content {
+            includeGroup "net.fabricmc"
+        }
+    }
 }
 
 dependencies {
     compileOnly gradleApi()
+
+    compileOnly group: "net.fabricmc", name: "fabric-loom", version: "0.11.32"
 	
     implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
