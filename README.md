@@ -132,7 +132,7 @@ The following properties can be set within the `modrinth {...}` block.
 | failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                                            |
 | detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
 | debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                                            |
-| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            | `false`                                                            |
+| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                                                    |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
