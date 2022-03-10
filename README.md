@@ -106,9 +106,7 @@ If you have some things you want in your `README.md` but not in your Modrinth pr
 This does not occur with the `modrinth` task; you must use the `modrinthSyncBody` task separately to accomplish this. You can make sure the project body gets synced with every publish by making the `modrinthSyncBody` task depend on `modrinth`:
 
 ```groovy
-afterEvaluate {
-    tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
-}
+tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
 ```
 
 Be careful with this task! Once a body is changed, you **cannot** get it back. You can use `debugMode` to make sure that what's to be uploaded is what you want.

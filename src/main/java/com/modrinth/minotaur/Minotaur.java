@@ -26,19 +26,11 @@ public class Minotaur implements Plugin<Project> {
         });
         project.getLogger().debug("Registered the `modrinth` task.");
 
-        project.afterEvaluate(evaluatedProject -> {
-            ModrinthExtension extension = evaluatedProject.getExtensions().getByType(ModrinthExtension.class);
-
-            if (extension.getSyncBodyFrom().getOrNull() != null) {
-                tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
-                    task.setGroup("publishing");
-                    task.setDescription("Sync project description to Modrinth");
-                });
-                project.getLogger().debug("Registered the `modrinthSyncBody` task.");
-            } else {
-                project.getLogger().debug("Did not register `modrinthSyncBody` task because there was no `syncBodyFrom` in extension.");
-            }
+        tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
+            task.setGroup("publishing");
+            task.setDescription("Sync project description to Modrinth");
         });
+        project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
         project.getLogger().debug("Successfully applied the Modrinth plugin!");
     }
