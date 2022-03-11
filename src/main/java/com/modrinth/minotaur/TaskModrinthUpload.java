@@ -26,10 +26,9 @@ import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
@@ -139,16 +138,10 @@ public class TaskModrinthUpload extends DefaultTask {
             }
 
             try {
-                final URI endpoint = new URI(this.getUploadEndpoint());
-                try {
-                    this.upload(endpoint, filesToUpload);
-                } catch (final IOException e) {
-                    this.getProject().getLogger().error("Failed to upload the file!", e);
-                    throw new GradleException("Failed to upload the file!", e);
-                }
-            } catch (final URISyntaxException e) {
-                this.getProject().getLogger().error("Invalid endpoint URI!", e);
-                throw new GradleException("Invalid endpoint URI!", e);
+                this.upload(filesToUpload);
+            } catch (final IOException e) {
+                this.getProject().getLogger().error("Failed to upload the file!", e);
+                throw new GradleException("Failed to upload the file!", e);
             }
         } catch (final Exception e) {
             if (extension.getFailSilently().get()) {
@@ -163,13 +156,12 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Uploads a file using the provided configuration.
      *
-     * @param endpoint The upload endpoint.
      * @param files    The files to upload.
      * @throws IOException Whenever something goes wrong wit uploading the file.
      */
-    public void upload(URI endpoint, List<File> files) throws IOException {
+    public void upload(List<File> files) throws IOException {
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
-        final HttpPost post = new HttpPost(endpoint);
+        final HttpPost post = new HttpPost(this.getUploadEndpoint());
 
         post.addHeader("Authorization", extension.getToken().get());
 
@@ -186,7 +178,7 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setVersionNumber(extension.getVersionNumber().get());
         data.setVersionTitle(extension.getVersionName().get());
         data.setChangelog(extension.getChangelog().get());
-        data.setVersionType(extension.getVersionType().get());
+        data.setVersionType(extension.getVersionType().get().toLowerCase(Locale.ROOT));
         data.setGameVersions(extension.getGameVersions().get());
         data.setLoaders(extension.getLoaders().get());
         data.setDependencies(extension.getDependencies().get());
@@ -233,7 +225,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     private String getUploadEndpoint() {
         String apiUrl = extension.getApiUrl().get();
-        return apiUrl.endsWith("/") ? apiUrl + "version" : apiUrl + "/version";
+        return apiUrl + (apiUrl.endsWith("/") ? "" : "/") + "version";
     }
 
     /**
