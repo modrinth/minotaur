@@ -17,6 +17,7 @@ public class ModrinthExtension {
     private final ListProperty<String> gameVersions, loaders;
     private final ListProperty<Dependency> dependencies;
     private final Property<Boolean> failSilently, detectLoaders, debugMode;
+    private final Property<String> syncBodyFrom;
 
     /**
      * @param project The Gradle project that the extension is applied to
@@ -37,6 +38,7 @@ public class ModrinthExtension {
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
         debugMode = project.getObjects().property(Boolean.class).convention(false);
+        syncBodyFrom = project.getObjects().property(String.class);
     }
 
     /**
@@ -146,5 +148,12 @@ public class ModrinthExtension {
      */
     public Property<Boolean> getDebugMode() {
         return this.debugMode;
+    }
+
+    /**
+     * @return The file to sync the project's body description from
+     */
+    public Property<String> getSyncBodyFrom() {
+        return this.syncBodyFrom;
     }
 }

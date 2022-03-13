@@ -1,10 +1,10 @@
 # [Minotaur](https://plugins.gradle.org/plugin/com.modrinth.minotaur)
 
-A Gradle plugin for uploading build artifacts directly to Modrinth.
+A Gradle plugin for interfacing directly with Modrinth, through uploading build artifacts and syncing project bodies.
 
 ## Usage Guide
 
-To use this plugin you must add it to your Gradle build script.
+To use this plugin you must add it to your Gradle build script. After that, you can use the `modrinth` task to upload the version to Modrinth.
 
 ### Groovy
 
@@ -65,7 +65,7 @@ pluginManagement {
 }
 ```
 
-The next step is to create a new task for uploading to Modrinth. This task allows you to configure the upload and control when and how versions are uploaded.
+The next step is to configure the task for uploading to Modrinth. This allows you to configure the upload and control when and how versions are uploaded.
 
 ```kotlin
 import com.modrinth.minotaur.dependencies.ModDependency
@@ -87,7 +87,33 @@ modrinth {
 
 </details>
 
+### Syncing Project Body
+
+In tandem with the `syncBodyFrom` property in your `modrinth {...}` block, you may set up syncing between, for example, your project's `README.md` and your project's body on Modrinth.
+
+For example:
+```groovy
+modrinth {
+    // ...
+    syncBodyFrom = rootProject.file("README.md").text
+}
+```
+
+This will sync the contents of the `README.md` file in your project's root to your project.
+
+If you have some things you want in your `README.md` but not in your Modrinth project body, you may also add comments to the file. Anything between `<!-- modrinth_exclude.start -->` and `<!-- modrinth_exclude.end -->` will be excluded.
+
+This does not occur with the `modrinth` task; you must use the `modrinthSyncBody` task separately to accomplish this. You can make sure the project body gets synced with every publish by making the `modrinthSyncBody` task depend on `modrinth`:
+
+```groovy
+tasks.modrinth.dependsOn(tasks.modrinthSyncBody)
+```
+
+Be careful with this task! Once a body is changed, you **cannot** get it back. You can use `debugMode` to make sure that what's to be uploaded is what you want.
+
 ### Available Properties
+
+The following properties can be set within the `modrinth {...}` block.
 
 | Property        | Required | Description                                                               | Default                                                            |
 |-----------------|----------|---------------------------------------------------------------------------|--------------------------------------------------------------------|
@@ -105,21 +131,14 @@ modrinth {
 | dependencies    | false    | Dependencies of the uploaded version.                                     |                                                                    |
 | failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                                            |
 | detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
-| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `true`                                                             |
+| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                                            |
+| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                                                    |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
-## Development Information
-
-This section contains information useful to those working on the plugin directly or creating their own custom versions of our plugin. If you want to just use Minotaur in your build pipeline you will not need to know or understand any of this.
-
-### Local Usage
-
-If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.
-
 ### Additional Properties
 
-These will only be accessible if you're creating your own `TaskModrinthUpload`.
+The following properties can only be accessed through `tasks.modrinth.<property>`.
 
 | Name                  | Description                                                                                         |
 |-----------------------|-----------------------------------------------------------------------------------------------------|
@@ -152,3 +171,9 @@ These will only be accessible if you're creating your own `TaskModrinthUpload`.
 |-------------|--------|----------------------------------------------------------------------|
 | error       | String | The type of error that occurred, for example an authorization error. |
 | description | String | The error message from the API.                                      |
+
+## Development Information
+
+If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.
+
+You need Java 17 to compile Minotaur, but you only need Java 8 to run it (unless you're using Fabric Loom, in which case that requires Java 17 to run anyway).

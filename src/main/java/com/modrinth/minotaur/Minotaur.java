@@ -9,7 +9,8 @@ import org.gradle.api.tasks.TaskContainer;
  */
 public class Minotaur implements Plugin<Project> {
     /**
-     * Creates the {@link ModrinthExtension} for the project and registers the {@code modrinth} task
+     * Creates the {@link ModrinthExtension} for the project and registers the {@code modrinth} and
+     * {@code modrinthSyncBody} tasks.
      * @param project The Gradle project which Minotaur is applied to
      */
     @Override
@@ -24,6 +25,12 @@ public class Minotaur implements Plugin<Project> {
             task.dependsOn(tasks.named("build"));
         });
         project.getLogger().debug("Registered the `modrinth` task.");
+
+        tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
+            task.setGroup("publishing");
+            task.setDescription("Sync project description to Modrinth");
+        });
+        project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
         project.getLogger().debug("Successfully applied the Modrinth plugin!");
     }

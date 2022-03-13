@@ -1,6 +1,6 @@
 plugins {
     id "fabric-loom" version "0.11-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.0.2-SNAPSHOT"
+    id "com.modrinth.minotaur" version "2.1.0"
 }
 
 version = "1.0.368"
@@ -38,6 +38,7 @@ modrinth {
             new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
     ]
     debugMode = true
+    syncBodyFrom = rootProject.file("README.md").text
 }
 
 tasks.modrinth.doLast {
