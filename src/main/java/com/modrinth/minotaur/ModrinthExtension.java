@@ -29,7 +29,7 @@ public class ModrinthExtension {
         versionNumber = project.getObjects().property(String.class);
         versionName = project.getObjects().property(String.class);
         changelog = project.getObjects().property(String.class).convention("No changelog was specified.");
-        uploadFile = project.getObjects().property(Object.class).convention(project.getTasks().getByName("jar"));
+        uploadFile = project.getObjects().property(Object.class);
         additionalFiles = project.getObjects().listProperty(Object.class).empty();
         versionType = project.getObjects().property(String.class).convention("release");
         gameVersions = project.getObjects().listProperty(String.class).empty();
