@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
 }
 
-version = '2.1.1'
+version = '2.1.2'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -29,7 +29,7 @@ repositories {
 dependencies {
     compileOnly gradleApi()
 
-    compileOnly group: "net.fabricmc", name: "fabric-loom", version: "0.11.32"
+    compileOnly group: "net.fabricmc", name: "fabric-loom", version: "0.12.7"
 
     implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
@@ -77,10 +77,12 @@ jar {
 java {
     withSourcesJar()
     withJavadocJar()
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
-    //noinspection all
-    it.options.release = 8
+    it.options.release.set(8)
 }

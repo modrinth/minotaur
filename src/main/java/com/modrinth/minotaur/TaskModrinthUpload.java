@@ -106,6 +106,7 @@ public class TaskModrinthUpload extends DefaultTask {
             if (extension.getLoaders().get().isEmpty() && extension.getDetectLoaders().get()) {
                 this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
                 this.addLoaderForPlugin("fabric-loom", "fabric");
+                this.addLoaderForPlugin("org.quiltmc.loom", "quilt");
             }
 
             if (extension.getLoaders().get().isEmpty()) {
@@ -306,7 +307,8 @@ public class TaskModrinthUpload extends DefaultTask {
         Project project = this.getProject();
         ModrinthExtension extension = this.getProject().getExtensions().getByType(ModrinthExtension.class);
 
-        if (project.getPluginManager().findPlugin("fabric-loom") != null) {
+        if (project.getPluginManager().findPlugin("fabric-loom") != null ||
+            project.getPluginManager().findPlugin("org.quiltmc.loom") != null) {
             try {
                 String loomGameVersion = FabricLoomCompatibility.detectGameVersion(project);
                 if (extension.getGameVersions().get().isEmpty()) {
@@ -319,7 +321,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 project.getLogger().debug("Failed to detect Loom game version.", e);
             }
         } else {
-            project.getLogger().debug("Fabric Loom is not present; no game versions were added.");
+            project.getLogger().debug("Loom is not present; no game versions were added.");
         }
     }
 
