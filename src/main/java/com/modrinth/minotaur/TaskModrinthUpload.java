@@ -1,7 +1,11 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.compat.FabricLoomCompatibility;
+import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.dependencies.ModDependency;
+import com.modrinth.minotaur.dependencies.VersionDependency;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -37,7 +41,9 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Constant gson instance used for deserializing the API responses when files are uploaded.
      */
-    private static final Gson GSON = new Gson();
+//    private static final Gson GSON = new Gson();
+    
+    private final Gson GSON = this.getGsonInstance();
 
     /**
      * The extension used for getting the data supplied in the buildscript.
@@ -57,6 +63,11 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     @Nullable
     public ResponseError errorInfo = null;
+    
+    /**
+     * Internal initially empty List to add Dependencies to if any were added
+     */
+    private List<Dependency> dependencies = new ArrayList<>();
 
     /**
      * Checks if the upload was successful or not. Provided as a utility for those manually creating their upload task.
@@ -112,6 +123,15 @@ public class TaskModrinthUpload extends DefaultTask {
             if (extension.getLoaders().get().isEmpty()) {
                 throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
             }
+            
+            // Retrieves each DependencyContainer if any and adds a new Dependency based on if the projectId property is set 
+            extension.getDependenciesConfiguration().getDependencies().forEach(container -> {
+            	if(container.getProjectId().isPresent()) {
+            		this.dependencies.add(new ModDependency(container.getName(), container.getType().get()));
+            	} else {
+					this.dependencies.add(new VersionDependency(container.getName(), container.getType().get()));
+				}
+            });
 
             List<File> filesToUpload = new ArrayList<>();
 
@@ -182,7 +202,7 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setVersionType(extension.getVersionType().get().toLowerCase(Locale.ROOT));
         data.setGameVersions(extension.getGameVersions().get());
         data.setLoaders(extension.getLoaders().get());
-        data.setDependencies(extension.getDependencies().get());
+        data.setDependencies(this.dependencies);
         data.setFileParts(fileParts);
         data.setPrimaryFile("0"); // The primary file will always be of the first index in the list
 
@@ -344,5 +364,13 @@ public class TaskModrinthUpload extends DefaultTask {
         } catch (final Exception e) {
             this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
         }
+    }
+    
+    private Gson getGsonInstance() {
+    	ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
+    	if(extension.getPrettyPrint().get()) {
+    		return new GsonBuilder().setPrettyPrinting().create();
+    	}
+    	return new Gson();
     }
 }

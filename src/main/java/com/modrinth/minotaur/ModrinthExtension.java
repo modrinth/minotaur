@@ -1,10 +1,11 @@
 package com.modrinth.minotaur;
 
-import com.modrinth.minotaur.dependencies.Dependency;
-import com.modrinth.minotaur.request.VersionType;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+
+import com.modrinth.minotaur.request.VersionType;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
@@ -15,8 +16,8 @@ public class ModrinthExtension {
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
     private final ListProperty<String> gameVersions, loaders;
-    private final ListProperty<Dependency> dependencies;
-    private final Property<Boolean> failSilently, detectLoaders, debugMode;
+    private final DependenciesConfiguation dependencies;
+    private final Property<Boolean> failSilently, detectLoaders, debugMode, prettyPrint;
     private final Property<String> syncBodyFrom;
 
     /**
@@ -34,10 +35,11 @@ public class ModrinthExtension {
         versionType = project.getObjects().property(String.class).convention("release");
         gameVersions = project.getObjects().listProperty(String.class).empty();
         loaders = project.getObjects().listProperty(String.class).empty();
-        dependencies = project.getObjects().listProperty(Dependency.class).empty();
+        dependencies = project.getObjects().newInstance(DependenciesConfiguation.class, project.getObjects());
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
         debugMode = project.getObjects().property(Boolean.class).convention(false);
+        prettyPrint = project.getObjects().property(Boolean.class).convention(false);
         syncBodyFrom = project.getObjects().property(String.class);
     }
 
@@ -122,11 +124,21 @@ public class ModrinthExtension {
         return this.loaders;
     }
 
+
     /**
-     * @return The dependencies of the version.
+     * @return the dependencies configuration
      */
-    public ListProperty<Dependency> getDependencies() {
+    public DependenciesConfiguation getDependenciesConfiguration() {
         return this.dependencies;
+    }
+    
+    /**
+     * Allows the provided Action closure to execute against the dependencies configuration
+     *
+     * @param action the DependenciesConfiguation action to execute 
+     */
+    public void dependencies(final Action<? super DependenciesConfiguation> action) {
+        action.execute(this.dependencies);
     }
 
     /**
@@ -148,6 +160,13 @@ public class ModrinthExtension {
      */
     public Property<Boolean> getDebugMode() {
         return this.debugMode;
+    }
+    
+    /**
+     * @return Whether debug output, if enabled, should have GSON Pretty Print option set.
+     */
+    public Property<Boolean> getPrettyPrint() {
+        return this.prettyPrint;
     }
 
     /**
