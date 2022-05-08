@@ -4,7 +4,7 @@ import javax.inject.Inject;
 
 import org.gradle.api.NamedDomainObjectContainer;
 
-import com.modrinth.minotaur.DependenciesConfiguation;
+import com.modrinth.minotaur.dependencies.DependenciesConfiguation;
 
 /**
  * The root DependencyContainer class

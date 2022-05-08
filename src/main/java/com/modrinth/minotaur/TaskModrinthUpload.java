@@ -38,18 +38,16 @@ import java.util.Locale;
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
 public class TaskModrinthUpload extends DefaultTask {
-    /**
-     * Constant gson instance used for deserializing the API responses when files are uploaded.
-     */
-//    private static final Gson GSON = new Gson();
-    
-    private final Gson GSON = this.getGsonInstance();
-
-    /**
+   /**
      * The extension used for getting the data supplied in the buildscript.
      */
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
 
+    /**
+     * Constant gson instance used for deserializing the API responses when files are uploaded.
+     */
+    private final Gson GSON = extension.getPrettyPrint().get() ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
+    
     /**
      * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
      * creating their upload task.

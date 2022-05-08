@@ -1,4 +1,4 @@
-package com.modrinth.minotaur;
+package com.modrinth.minotaur.dependencies;
 
 import javax.inject.Inject;
 

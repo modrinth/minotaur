@@ -1,6 +1,7 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.modrinth.minotaur.responses.ResponseError;
 import org.apache.http.HttpResponse;
@@ -24,15 +25,15 @@ import java.io.IOException;
  */
 public class TaskModrinthSyncBody extends DefaultTask {
     /**
-     * Constant gson instance used for serializing the API request.
-     */
-    private static final Gson GSON = new Gson();
-
-    /**
      * The extension used for getting the data supplied in the buildscript.
      */
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
 
+    /**
+     * Constant gson instance used for deserializing the API responses when files are uploaded.
+     */
+    private final Gson GSON = extension.getPrettyPrint().get() ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
+    
     /**
      * The response from the API when the body failed to upload.
      */

@@ -5,6 +5,7 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
+import com.modrinth.minotaur.dependencies.DependenciesConfiguation;
 import com.modrinth.minotaur.request.VersionType;
 
 /**
