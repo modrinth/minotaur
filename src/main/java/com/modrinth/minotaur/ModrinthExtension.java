@@ -1,30 +1,30 @@
 package com.modrinth.minotaur;
 
-import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
-
-import com.modrinth.minotaur.dependencies.DependenciesConfiguation;
+import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import com.modrinth.minotaur.request.VersionType;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
  * {...}} block in the buildscript.
  */
-public class ModrinthExtension {
+public class ModrinthExtension extends DependencyDSL {
     private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType;
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
     private final ListProperty<String> gameVersions, loaders;
-    private final DependenciesConfiguation dependencies;
-    private final Property<Boolean> failSilently, detectLoaders, debugMode, prettyPrint;
+    private final ListProperty<Dependency> dependencies;
+    private final Property<Boolean> failSilently, detectLoaders, debugMode;
     private final Property<String> syncBodyFrom;
 
     /**
      * @param project The Gradle project that the extension is applied to
      */
     public ModrinthExtension(Project project) {
+        super(project.getObjects());
         apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
         token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
         projectId = project.getObjects().property(String.class);
@@ -36,11 +36,10 @@ public class ModrinthExtension {
         versionType = project.getObjects().property(String.class).convention("release");
         gameVersions = project.getObjects().listProperty(String.class).empty();
         loaders = project.getObjects().listProperty(String.class).empty();
-        dependencies = project.getObjects().newInstance(DependenciesConfiguation.class, project.getObjects());
+        dependencies = project.getObjects().listProperty(Dependency.class).empty();
         failSilently = project.getObjects().property(Boolean.class).convention(false);
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
         debugMode = project.getObjects().property(Boolean.class).convention(false);
-        prettyPrint = project.getObjects().property(Boolean.class).convention(false);
         syncBodyFrom = project.getObjects().property(String.class);
     }
 
@@ -125,21 +124,11 @@ public class ModrinthExtension {
         return this.loaders;
     }
 
-
     /**
-     * @return the dependencies configuration
+     * @return The dependencies of the version.
      */
-    public DependenciesConfiguation getDependenciesConfiguration() {
+    public ListProperty<Dependency> getDependencies() {
         return this.dependencies;
-    }
-    
-    /**
-     * Allows the provided Action closure to execute against the dependencies configuration
-     *
-     * @param action the DependenciesConfiguation action to execute 
-     */
-    public void dependencies(final Action<? super DependenciesConfiguation> action) {
-        action.execute(this.dependencies);
     }
 
     /**
@@ -161,13 +150,6 @@ public class ModrinthExtension {
      */
     public Property<Boolean> getDebugMode() {
         return this.debugMode;
-    }
-    
-    /**
-     * @return Whether debug output, if enabled, should have GSON Pretty Print option set.
-     */
-    public Property<Boolean> getPrettyPrint() {
-        return this.prettyPrint;
     }
 
     /**

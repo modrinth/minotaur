@@ -4,8 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.compat.FabricLoomCompatibility;
 import com.modrinth.minotaur.dependencies.Dependency;
-import com.modrinth.minotaur.dependencies.ModDependency;
-import com.modrinth.minotaur.dependencies.VersionDependency;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -26,7 +24,6 @@ import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +43,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Constant gson instance used for deserializing the API responses when files are uploaded.
      */
-    private final Gson GSON = extension.getPrettyPrint().get() ? new GsonBuilder().setPrettyPrinting().create() : new Gson();
+    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();;
     
     /**
      * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
@@ -123,13 +120,8 @@ public class TaskModrinthUpload extends DefaultTask {
             }
             
             // Retrieves each DependencyContainer if any and adds a new Dependency based on if the projectId property is set 
-            extension.getDependenciesConfiguration().getDependencies().forEach(container -> {
-            	if(container.getProjectId().isPresent()) {
-            		this.dependencies.add(new ModDependency(container.getName(), container.getType().get()));
-            	} else {
-					this.dependencies.add(new VersionDependency(container.getName(), container.getType().get()));
-				}
-            });
+            this.dependencies.addAll(extension.getNamedDependenciesAsList());
+            this.dependencies.addAll(extension.getDependencies().get());
 
             List<File> filesToUpload = new ArrayList<>();
 
@@ -362,13 +354,5 @@ public class TaskModrinthUpload extends DefaultTask {
         } catch (final Exception e) {
             this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
         }
-    }
-    
-    private Gson getGsonInstance() {
-    	ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
-    	if(extension.getPrettyPrint().get()) {
-    		return new GsonBuilder().setPrettyPrinting().create();
-    	}
-    	return new Gson();
     }
 }
