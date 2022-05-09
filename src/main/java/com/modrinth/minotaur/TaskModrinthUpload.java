@@ -45,7 +45,7 @@ public class TaskModrinthUpload extends DefaultTask {
      * The extension used for getting the data supplied in the buildscript.
      */
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
-    
+
     /**
      * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
      * creating their upload task.

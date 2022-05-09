@@ -33,7 +33,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
      * The extension used for getting the data supplied in the buildscript.
      */
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
-    
+
     /**
      * The response from the API when the body failed to upload.
      */
