@@ -189,7 +189,7 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setProjectId(extension.getProjectId().get());
         data.setVersionNumber(extension.getVersionNumber().get());
         data.setVersionTitle(extension.getVersionName().get());
-        data.setChangelog(extension.getChangelog().get());
+        data.setChangelog(extension.getChangelog().get().replaceAll("\r\n", "\n"));
         data.setVersionType(extension.getVersionType().get().toLowerCase(Locale.ROOT));
         data.setGameVersions(extension.getGameVersions().get());
         data.setLoaders(extension.getLoaders().get());
@@ -221,6 +221,10 @@ public class TaskModrinthUpload extends DefaultTask {
                 this.getProject().getLogger().lifecycle("Successfully uploaded version {} to {} as version ID {}.", this.uploadInfo.getVersionNumber(), extension.getProjectId().get(), this.uploadInfo.getId());
             } else {
                 this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+                if (this.errorInfo == null) {
+                    this.getProject().getLogger().error("Error info is null - this could potentially mean that you're reusing a version number?");
+                    this.errorInfo = new ResponseError();
+                }
                 this.getProject().getLogger().error("Upload failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
                 throw new GradleException("Upload failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
             }

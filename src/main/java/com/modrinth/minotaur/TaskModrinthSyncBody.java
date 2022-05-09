@@ -60,7 +60,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
         patch.addHeader("Authorization", extension.getToken().get());
 
         JsonObject data = new JsonObject();
-        data.addProperty("body", extension.getSyncBodyFrom().get().replaceAll(excludeRegex, "").replaceAll("\\r\\n", "\n"));
+        data.addProperty("body", extension.getSyncBodyFrom().get().replaceAll(excludeRegex, "").replaceAll("\r\n", "\n"));
 
         if (extension.getDebugMode().get()) {
             this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", data);
