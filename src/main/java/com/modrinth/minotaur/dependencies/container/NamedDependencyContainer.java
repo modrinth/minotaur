@@ -29,7 +29,7 @@ public class NamedDependencyContainer {
      *
      * @param projectId the project id
      */
-    public void mod(final String projectId) {
+    public void project(final String projectId) {
         this.dependencyContainer.add(new NamedDependency(projectId, null, this.dependencyType));
     }
 

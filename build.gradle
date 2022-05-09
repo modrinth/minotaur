@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
 }
 
-version = '2.1.2'
+version = '2.2.0'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'

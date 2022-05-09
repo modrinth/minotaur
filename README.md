@@ -28,18 +28,20 @@ pluginManagement {
 The next step is to configure the task for uploading to Modrinth. This allows you to configure the upload and control when and how versions are uploaded.
 
 ```groovy
-import com.modrinth.minotaur.dependencies.ModDependency
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "AABBCCDD"
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType = "release" // This is the default
-    uploadFile = jar // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
+    versionType = "release" // This is the default -- can also be `beta` or `alpha`
+    uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions = ["1.18", "1.18.1"] // Must be an array, even with only one version
-    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
-    dependencies = [ // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
-            new ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
-    ]
+    loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+    dependencies { // A special DSL for creating dependencies
+      // scope.type
+      // The scope can be `required`, `optional`, or `incompatible`
+      // The type can either be `project` or `version`
+      required.project "P7dR8mSH" // Creates a new required dependency on Fabric API
+    }
 }
 ```
 
@@ -68,20 +70,20 @@ pluginManagement {
 The next step is to configure the task for uploading to Modrinth. This allows you to configure the upload and control when and how versions are uploaded.
 
 ```kotlin
-import com.modrinth.minotaur.dependencies.ModDependency
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN")) // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId.set("AABBCCDD")
     versionNumber.set("1.0.0") // You don't need to set this manually. Will fail if Modrinth has this version already
-    versionType.set("release") // This is the default
-    uploadFile.set(jar) // With Fabric Loom or Architectury Loom, this MUST be set to `remapJar` instead of `jar`!
+    versionType.set("release") // This is the default -- can also be `beta` or `alpha`
+    uploadFile.set(tasks.jar) // With Loom, this MUST be set to `remapJar` instead of `jar`!
     gameVersions.addAll(arrayOf("1.18", "1.18.1")) // Must be an array, even with only one version
-    loaders.add("fabric") // Must also be an array - no need to specify this if you're using Fabric Loom or ForgeGradle
-    dependencies.set( // Yet another array. Create a new `ModDependency` or `VersionDependency` with two strings - the ID and the scope
-        mutableListOf(
-            ModDependency("P7dR8mSH", "required") // Creates a new required dependency on Fabric API
-        )
-    )
+    loaders.add("fabric") // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+    dependencies { // A special DSL for creating dependencies
+        // scope.type
+        // The scope can be `required`, `optional`, or `incompatible`
+        // The type can either be `project` or `version`
+        required.project("P7dR8mSH") // Creates a new required dependency on Fabric API
+	}
 }
 ```
 
