@@ -2,6 +2,7 @@ package com.modrinth.minotaur.dependencies;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import org.gradle.internal.impldep.org.jetbrains.annotations.ApiStatus;
 
 import java.util.Locale;
 
@@ -24,7 +25,8 @@ public class Dependency {
      * @param id   The ID of the project or version to create a dependency with.
      * @param type The type of dependency being created.
      */
-    public Dependency(String id, DependencyType type) {
+    @ApiStatus.Internal
+    Dependency(String id, DependencyType type) {
         this.dependencyType = type.toString().toLowerCase(Locale.ROOT);
     }
 
@@ -34,7 +36,8 @@ public class Dependency {
      * @param id   The ID of the project or version to create a dependency with.
      * @param type The type of dependency being created.
      */
-    public Dependency(String id, String type) {
+    @ApiStatus.Internal
+    Dependency(String id, String type) {
         this.dependencyType = type;
     }
 

@@ -1,6 +1,7 @@
 package com.modrinth.minotaur;
 
 import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import com.modrinth.minotaur.request.VersionType;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
@@ -10,7 +11,7 @@ import org.gradle.api.provider.Property;
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
  * {...}} block in the buildscript.
  */
-public class ModrinthExtension {
+public class ModrinthExtension extends DependencyDSL {
     private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType;
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
@@ -23,6 +24,7 @@ public class ModrinthExtension {
      * @param project The Gradle project that the extension is applied to
      */
     public ModrinthExtension(Project project) {
+        super(project.getObjects());
         apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
         token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
         projectId = project.getObjects().property(String.class);
