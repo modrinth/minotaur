@@ -24,6 +24,7 @@ import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -35,15 +36,15 @@ import java.util.Locale;
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
 public class TaskModrinthUpload extends DefaultTask {
-   /**
+    /**
+     * Constant gson instance used for deserializing the API responses.
+     */
+    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    /**
      * The extension used for getting the data supplied in the buildscript.
      */
     private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
-
-    /**
-     * Constant gson instance used for deserializing the API responses when files are uploaded.
-     */
-    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();;
     
     /**
      * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
@@ -62,7 +63,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Internal initially empty List to add Dependencies to if any were added
      */
-    private List<Dependency> dependencies = new ArrayList<>();
+    private final List<Dependency> dependencies = new ArrayList<>();
 
     /**
      * Checks if the upload was successful or not. Provided as a utility for those manually creating their upload task.

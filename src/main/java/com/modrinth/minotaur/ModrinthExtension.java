@@ -1,11 +1,11 @@
 package com.modrinth.minotaur;
 
-import org.gradle.api.Project;
-import org.gradle.api.provider.ListProperty;
-import org.gradle.api.provider.Property;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import com.modrinth.minotaur.request.VersionType;
+import org.gradle.api.Project;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth

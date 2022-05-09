@@ -6,38 +6,38 @@ import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.dependencies.VersionDependency;
 import org.gradle.api.GradleException;
 import org.gradle.api.Named;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Defines a Named Dependency for our DependencyContainer.
+ * Defines a Named Dependency for our NamedDependencyContainer.
  */
 public class NamedDependency implements Named {
-
     private final String id;
-    private String projectId;
-    private String versionId;
-    private DependencyType dependencyType;
+    private final String projectId;
+    private final String versionId;
+    private final DependencyType dependencyType;
 
     /**
      * Instantiates a new NamedDependency.
      *
-     * @param projectId the projectId if not-null
-     * @param versionId the versionId if not-null
+     * @param projectId      the projectId if not-null
+     * @param versionId      the versionId if not-null
      * @param dependencyType the DependencyType
      */
     protected NamedDependency(@Nullable String projectId, @Nullable String versionId, DependencyType dependencyType) {
         this.checkAll(projectId, versionId);
-        this.id = isNull(projectId) ? versionId : projectId;
+        this.id = projectId == null ? versionId : projectId;
         this.dependencyType = dependencyType;
         this.projectId = projectId;
         this.versionId = versionId;
     }
 
     /**
-     * 
      * @return the container id, is only of either projectId or versionId
      */
+    @Nonnull
     @Override
     public String getName() {
         return this.id;
@@ -53,21 +53,17 @@ public class NamedDependency implements Named {
     }
 
     /**
-     * Return this as a never null {@link VersionDependency} or {@link ModDependency} depending on 
+     * Return this as a never null {@link VersionDependency} or {@link ModDependency} depending on
      * which id is set.
-     * 
+     *
      * @return {@link Dependency} dynamically created Dependency
      */
     @Nonnull
     public Dependency getDependency() {
-        if (isNull(this.projectId)) {
+        if (this.projectId == null) {
             return new VersionDependency(this.versionId, this.dependencyType);
         }
         return new ModDependency(this.projectId, this.dependencyType);
-    }
-
-    private boolean isNull(final String it) {
-        return it == null;
     }
 
     private void checkAll(@Nullable Object obj1, @Nullable Object obj2) {

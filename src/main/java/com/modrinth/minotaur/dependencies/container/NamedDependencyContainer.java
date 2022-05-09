@@ -2,20 +2,20 @@ package com.modrinth.minotaur.dependencies.container;
 
 import com.modrinth.minotaur.dependencies.DependencyType;
 import org.gradle.api.NamedDomainObjectContainer;
+
 import javax.inject.Inject;
 
 /**
- * The root DependencyContainer class
+ * The root NamedDependencyContainer class
  */
 public class NamedDependencyContainer {
-
     private final NamedDomainObjectContainer<NamedDependency> dependencyContainer;
     private final DependencyType dependencyType;
 
     /**
      * Instantiates a new Dependency object.
      *
-     * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
+     * @param container      {@literal NamedDomainObjectContainer<NamedDependency>}
      * @param dependencyType {@link DependencyType}
      */
     @Inject
@@ -25,7 +25,7 @@ public class NamedDependencyContainer {
     }
 
     /**
-     * Creates a incompatible Dependency Container and applies the projectId property
+     * Creates an incompatible Dependency Container and applies the projectId property
      *
      * @param projectId the project id
      */
@@ -46,7 +46,6 @@ public class NamedDependencyContainer {
      * Incompatible DependencyType container class
      */
     public static class Incompatible extends NamedDependencyContainer {
-
         /**
          * Instantiates a new incompatible object.
          *
@@ -62,7 +61,6 @@ public class NamedDependencyContainer {
      * Optional DependencyType container class
      */
     public static class Optional extends NamedDependencyContainer {
-
         /**
          * Instantiates a new optional object.
          *
@@ -78,7 +76,6 @@ public class NamedDependencyContainer {
      * Required DependencyType container class
      */
     public static class Required extends NamedDependencyContainer {
-
         /**
          * Instantiates a new required object.
          *
