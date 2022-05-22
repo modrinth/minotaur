@@ -2,7 +2,7 @@
 
 A Gradle plugin for interfacing directly with Modrinth, through uploading build artifacts and syncing project bodies.
 
-Want to use a GitHub Action instead of a Gradle plugin? Check out [KirAntipov/mc-publish](https://github.com/KirAntipov/mc-publish), but note that Modrinth does not give support for `mc-publish` where we do for Minotaur.
+Want to use a GitHub Action instead of a Gradle plugin? Check out [Kir-Antipov/mc-publish](https://github.com/Kir-Antipov/mc-publish), but note that Modrinth does not give support for `mc-publish` where we do for Minotaur.
 
 ## Usage Guide
 
