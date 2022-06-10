@@ -2,6 +2,7 @@ package com.modrinth.minotaur;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskContainer;
 
 /**
@@ -22,7 +23,8 @@ public class Minotaur implements Plugin<Project> {
         tasks.register("modrinth", TaskModrinthUpload.class, task -> {
             task.setGroup("publishing");
             task.setDescription("Upload project to Modrinth");
-            task.dependsOn(tasks.named("build"));
+            task.dependsOn(tasks.named("assemble"));
+            task.mustRunAfter(tasks.named("build"));
         });
         project.getLogger().debug("Registered the `modrinth` task.");
 
@@ -31,6 +33,16 @@ public class Minotaur implements Plugin<Project> {
             task.setDescription("Sync project description to Modrinth");
         });
         project.getLogger().debug("Registered the `modrinthSyncBody` task.");
+
+        project.afterEvaluate(evaluatedProject -> {
+            ModrinthExtension extension = evaluatedProject.getExtensions().getByType(ModrinthExtension.class);
+            Task task = evaluatedProject.getTasks().getByName("modrinth");
+            task.dependsOn(extension.getUploadFile());
+            for (Object file : extension.getAdditionalFiles().get()) {
+                task.dependsOn(file);
+            }
+        });
+        project.getLogger().debug("Made the `modrinth` task depend on the upload file and additional files.");
 
         project.getLogger().debug("Successfully applied the Modrinth plugin!");
     }
