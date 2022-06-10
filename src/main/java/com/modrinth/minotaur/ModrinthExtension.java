@@ -21,19 +21,36 @@ public class ModrinthExtension extends DependencyDSL {
     private final Property<String> syncBodyFrom;
 
     /**
+     * The default API URL in use for uploading. Exposed as a fallback utility.
+     */
+    public static final String DEFAULT_API_URL = "https://api.modrinth.com/v2";
+    /**
+     * The default token in use for uploading. Exposed as a fallback utility.
+     */
+    public static final String DEFAULT_TOKEN = System.getenv("MODRINTH_TOKEN");
+    /**
+     * The default changelog if one was not provided. Exposed as a fallback utility.
+     */
+    public static final String DEFAULT_CHANGELOG = "No changelog was specified.";
+    /**
+     * The default release type if one was not provided. Exposed as a fallback utility.
+     */
+    public static final String DEFAULT_VERSION_TYPE = "release";
+
+    /**
      * @param project The Gradle project that the extension is applied to
      */
     public ModrinthExtension(Project project) {
         super(project.getObjects());
-        apiUrl = project.getObjects().property(String.class).convention("https://api.modrinth.com/v2");
-        token = project.getObjects().property(String.class).convention(System.getenv("MODRINTH_TOKEN"));
+        apiUrl = project.getObjects().property(String.class).convention(DEFAULT_API_URL);
+        token = project.getObjects().property(String.class).convention(DEFAULT_TOKEN);
         projectId = project.getObjects().property(String.class);
         versionNumber = project.getObjects().property(String.class);
         versionName = project.getObjects().property(String.class);
-        changelog = project.getObjects().property(String.class).convention("No changelog was specified.");
+        changelog = project.getObjects().property(String.class).convention(DEFAULT_CHANGELOG);
         uploadFile = project.getObjects().property(Object.class);
         additionalFiles = project.getObjects().listProperty(Object.class).empty();
-        versionType = project.getObjects().property(String.class).convention("release");
+        versionType = project.getObjects().property(String.class).convention(DEFAULT_VERSION_TYPE);
         gameVersions = project.getObjects().listProperty(String.class).empty();
         loaders = project.getObjects().listProperty(String.class).empty();
         dependencies = project.getObjects().listProperty(Dependency.class).empty();
