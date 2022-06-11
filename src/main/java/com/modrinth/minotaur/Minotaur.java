@@ -7,7 +7,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.jetbrains.annotations.ApiStatus;
 
 import static com.modrinth.minotaur.Util.getExtension;
-import static com.modrinth.minotaur.Util.resolveFile;
 
 /**
  * The main class for Minotaur.
