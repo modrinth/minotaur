@@ -9,14 +9,14 @@ buildscript {
 }
 
 plugins {
-    id "com.modrinth.minotaur" version "2.0.2-SNAPSHOT"
+    id "com.modrinth.minotaur" version "2.3.0"
     id "java"
     id "idea"
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 
-version = "1.0.12345-fg"
+version = "1.0.371"
 group = "com.modrinth.minotaur"
 
 repositories {
@@ -38,19 +38,28 @@ idea {
     }
 }
 
+java {
+    withSourcesJar()
+}
 
 import com.modrinth.minotaur.dependencies.DependencyType
 import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
+
 modrinth {
-    apiUrl = "https://staging-api.modrinth.com/v2"
-    projectId = "COR7NNIz"
+    apiUrl = STAGING_API_URL
+    projectId = "freeeedom"
     uploadFile = jar
+    additionalFiles = [sourcesJar]
     versionType = "beta"
-    //gameVersions = ["1.RV-Pre1", "3D-Shareware-v1.34"]
     dependencies = [
-            new ModDependency("tsi4hUoN", "optional"),
-            new VersionDependency("igy4JZo5", DependencyType.INCOMPATIBLE)
+        //new ModDependency("tsi4hUoN", "optional"),
+        //new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
     ]
-    debugMode = true
+    dependencies {
+        required.project "modmod"
+        //optional.project "tsi4hUoN"
+        //incompatible.version "M8VeghJn"
+    }
+    //debugMode = true
 }

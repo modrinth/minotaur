@@ -2,7 +2,7 @@ package com.modrinth.minotaur.dependencies;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import org.gradle.internal.impldep.org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Locale;
 

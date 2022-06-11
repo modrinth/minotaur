@@ -6,9 +6,8 @@ import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.dependencies.VersionDependency;
 import org.gradle.api.GradleException;
 import org.gradle.api.Named;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Defines a Named Dependency for our NamedDependencyContainer.
@@ -37,7 +36,7 @@ public class NamedDependency implements Named {
     /**
      * @return the container id, is only of either projectId or versionId
      */
-    @Nonnull
+    @NotNull
     @Override
     public String getName() {
         return this.id;
@@ -58,7 +57,7 @@ public class NamedDependency implements Named {
      *
      * @return {@link Dependency} dynamically created Dependency
      */
-    @Nonnull
+    @NotNull
     public Dependency getDependency() {
         if (this.projectId == null) {
             return new VersionDependency(this.versionId, this.dependencyType);
