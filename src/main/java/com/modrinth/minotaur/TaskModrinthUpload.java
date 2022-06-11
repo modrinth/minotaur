@@ -9,16 +9,12 @@ import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
 import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.PluginManager;
@@ -31,7 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.modrinth.minotaur.Util.createHttpClient;
 import static com.modrinth.minotaur.Util.getExtension;
+import static com.modrinth.minotaur.Util.getUploadEndpoint;
 import static com.modrinth.minotaur.Util.resolveId;
 
 /**
@@ -170,8 +168,8 @@ public class TaskModrinthUpload extends DefaultTask {
      * @throws IOException Whenever something goes wrong wit uploading the file.
      */
     public void upload(List<File> files) throws IOException {
-        final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
-        final HttpPost post = new HttpPost(this.getUploadEndpoint() + "version");
+        final HttpClient client = createHttpClient();
+        final HttpPost post = new HttpPost(getUploadEndpoint() + "version");
 
         post.addHeader("Authorization", extension.getToken().get());
 
@@ -204,7 +202,7 @@ public class TaskModrinthUpload extends DefaultTask {
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
         for (int i = 0; i < files.size(); i++) {
-            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), this.getUploadEndpoint() + "version");
+            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint() + "version");
             form.addBinaryBody(String.valueOf(i), files.get(i));
         }
 
@@ -240,20 +238,9 @@ public class TaskModrinthUpload extends DefaultTask {
     }
 
     /**
-     * Provides the upload API endpoint to use.
-     *
-     * @return The upload API endpoint.
-     */
-    private String getUploadEndpoint() {
-        String apiUrl = extension.getApiUrl().get();
-        return apiUrl + (apiUrl.endsWith("/") ? "" : "/");
-    }
-
-    /**
      * Attempts to detect the game version by detecting ForgeGradle data in the build environment.
      */
     private void detectGameVersionForge() {
-        // TODO confirm this actually works
         final ExtraPropertiesExtension extraProps = Minotaur.project.getExtensions().getExtraProperties();
 
         // ForgeGradle will store the game version here.

@@ -12,10 +12,11 @@ import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
-
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.getExtension;
+import static com.modrinth.minotaur.Util.getUploadEndpoint;
+import static com.modrinth.minotaur.Util.resolveId;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.

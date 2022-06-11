@@ -4,7 +4,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskContainer;
-import org.gradle.internal.impldep.org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.ApiStatus;
 
 import static com.modrinth.minotaur.Util.getExtension;
 import static com.modrinth.minotaur.Util.resolveFile;
@@ -49,9 +49,9 @@ public class Minotaur implements Plugin<Project> {
         project.afterEvaluate(evaluatedProject -> {
             ModrinthExtension extension = getExtension();
             Task task = evaluatedProject.getTasks().getByName("modrinth");
-            task.dependsOn(resolveFile(extension.getUploadFile()));
+            task.dependsOn(extension.getUploadFile().get());
             for (Object file : extension.getAdditionalFiles().get()) {
-                task.dependsOn(resolveFile(file));
+                task.dependsOn(file);
             }
         });
         project.getLogger().debug("Made the `modrinth` task depend on the upload file and additional files.");
