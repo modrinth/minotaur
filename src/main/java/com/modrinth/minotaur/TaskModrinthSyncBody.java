@@ -1,6 +1,7 @@
 package com.modrinth.minotaur;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.modrinth.minotaur.responses.ResponseError;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,7 +16,8 @@ import org.gradle.api.tasks.TaskAction;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.getUploadEndpoint;
+import static com.modrinth.minotaur.Util.resolveId;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
@@ -73,27 +75,22 @@ public class TaskModrinthSyncBody extends DefaultTask {
                 throw new GradleException(error, e);
             }
 
-            try {
-                final HttpResponse response = client.execute(patch);
-                final int status = response.getStatusLine().getStatusCode();
+            final HttpResponse response = client.execute(patch);
+            final int status = response.getStatusLine().getStatusCode();
 
-                if (status == 204) {
-                    this.getProject().getLogger().lifecycle("Successfully synced body to project {}.", extension.getProjectId().get());
-                } else {
-                    this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-                    this.getProject().getLogger().error("Syncing failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-                    throw new GradleException("Syncing failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
-                }
-            } catch (final IOException e) {
-                this.getProject().getLogger().error("Failed to sync project body!", e);
-                throw new GradleException("Failed to sync project body!", e);
+            if (status == 204) {
+                this.getProject().getLogger().lifecycle("Successfully synced body to project {}.", extension.getProjectId().get());
+            } else {
+                this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+                this.getProject().getLogger().error("Syncing failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
+                throw new GradleException("Syncing failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
             }
         } catch (final Exception e) {
             if (extension.getFailSilently().get()) {
-                this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
-                this.getLogger().error("Modrinth upload failed silently.", e);
+                this.getLogger().info("Failed to sync body to Modrinth. Check logs for more info.");
+                this.getLogger().error("Modrinth body sync failed silently.", e);
             } else {
-                throw new RuntimeException(e);
+                throw new GradleException("Failed to sync project body!", e);
             }
         }
     }

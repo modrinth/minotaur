@@ -21,6 +21,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
+import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.resolveId;
 
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
@@ -135,20 +136,12 @@ public class TaskModrinthUpload extends DefaultTask {
                 }
             }
 
+            List<Object> fileObjects = new ArrayList<>();
             List<File> filesToUpload = new ArrayList<>();
+            fileObjects.add(resolveFile(this.getProject(), extension.getUploadFile().get()));
+            fileObjects.addAll(extension.getAdditionalFiles().get());
 
-            final Object primaryFile = extension.getUploadFile().get();
-            final File file = resolveFile(this.getProject(), primaryFile);
-
-            // Ensure the file actually exists before trying to upload it.
-            if (file == null || !file.exists()) {
-                this.getProject().getLogger().error("The upload file is missing or null. {}", primaryFile);
-                throw new GradleException("The upload file is missing or null. " + primaryFile);
-            }
-
-            filesToUpload.add(file);
-
-            for (Object fileObject : extension.getAdditionalFiles().get()) {
+            for (Object fileObject : fileObjects) {
                 final File resolvedFile = resolveFile(this.getProject(), fileObject);
 
                 // Ensure the file actually exists before trying to upload it.
@@ -160,18 +153,13 @@ public class TaskModrinthUpload extends DefaultTask {
                 filesToUpload.add(resolvedFile);
             }
 
-            try {
-                this.upload(filesToUpload);
-            } catch (final IOException e) {
-                this.getProject().getLogger().error("Failed to upload the file!", e);
-                throw new GradleException("Failed to upload the file!", e);
-            }
+            this.upload(filesToUpload);
         } catch (final Exception e) {
             if (extension.getFailSilently().get()) {
                 this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
                 this.getLogger().error("Modrinth upload failed silently.", e);
             } else {
-                throw new RuntimeException(e);
+                throw new GradleException("Failed to upload file to Modrinth!", e);
             }
         }
     }
@@ -223,22 +211,17 @@ public class TaskModrinthUpload extends DefaultTask {
 
         post.setEntity(form.build());
 
-        try {
-            final HttpResponse response = client.execute(post);
-            final int status = response.getStatusLine().getStatusCode();
+        final HttpResponse response = client.execute(post);
+        final int status = response.getStatusLine().getStatusCode();
 
-            if (status == 200) {
-                this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-                this.getProject().getLogger().lifecycle("Successfully uploaded version {} to {} as version ID {}.", this.uploadInfo.getVersionNumber(), extension.getProjectId().get(), this.uploadInfo.getId());
-            } else {
-                this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-                String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-                this.getProject().getLogger().error(error);
-                throw new GradleException(error);
-            }
-        } catch (final IOException e) {
-            this.getProject().getLogger().error("Failure to upload files!", e);
-            throw e;
+        if (status == 200) {
+            this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
+            this.getProject().getLogger().lifecycle("Successfully uploaded version {} to {} as version ID {}.", this.uploadInfo.getVersionNumber(), extension.getProjectId().get(), this.uploadInfo.getId());
+        } else {
+            this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+            String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
+            this.getProject().getLogger().error(error);
+            throw new GradleException(error);
         }
     }
 
@@ -301,25 +284,21 @@ public class TaskModrinthUpload extends DefaultTask {
         Project project = this.getProject();
         ModrinthExtension extension = project.getExtensions().getByType(ModrinthExtension.class);
 
-        try {
-            final ExtraPropertiesExtension extraProps = project.getExtensions().getExtraProperties();
+        final ExtraPropertiesExtension extraProps = project.getExtensions().getExtraProperties();
 
-            // ForgeGradle will store the game version here.
-            // https://github.com/MinecraftForge/ForgeGradle/blob/7ca294b2c1f57be675c11a6164bc2e07a41802f1/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
-            if (extraProps.has("MC_VERSION")) {
-                //noinspection ConstantConditions
-                final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
+        // ForgeGradle will store the game version here.
+        // https://github.com/MinecraftForge/ForgeGradle/blob/7ca294b2c1f57be675c11a6164bc2e07a41802f1/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
+        if (extraProps.has("MC_VERSION")) {
+            //noinspection ConstantConditions
+            final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
 
-                if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
-                    project.getLogger().debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
-                    if (extension.getGameVersions().get().isEmpty()) {
-                        project.getLogger().debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
-                        extension.getGameVersions().add(forgeGameVersion);
-                    }
+            if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
+                project.getLogger().debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
+                if (extension.getGameVersions().get().isEmpty()) {
+                    project.getLogger().debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
+                    extension.getGameVersions().add(forgeGameVersion);
                 }
             }
-        } catch (final Exception e) {
-            project.getLogger().debug("Failed to detect ForgeGradle game version.", e);
         }
     }
 
@@ -328,20 +307,16 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     private void detectGameVersionFabric() {
         Project project = this.getProject();
-        ModrinthExtension extension = this.getProject().getExtensions().getByType(ModrinthExtension.class);
+        ModrinthExtension extension = project.getExtensions().getByType(ModrinthExtension.class);
+        PluginManager pluginManager = project.getPluginManager();
 
-        if (project.getPluginManager().findPlugin("fabric-loom") != null ||
-            project.getPluginManager().findPlugin("org.quiltmc.loom") != null) {
-            try {
-                String loomGameVersion = FabricLoomCompatibility.detectGameVersion(project);
-                if (extension.getGameVersions().get().isEmpty()) {
-                    project.getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
-                    extension.getGameVersions().add(loomGameVersion);
-                } else {
-                    project.getLogger().debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
-                }
-            } catch (final Exception e) {
-                project.getLogger().debug("Failed to detect Loom game version.", e);
+        if (pluginManager.findPlugin("fabric-loom") != null || pluginManager.findPlugin("org.quiltmc.loom") != null) {
+            String loomGameVersion = FabricLoomCompatibility.detectGameVersion(project);
+            if (extension.getGameVersions().get().isEmpty()) {
+                project.getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
+                extension.getGameVersions().add(loomGameVersion);
+            } else {
+                project.getLogger().debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
             }
         } else {
             project.getLogger().debug("Loom is not present; no game versions were added.");
@@ -355,17 +330,13 @@ public class TaskModrinthUpload extends DefaultTask {
      * @param loaderName The mod loader to apply.
      */
     private void addLoaderForPlugin(String pluginName, String loaderName) {
-        try {
-            final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
+        final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
 
-            if (plugin != null) {
-                extension.getLoaders().add(loaderName);
-                this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
-            } else {
-                this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
-            }
-        } catch (final Exception e) {
-            this.getLogger().debug("Failed to detect plugin {}.", pluginName, e);
+        if (plugin != null) {
+            extension.getLoaders().add(loaderName);
+            this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
+        } else {
+            this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
         }
     }
 }
