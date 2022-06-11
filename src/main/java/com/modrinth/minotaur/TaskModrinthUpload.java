@@ -1,9 +1,9 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.compat.FabricLoomCompatibility;
 import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.modrinth.minotaur.Util.*;
+
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
@@ -39,7 +41,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Constant gson instance used for deserializing the API responses.
      */
-    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson GSON = Util.createGsonInstance();
 
     /**
      * The extension used for getting the data supplied in the buildscript.
@@ -120,9 +122,18 @@ public class TaskModrinthUpload extends DefaultTask {
                 throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
             }
             
-            // Retrieves each DependencyContainer if any and adds a new Dependency based on if the projectId property is set 
-            this.dependencies.addAll(extension.getNamedDependenciesAsList());
-            this.dependencies.addAll(extension.getDependencies().get());
+            // Resolve dependencies
+            List<Dependency> dependencies = new ArrayList<>();
+            dependencies.addAll(extension.getNamedDependenciesAsList());
+            dependencies.addAll(extension.getDependencies().get());
+            for (Dependency dependency : dependencies) {
+                if (dependency instanceof ModDependency) {
+                    String id = resolveId(((ModDependency) dependency).getProjectId(), getProject());
+                    this.dependencies.add(new ModDependency(id, dependency.getDependencyType()));
+                } else {
+                    this.dependencies.add(dependency);
+                }
+            }
 
             List<File> filesToUpload = new ArrayList<>();
 
@@ -160,7 +171,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
                 this.getLogger().error("Modrinth upload failed silently.", e);
             } else {
-                throw e;
+                throw new RuntimeException(e);
             }
         }
     }
@@ -173,7 +184,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     public void upload(List<File> files) throws IOException {
         final HttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()).build();
-        final HttpPost post = new HttpPost(this.getUploadEndpoint());
+        final HttpPost post = new HttpPost(this.getUploadEndpoint() + "version");
 
         post.addHeader("Authorization", extension.getToken().get());
 
@@ -186,7 +197,7 @@ public class TaskModrinthUpload extends DefaultTask {
         }
 
         final VersionData data = new VersionData();
-        data.setProjectId(extension.getProjectId().get());
+        data.setProjectId(resolveId(extension.getProjectId().get(), getProject()));
         data.setVersionNumber(extension.getVersionNumber().get());
         data.setVersionTitle(extension.getVersionName().get());
         data.setChangelog(extension.getChangelog().get().replaceAll("\r\n", "\n"));
@@ -206,7 +217,7 @@ public class TaskModrinthUpload extends DefaultTask {
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
         for (int i = 0; i < files.size(); i++) {
-            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), this.getUploadEndpoint());
+            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), this.getUploadEndpoint() + "version");
             form.addBinaryBody(String.valueOf(i), files.get(i));
         }
 
@@ -221,12 +232,9 @@ public class TaskModrinthUpload extends DefaultTask {
                 this.getProject().getLogger().lifecycle("Successfully uploaded version {} to {} as version ID {}.", this.uploadInfo.getVersionNumber(), extension.getProjectId().get(), this.uploadInfo.getId());
             } else {
                 this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-                if (this.errorInfo == null) {
-                    this.getProject().getLogger().error("Error info is null - this could potentially mean that you're reusing a version number?");
-                    this.errorInfo = new ResponseError();
-                }
-                this.getProject().getLogger().error("Upload failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-                throw new GradleException("Upload failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
+                String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
+                this.getProject().getLogger().error(error);
+                throw new GradleException(error);
             }
         } catch (final IOException e) {
             this.getProject().getLogger().error("Failure to upload files!", e);
@@ -241,7 +249,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     private String getUploadEndpoint() {
         String apiUrl = extension.getApiUrl().get();
-        return apiUrl + (apiUrl.endsWith("/") ? "" : "/") + "version";
+        return apiUrl + (apiUrl.endsWith("/") ? "" : "/");
     }
 
     /**
