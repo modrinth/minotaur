@@ -1,9 +1,9 @@
 plugins {
     id "fabric-loom" version "0.12-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.3.0-SNAPSHOT.4"
+    id "com.modrinth.minotaur" version "2.3.0-SNAPSHOT.8"
 }
 
-version = "1.0.368"
+version = "1.0.370"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -28,7 +28,7 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-    apiUrl = "https://staging-api.modrinth.com/v2"
+    apiUrl = STAGING_API_URL
     projectId = "freeeedom"
     uploadFile = remapJar
     additionalFiles = [sourcesJar]
@@ -42,7 +42,7 @@ modrinth {
         //optional.project "tsi4hUoN"
         //incompatible.version "M8VeghJn"
     }
-    debugMode = true
+    //debugMode = true
 }
 
 tasks.modrinth.doLast {

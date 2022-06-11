@@ -25,6 +25,10 @@ public class ModrinthExtension extends DependencyDSL {
      */
     public static final String DEFAULT_API_URL = "https://api.modrinth.com/v2";
     /**
+     * The staging API URL if desired for testing.
+     */
+    public static final String STAGING_API_URL = "https://staging-api.modrinth.com/v2";
+    /**
      * The default token in use for uploading. Exposed as a fallback utility.
      */
     public static final String DEFAULT_TOKEN = System.getenv("MODRINTH_TOKEN");
@@ -107,7 +111,7 @@ public class ModrinthExtension extends DependencyDSL {
 
     /**
      * @return The upload artifact file. This can be any object type that is resolvable by
-     * {@link TaskModrinthUpload#resolveFile(Project, Object)}.
+     * {@link Util#resolveFile(Object)}.
      */
     public Property<Object> getUploadFile() {
         return this.uploadFile;

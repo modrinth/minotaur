@@ -14,10 +14,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 
-import static com.modrinth.minotaur.Util.getUploadEndpoint;
-import static com.modrinth.minotaur.Util.resolveId;
+import static com.modrinth.minotaur.Util.*;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
@@ -31,7 +29,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
     /**
      * The extension used for getting the data supplied in the buildscript.
      */
-    private final ModrinthExtension extension = getProject().getExtensions().getByType(ModrinthExtension.class);
+    private final ModrinthExtension extension = getExtension();
 
     /**
      * The response from the API when the body failed to upload.
@@ -54,7 +52,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
             String excludeRegex = "(?m)<!-- modrinth_exclude\\.start -->(.|\n)*?<!-- modrinth_exclude\\.end -->";
 
             final HttpClient client = Util.createHttpClient();
-            final HttpPatch patch = new HttpPatch(getUploadEndpoint(getProject()) + "project/" + resolveId(extension.getProjectId().get(), getProject()));
+            final HttpPatch patch = new HttpPatch(getUploadEndpoint() + "project/" + resolveId(extension.getProjectId().get()));
 
             patch.addHeader("Authorization", extension.getToken().get());
 
