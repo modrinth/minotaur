@@ -48,7 +48,9 @@ public class Minotaur implements Plugin<Project> {
         project.afterEvaluate(evaluatedProject -> {
             ModrinthExtension extension = getExtension();
             Task task = evaluatedProject.getTasks().getByName("modrinth");
-            task.dependsOn(extension.getUploadFile().get());
+            if (extension.getUploadFile().getOrNull() != null) {
+                task.dependsOn(extension.getUploadFile().get());
+            }
             for (Object file : extension.getAdditionalFiles().get()) {
                 task.dependsOn(file);
             }
