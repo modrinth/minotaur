@@ -32,7 +32,7 @@ The next step is to configure the task for uploading to Modrinth. This allows yo
 ```groovy
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
-    projectId = "AABBCCDD"
+    projectId = "my-project" // This can be the project ID or the slug. Either will work!
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default -- can also be `beta` or `alpha`
     uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
@@ -42,7 +42,7 @@ modrinth {
         // scope.type
         // The scope can be `required`, `optional`, or `incompatible`
         // The type can either be `project` or `version`
-        required.project "P7dR8mSH" // Creates a new required dependency on Fabric API
+        required.project "fabric-api" // Creates a new required dependency on Fabric API
     }
 }
 ```
@@ -74,7 +74,7 @@ The next step is to configure the task for uploading to Modrinth. This allows yo
 ```kotlin
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN")) // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
-    projectId.set("AABBCCDD")
+    projectId.set("my-project") // This can be the project ID or the slug. Either will work!
     versionNumber.set("1.0.0") // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType.set("release") // This is the default -- can also be `beta` or `alpha`
     uploadFile.set(tasks.jar) // With Loom, this MUST be set to `remapJar` instead of `jar`!
@@ -84,7 +84,7 @@ modrinth {
         // scope.type
         // The scope can be `required`, `optional`, or `incompatible`
         // The type can either be `project` or `version`
-        required.project("P7dR8mSH") // Creates a new required dependency on Fabric API
+        required.project("fabric-api") // Creates a new required dependency on Fabric API
     }
 }
 ```
@@ -119,24 +119,24 @@ Be careful with this task! Once a body is changed, you **cannot** get it back. Y
 
 The following properties can be set within the `modrinth {...}` block.
 
-| Property        | Required | Description                                                               | Default                                                            |
-|-----------------|----------|---------------------------------------------------------------------------|--------------------------------------------------------------------|
-| apiURL          | false    | The API endpoint URL to use for uploading files.                          | `https://api.modrinth.com/v2`                                      |
-| token           | false    | A valid API token for the Modrinth API.                                   | `MODRINTH_TOKEN` environment variable                              |
-| projectId       | true     | The ID of the project to upload to.                                       |                                                                    |
-| versionNumber   | false    | The version number of the version.                                        | `version` declaration                                              |
-| versionName     | false    | The name of the version.                                                  | `versionNumber`                                                    |
-| changelog       | false    | The changelog for the file. Allows Markdown formatting.                   | `No changelog was specified.`                                      |
-| uploadFile      | true     | The file to upload. Can be an actual file or a file task.                 |                                                                    |
-| additionalFiles | false    | An array of additional files to be uploaded to a version.                 |                                                                    |
-| versionType     | false    | The stability level of the version. Can be `release`, `beta`, or `alpha`. | `release`                                                          |
-| gameVersions    | true     | An array of game versions that this version supports.                     | `MC_VERSION` on FG, `MinecraftProvider.minecraftVersion()` on Loom |
-| loaders         | false    | An array of mod loaders that this version supports.                       | `forge` if using FG, `fabric` if using Loom                        |
-| dependencies    | false    | Dependencies of the uploaded version.                                     |                                                                    |
-| failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                                            |
-| detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                                             |
-| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                                            |
-| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                                                    |
+| Property        | Required | Description                                                               | Default                                      |
+|-----------------|----------|---------------------------------------------------------------------------|----------------------------------------------|
+| apiURL          | false    | The API endpoint URL to use for uploading files.                          | `https://api.modrinth.com/v2`                |
+| token           | false    | A valid API token for the Modrinth API.                                   | `MODRINTH_TOKEN` environment variable        |
+| projectId       | true     | The ID of the project to upload to.                                       |                                              |
+| versionNumber   | false    | The version number of the version.                                        | `version` declaration                        |
+| versionName     | false    | The name of the version.                                                  | `versionNumber`                              |
+| changelog       | false    | The changelog for the file. Allows Markdown formatting.                   | `No changelog was specified.`                |
+| uploadFile      | true     | The file to upload. Can be an actual file or a file task.                 |                                              |
+| additionalFiles | false    | An array of additional files to be uploaded to a version.                 |                                              |
+| versionType     | false    | The stability level of the version. Can be `release`, `beta`, or `alpha`. | `release`                                    |
+| gameVersions    | true     | An array of game versions that this version supports.                     | Detected based on the Gradle plugins you use |
+| loaders         | false    | An array of mod loaders that this version supports.                       | Detected based on the Gradle plugins you use |
+| dependencies    | false    | Dependencies of the uploaded version.                                     |                                              |
+| failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                      |
+| detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                       |
+| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                      |
+| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                              |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
@@ -163,7 +163,7 @@ The following properties can only be accessed through `tasks.modrinth.<property>
 | changelog     | String      | The changelog for this version of the mod.                             |
 | datePublished | Date        | The date that this version was published.                              |
 | downloads     | Integer     | The number of downloads this specific version has had.                 |
-| versionType   | VersionType | The type of the release - `ALPHA`, `BETA`, or `RELEASE`.               |
+| versionType   | VersionType | The type of the release - `alpha`, `beta`, or `release`.               |
 | files         | List        | A list of files available for download for this version.               |
 | gameVersions  | List        | A list of versions of Minecraft that this version of the mod supports. |
 | loaders       | List        | The loaders that this version works on                                 |
@@ -178,6 +178,4 @@ The following properties can only be accessed through `tasks.modrinth.<property>
 
 ## Development Information
 
-If you want to use the plugin from your local maven repo make sure you have added the mavenLocal repository to your script. Grabbing the plugin is the same as normal. To publish locally you run `./gradlew clean build publishToMavenLocal`. Local maven files can be found in the `%home%/.m2/` directory.
-
-You need Java 17 to compile Minotaur, but you only need Java 8 to run it (unless you're using Fabric Loom, in which case that requires Java 17 to run anyway).
+For contributing information, please see the Minotaur section of the [Modrinth contributing guide](https://docs.modrinth.com/docs/details/contributing/#minotaur-gradle-plugin).
