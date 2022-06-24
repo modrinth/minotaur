@@ -51,12 +51,13 @@ public class Minotaur implements Plugin<Project> {
             ModrinthExtension extension = getExtension();
             Task task = evaluatedProject.getTasks().getByName("modrinth");
             if (extension.getUploadFile().getOrNull() != null) {
+                Object uploadFile = extension.getUploadFile().get();
                 // We have an upload file set. Try to get an AbstractArchiveTask from it by whatever means possible.
-                if (extension.getUploadFile().get() instanceof AbstractArchiveTask) {
-                    task.dependsOn(extension.getUploadFile().get());
-                } else if (extension.getUploadFile().get() instanceof TaskProvider<?> &&
-                    ((TaskProvider<?>) extension.getUploadFile().get()).get() instanceof AbstractArchiveTask) {
-                    task.dependsOn(((TaskProvider<?>) extension.getUploadFile().get()).get());
+                if (uploadFile instanceof AbstractArchiveTask) {
+                    task.dependsOn(uploadFile);
+                } else if (uploadFile instanceof TaskProvider<?> &&
+                    ((TaskProvider<?>) uploadFile).get() instanceof AbstractArchiveTask) {
+                    task.dependsOn(((TaskProvider<?>) uploadFile).get());
                 }
             }
             for (Object file : extension.getAdditionalFiles().get()) {

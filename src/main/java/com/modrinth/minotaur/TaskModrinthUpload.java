@@ -1,7 +1,6 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
-import com.modrinth.minotaur.compat.FabricLoomCompatibility;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.ModDependency;
 import com.modrinth.minotaur.request.VersionData;
@@ -15,6 +14,8 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.AppliedPlugin;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.PluginManager;
@@ -47,15 +48,18 @@ public class TaskModrinthUpload extends DefaultTask {
     private final ModrinthExtension extension = getExtension();
 
     /**
-     * The response from the API when the file was uploaded successfully. Provided as a utility for those manually
-     * creating their upload task.
+     * Easy way to access Gradle's logging.
+     */
+    private final Logger log = this.getProject().getLogger();
+
+    /**
+     * The response from the API when the file was uploaded successfully.
      */
     @Nullable
     public ResponseUpload uploadInfo = null;
 
     /**
-     * The response from the API when the file failed to upload. Provided as a utility for those manually creating their
-     * upload task.
+     * The response from the API when the file failed to upload.
      */
     @Nullable
     public ResponseError errorInfo = null;
@@ -66,7 +70,7 @@ public class TaskModrinthUpload extends DefaultTask {
     private final List<Dependency> dependencies = new ArrayList<>();
 
     /**
-     * Checks if the upload was successful or not. Provided as a utility for those manually creating their upload task.
+     * Checks if the upload was successful or not.
      *
      * @return Whether the file was successfully uploaded.
      */
@@ -88,7 +92,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     @TaskAction
     public void apply() {
-        this.getLogger().lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
+        log.lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
         try {
             // Add version number if it's null
             if (extension.getVersionNumber().getOrNull() == null) {
@@ -143,7 +147,7 @@ public class TaskModrinthUpload extends DefaultTask {
 
                 // Ensure the file actually exists before trying to upload it.
                 if (resolvedFile == null || !resolvedFile.exists()) {
-                    this.getProject().getLogger().error("The upload file is missing or null. {}", fileObject);
+                    log.error("The upload file is missing or null. {}", fileObject);
                     throw new GradleException("The upload file is missing or null. " + fileObject);
                 }
 
@@ -153,8 +157,8 @@ public class TaskModrinthUpload extends DefaultTask {
             this.upload(filesToUpload);
         } catch (final Exception e) {
             if (extension.getFailSilently().get()) {
-                this.getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
-                this.getLogger().error("Modrinth upload failed silently.", e);
+                log.info("Failed to upload to Modrinth. Check logs for more info.");
+                log.error("Modrinth upload failed silently.", e);
             } else {
                 throw new GradleException("Failed to upload file to Modrinth!", e);
             }
@@ -194,15 +198,15 @@ public class TaskModrinthUpload extends DefaultTask {
         data.setPrimaryFile("0"); // The primary file will always be of the first index in the list
 
         if (extension.getDebugMode().get()) {
-            this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", GSON.toJson(data));
-            this.getProject().getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
+            log.lifecycle("Full data to be sent for upload: {}", GSON.toJson(data));
+            log.lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
             return;
         }
 
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
         for (int i = 0; i < files.size(); i++) {
-            this.getProject().getLogger().debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint() + "version");
+            log.debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint() + "version");
             form.addBinaryBody(String.valueOf(i), files.get(i));
         }
 
@@ -222,7 +226,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 url = String.format("https://staging.modrinth.com/mod/%s/version/%s", extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
             }
 
-            this.getProject().getLogger().lifecycle(
+            log.lifecycle(
                 "Successfully uploaded version {} to {} as version ID {}. {}",
                 this.uploadInfo.getVersionNumber(),
                 extension.getProjectId().get(),
@@ -232,7 +236,7 @@ public class TaskModrinthUpload extends DefaultTask {
         } else {
             this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
             String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-            this.getProject().getLogger().error(error);
+            log.error(error);
             throw new GradleException(error);
         }
     }
@@ -241,7 +245,7 @@ public class TaskModrinthUpload extends DefaultTask {
      * Attempts to detect the game version by detecting ForgeGradle data in the build environment.
      */
     private void detectGameVersionForge() {
-        final ExtraPropertiesExtension extraProps = Minotaur.project.getExtensions().getExtraProperties();
+        final ExtraPropertiesExtension extraProps = this.getProject().getExtensions().getExtraProperties();
 
         // ForgeGradle will store the game version here.
         // https://github.com/MinecraftForge/ForgeGradle/blob/7ca294b2c1f57be675c11a6164bc2e07a41802f1/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
@@ -250,9 +254,9 @@ public class TaskModrinthUpload extends DefaultTask {
             final String forgeGameVersion = extraProps.get("MC_VERSION").toString();
 
             if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
-                this.getProject().getLogger().debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
+                log.debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
                 if (this.extension.getGameVersions().get().isEmpty()) {
-                    this.getProject().getLogger().debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
+                    log.debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
                     this.extension.getGameVersions().add(forgeGameVersion);
                 }
             }
@@ -263,18 +267,22 @@ public class TaskModrinthUpload extends DefaultTask {
      * Attempts to detect the game version by detecting Loom data in the build environment.
      */
     private void detectGameVersionFabric() {
-        PluginManager pluginManager = this.getProject().getPluginManager();
+        final PluginManager pluginManager = this.getProject().getPluginManager();
+        final ConfigurationContainer configurations = this.getProject().getConfigurations();
 
         if (pluginManager.findPlugin("fabric-loom") != null || pluginManager.findPlugin("org.quiltmc.loom") != null) {
-            String loomGameVersion = FabricLoomCompatibility.detectGameVersion();
+            // Use the same method Loom uses to get the version.
+            // https://github.com/FabricMC/fabric-loom/blob/9b2b857b38b4157b5ae468469c5d3bd6ef9fee35/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#L60
+            final String loomGameVersion = configurations.getByName("minecraft").getDependencies().iterator().next().getVersion();
+            assert loomGameVersion != null;
             if (this.extension.getGameVersions().get().isEmpty()) {
-                this.getProject().getLogger().debug("Detected fallback game version {} from Loom.", loomGameVersion);
+                log.debug("Detected fallback game version {} from Loom.", loomGameVersion);
                 this.extension.getGameVersions().add(loomGameVersion);
             } else {
-                this.getProject().getLogger().debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
+                log.debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
             }
         } else {
-            this.getProject().getLogger().debug("Loom is not present; no game versions were added.");
+            log.debug("Loom is not present; no game versions were added.");
         }
     }
 
@@ -289,9 +297,9 @@ public class TaskModrinthUpload extends DefaultTask {
 
         if (plugin != null) {
             extension.getLoaders().add(loaderName);
-            this.getLogger().debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
+            log.debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
         } else {
-            this.getLogger().debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
+            log.debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);
         }
     }
 }
