@@ -11,15 +11,32 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: 17
-          distribution: adopt
+          distribution: temurin
+
+      - name: Cache Gradle files
+        uses: actions/cache@v2
+        if: ${{ !env.ACT }}
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            build/loom-cache
+            .gradle/loom-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*/build.gradle', '*/settings.gradle', '*gradle.*') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
-        run: ./gradlew build
-        env:
-          GPG_KEYNAME: ${{ secrets.GPG_KEYNAME }}
+        run: ./gradlew build publishToMavenLocal
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
+        if: ${{ !env.ACT }}
         with:
           name: Artifacts
           path: build/libs
+
+      - name: Test with Gradle
+        run: ./gradlew fg:modrinth loom:modrinth
+        if: ${{ !contains(github.event.head_commit.message, 'skip test') }}
+        env:
+          MODRINTH_TOKEN: dummy_token_does_not_matter_because_debugMode

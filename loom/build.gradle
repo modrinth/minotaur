@@ -1,6 +1,6 @@
 plugins {
-    id "fabric-loom" version "0.12-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.3.2-SNAPSHOT.0"
+    id "fabric-loom" version "0.12.+"
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 version = "1.0.370"
@@ -32,20 +32,14 @@ modrinth {
     projectId = "freeeedom"
     uploadFile = remapJar
     additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
-    // additionalFiles = [sourcesJar]
     versionType = "beta"
     dependencies = [
-            //new ModDependency("tsi4hUoN", "optional"),
-            //new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
+            new ModDependency("big-mod", "optional"),
+            new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
     ]
     dependencies {
         required.project "modmod"
-        //optional.project "tsi4hUoN"
-        //incompatible.version "M8VeghJn"
+        incompatible.version "M8VeghJn"
     }
     debugMode = true
-}
-
-tasks.modrinth.doLast {
-    if (!modrinth.debugMode && tasks.modrinth.wasUploadSuccessful()) println tasks.modrinth.uploadInfo.id
 }

@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
-        mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
@@ -9,7 +8,7 @@ buildscript {
 }
 
 plugins {
-    id "com.modrinth.minotaur" version "2.3.0"
+    id "com.modrinth.minotaur" version "2.+"
     id "java"
     id "idea"
 }
@@ -18,10 +17,6 @@ apply plugin: 'net.minecraftforge.gradle'
 
 version = "1.0.371"
 group = "com.modrinth.minotaur"
-
-repositories {
-    mavenCentral()
-}
 
 minecraft {
     mappings channel: "official", version: "1.18.1"
@@ -50,16 +45,19 @@ modrinth {
     apiUrl = STAGING_API_URL
     projectId = "freeeedom"
     uploadFile = jar
-    additionalFiles = [sourcesJar]
+    additionalFiles = [project.file("build/libs/fg-$version-sources.jar")]
     versionType = "beta"
     dependencies = [
-        //new ModDependency("tsi4hUoN", "optional"),
-        //new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
+        new ModDependency("big-mod", "optional"),
+        new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
     ]
     dependencies {
         required.project "modmod"
-        //optional.project "tsi4hUoN"
-        //incompatible.version "M8VeghJn"
+        incompatible.version "M8VeghJn"
     }
-    //debugMode = true
+    debugMode = true
+}
+
+tasks.modrinth.doLast {
+    if (!modrinth.debugMode && tasks.modrinth.wasUploadSuccessful()) println tasks.modrinth.uploadInfo.id
 }

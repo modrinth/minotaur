@@ -1,1 +1,13 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
 rootProject.name = 'Minotaur'
+include 'fg', 'loom'
