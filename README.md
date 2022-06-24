@@ -39,10 +39,10 @@ modrinth {
     gameVersions = ["1.18", "1.18.1"] // Must be an array, even with only one version
     loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
-      // scope.type
-      // The scope can be `required`, `optional`, or `incompatible`
-      // The type can either be `project` or `version`
-      required.project "P7dR8mSH" // Creates a new required dependency on Fabric API
+        // scope.type
+        // The scope can be `required`, `optional`, or `incompatible`
+        // The type can either be `project` or `version`
+        required.project "P7dR8mSH" // Creates a new required dependency on Fabric API
     }
 }
 ```
@@ -85,7 +85,7 @@ modrinth {
         // The scope can be `required`, `optional`, or `incompatible`
         // The type can either be `project` or `version`
         required.project("P7dR8mSH") // Creates a new required dependency on Fabric API
-	}
+    }
 }
 ```
 
