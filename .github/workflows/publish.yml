@@ -14,7 +14,19 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: 17 # Use Java 17 here because the Loom test env needs it
-          distribution: adopt
+          distribution: temurin
+
+      - name: Cache Gradle files
+        uses: actions/cache@v2
+        if: ${{ !env.ACT }}
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            build/loom-cache
+            .gradle/loom-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('*/build.gradle', '*/settings.gradle', '*gradle.*') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
       - name: Build with Gradle
         run: ./gradlew build
