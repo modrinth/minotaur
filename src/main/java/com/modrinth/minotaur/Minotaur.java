@@ -4,6 +4,8 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.jetbrains.annotations.ApiStatus;
 
 import static com.modrinth.minotaur.Util.getExtension;
@@ -49,10 +51,21 @@ public class Minotaur implements Plugin<Project> {
             ModrinthExtension extension = getExtension();
             Task task = evaluatedProject.getTasks().getByName("modrinth");
             if (extension.getUploadFile().getOrNull() != null) {
-                task.dependsOn(extension.getUploadFile().get());
+                // We have an upload file set. Try to get an AbstractArchiveTask from it by whatever means possible.
+                if (extension.getUploadFile().get() instanceof AbstractArchiveTask) {
+                    task.dependsOn(extension.getUploadFile().get());
+                } else if (extension.getUploadFile().get() instanceof TaskProvider<?> &&
+                    ((TaskProvider<?>) extension.getUploadFile().get()).get() instanceof AbstractArchiveTask) {
+                    task.dependsOn(((TaskProvider<?>) extension.getUploadFile().get()).get());
+                }
             }
             for (Object file : extension.getAdditionalFiles().get()) {
-                task.dependsOn(file);
+                if (file instanceof AbstractArchiveTask) {
+                    task.dependsOn(file);
+                } else if (file instanceof TaskProvider<?> &&
+                    ((TaskProvider<?>) file).get() instanceof AbstractArchiveTask) {
+                    task.dependsOn(((TaskProvider<?>) file).get());
+                }
             }
         });
         project.getLogger().debug("Made the `modrinth` task depend on the upload file and additional files.");
