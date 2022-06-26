@@ -27,6 +27,8 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build publishToMavenLocal
+        env:
+          EXCLUDE_SUBPROJECTS: true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2

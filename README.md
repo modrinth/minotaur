@@ -40,7 +40,7 @@ modrinth {
     loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
         // scope.type
-        // The scope can be `required`, `optional`, or `incompatible`
+        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
         // The type can either be `project` or `version`
         required.project "fabric-api" // Creates a new required dependency on Fabric API
     }
@@ -82,7 +82,7 @@ modrinth {
     loaders.add("fabric") // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
         // scope.type
-        // The scope can be `required`, `optional`, or `incompatible`
+        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
         // The type can either be `project` or `version`
         required.project("fabric-api") // Creates a new required dependency on Fabric API
     }

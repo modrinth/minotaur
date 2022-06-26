@@ -86,4 +86,19 @@ public class NamedDependencyContainer {
             super(container, DependencyType.REQUIRED);
         }
     }
+
+    /**
+     * Embedded DependencyType container class
+     */
+    public static class Embedded extends NamedDependencyContainer {
+        /**
+         * Instantiates a new required object.
+         *
+         * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
+         */
+        @Inject
+        public Embedded(NamedDomainObjectContainer<NamedDependency> container) {
+            super(container, DependencyType.EMBEDDED);
+        }
+    }
 }

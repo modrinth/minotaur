@@ -16,6 +16,7 @@ public class DependencyDSL {
     private final NamedDependencyContainer.Incompatible incompatible;
     private final NamedDependencyContainer.Optional optional;
     private final NamedDependencyContainer.Required required;
+    private final NamedDependencyContainer.Embedded embedded;
 
     /**
      * Instantiates a new dependencies configuration.
@@ -28,6 +29,7 @@ public class DependencyDSL {
         this.incompatible = objects.newInstance(NamedDependencyContainer.Incompatible.class, dependencies);
         this.optional = objects.newInstance(NamedDependencyContainer.Optional.class, dependencies);
         this.required = objects.newInstance(NamedDependencyContainer.Required.class, dependencies);
+        this.embedded = objects.newInstance(NamedDependencyContainer.Embedded.class, dependencies);
     }
 
     /**
@@ -67,5 +69,15 @@ public class DependencyDSL {
      */
     public NamedDependencyContainer.Required getRequired() {
         return this.required;
+    }
+
+    /**
+     * Retrieve the reference to an {@link NamedDependencyContainer.Embedded} instance.
+     * Provided as a utility method for external uses.
+     *
+     * @return embedded {@link NamedDependencyContainer.Embedded}
+     */
+    public NamedDependencyContainer.Embedded getEmbedded() {
+        return this.embedded;
     }
 }

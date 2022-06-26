@@ -23,5 +23,10 @@ public enum DependencyType {
      * The version is not compatible with the project/version and will not work when both are used.
      */
     @SerializedName("incompatible")
-    INCOMPATIBLE
+    INCOMPATIBLE,
+    /**
+     * The version contains this other project/version within it.
+     */
+    @SerializedName("embedded")
+    EMBEDDED
 }

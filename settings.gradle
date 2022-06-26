@@ -10,4 +10,6 @@ pluginManagement {
     }
 }
 rootProject.name = 'Minotaur'
-include 'fg', 'loom'
+if (!System.getenv().EXCLUDE_SUBPROJECTS) {
+    include 'fg', 'loom'
+}
