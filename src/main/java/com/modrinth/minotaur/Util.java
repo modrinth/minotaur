@@ -37,7 +37,8 @@ class Util {
      */
     static HttpClient createHttpClient() {
         RequestConfig rc = RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build();
-        return HttpClientBuilder.create().setDefaultRequestConfig(rc).build();
+        String ua = "modrinth/minotaur " + Util.class.getPackage().getImplementationVersion();
+        return HttpClientBuilder.create().setDefaultRequestConfig(rc).setUserAgent(ua).build();
     }
 
     /**
