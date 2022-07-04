@@ -130,7 +130,7 @@ public class TaskModrinthUpload extends DefaultTask {
             dependencies.addAll(extension.getDependencies().get());
             for (Dependency dependency : dependencies) {
                 if (dependency instanceof ModDependency) {
-                    String id = resolveId(((ModDependency) dependency).getProjectId());
+                    String id = resolveId(((ModDependency) dependency).getProjectId(), log);
                     this.dependencies.add(new ModDependency(id, dependency.getDependencyType()));
                 } else {
                     this.dependencies.add(dependency);
@@ -160,7 +160,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 log.info("Failed to upload to Modrinth. Check logs for more info.");
                 log.error("Modrinth upload failed silently.", e);
             } else {
-                throw new GradleException("Failed to upload file to Modrinth!", e);
+                throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
             }
         }
     }

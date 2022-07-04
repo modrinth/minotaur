@@ -89,7 +89,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
                 this.getLogger().info("Failed to sync body to Modrinth. Check logs for more info.");
                 this.getLogger().error("Modrinth body sync failed silently.", e);
             } else {
-                throw new GradleException("Failed to sync project body!", e);
+                throw new GradleException("Failed to sync project body! " + e.getMessage(), e);
             }
         }
     }

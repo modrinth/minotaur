@@ -16,6 +16,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +66,17 @@ class Util {
      * @return ID of the resolved project
      */
     static String resolveId(String projectId) throws IOException {
+        return resolveId(projectId, Minotaur.project.getLogger());
+    }
+
+    /**
+     * Returns a project ID from a project ID or slug
+     *
+     * @param projectId ID or slug of the project to resolve
+     * @param log Logger to use
+     * @return ID of the resolved project
+     */
+    static String resolveId(String projectId, Logger log) throws IOException {
         HttpClient client = createHttpClient();
         HttpGet get = new HttpGet(getUploadEndpoint() + "project/" + projectId);
         get.addHeader("Authorization", getExtension().getToken().get());
@@ -77,7 +89,7 @@ class Util {
                 errorInfo = new ResponseError();
             }
             String error = String.format("Project ID resolution for %s failed! Status: %s Error: %s Reason: %s", projectId, code, errorInfo.getError(), errorInfo.getDescription());
-            Minotaur.project.getLogger().error(error);
+            log.error(error);
             throw new GradleException(error);
         }
 
@@ -85,7 +97,7 @@ class Util {
         JsonElement element = JsonParser.parseString(returned);
         if (!element.isJsonObject() || !element.getAsJsonObject().has("id")) {
             String error = "Invalid API response during project ID resolution! Expected JSON with an ID field but got: " + returned;
-            Minotaur.project.getLogger().error(error);
+            log.error(error);
             throw new GradleException(error, new IllegalStateException(error));
         }
         return element.getAsJsonObject().get("id").getAsString();
