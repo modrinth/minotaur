@@ -78,7 +78,7 @@ class Util {
      */
     static String resolveId(String projectId, Logger log) throws IOException {
         HttpClient client = createHttpClient();
-        HttpGet get = new HttpGet(getUploadEndpoint() + "project/" + projectId);
+        HttpGet get = new HttpGet(String.format("%sproject/%s/check", getUploadEndpoint(), projectId));
         get.addHeader("Authorization", getExtension().getToken().get());
         HttpResponse response = client.execute(get);
 
