@@ -16,6 +16,10 @@ import java.util.Map;
  */
 @SuppressWarnings("unused")
 public class ResponseUpload {
+    @Expose
+    @SerializedName("project_type")
+    private String projectType;
+
     /**
      * The ID of the version, encoded as a base62 string.
      */
@@ -113,6 +117,13 @@ public class ResponseUpload {
     @Expose
     @SerializedName("dependencies")
     private Collection<Dependency> dependencies = new ArrayList<>();
+
+    /**
+     * @return {@link #projectType}
+     */
+    public String getProjectType() {
+        return this.projectType;
+    }
 
     /**
      * @return {@link #id}
