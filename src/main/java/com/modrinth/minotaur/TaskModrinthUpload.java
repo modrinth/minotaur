@@ -217,13 +217,13 @@ public class TaskModrinthUpload extends DefaultTask {
 
         if (status == 200) {
             this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-            assert this.uploadInfo != null;
+            assert this.uploadInfo.getVersionNumber() != null;
 
             String url = "";
             if (extension.getApiUrl().get().equals(ModrinthExtension.DEFAULT_API_URL)) {
-                url = String.format("https://modrinth.com/%s/%s/version/%s", this.uploadInfo.getProjectType(), extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
+                url = String.format("https://modrinth.com/mod/%s/version/%s", extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
             } else if (extension.getApiUrl().get().equals(ModrinthExtension.STAGING_API_URL)) {
-                url = String.format("https://staging.modrinth.com/%s/%s/version/%s", this.uploadInfo.getProjectType(), extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
+                url = String.format("https://staging.modrinth.com/mod/%s/version/%s", extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
             }
 
             log.lifecycle(
