@@ -235,6 +235,9 @@ public class TaskModrinthUpload extends DefaultTask {
             );
         } else {
             this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+            if (this.errorInfo == null) {
+                this.errorInfo = new ResponseError();
+            }
             String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
             log.error(error);
             throw new GradleException(error);
