@@ -4,6 +4,8 @@ A Gradle plugin for interfacing directly with Modrinth, through uploading build 
 
 Want to use a GitHub Action instead of a Gradle plugin? Check out [Kir-Antipov/mc-publish](https://github.com/Kir-Antipov/mc-publish), but note that Modrinth does not give support for `mc-publish` where we do for Minotaur.
 
+Still using Minotaur v1? You should switch as soon as possible, because it uses the deprecated API v1. Migration instructions can be found [on the Modrinth documentation page](https://docs.modrinth.com/docs/migrations/v1-to-v2/#minotaur-v1-to-v2).
+
 ## Usage Guide
 
 To use this plugin you must add it to your Gradle build script. After that, you can use the `modrinth` task to upload the version to Modrinth.
@@ -16,6 +18,8 @@ To use this plugin you must add it to your Gradle build script. After that, you 
 // build.gradle
 plugins {
     id "com.modrinth.minotaur" version "2.+"
+    // It's safest to have this on 2.+ to get the latest features and
+    // bug fixes without having to worry about breaking changes.
 }
 
 // settings.gradle
@@ -57,6 +61,8 @@ modrinth {
 // build.gradle.kts
 plugins {
     id("com.modrinth.minotaur") version "2.+"
+    // It's safest to have this on 2.+ to get the latest features and
+    // bug fixes without having to worry about breaking changes.
 }
 
 
