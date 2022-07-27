@@ -50,7 +50,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
                 throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
             }
 
-            String excludeRegex = "(?m)<!-- modrinth_exclude\\.start -->(.|\n)*?<!-- modrinth_exclude\\.end -->";
+            String excludeRegex = "(?m)<!-- modrinth_exclude\\.start -->(.|\n|\r\n)*?<!-- modrinth_exclude\\.end -->";
 
             final HttpClient client = Util.createHttpClient();
             final HttpPatch patch = new HttpPatch(getUploadEndpoint() + "project/" + resolveId(extension.getProjectId().get()));
@@ -58,7 +58,13 @@ public class TaskModrinthSyncBody extends DefaultTask {
             patch.addHeader("Authorization", extension.getToken().get());
 
             JsonObject data = new JsonObject();
-            data.addProperty("body", extension.getSyncBodyFrom().get().replaceAll(excludeRegex, "").replaceAll("\r\n", "\n"));
+            try {
+                data.addProperty("body", extension.getSyncBodyFrom().get().replaceAll("\r\n", "\n").replaceAll(excludeRegex, ""));
+            } catch (StackOverflowError e) {
+                String error = "StackOverflowError whilst trying to parse modrinth_exclude tags; please make the amount of text within each of these tags smaller";
+                this.getProject().getLogger().error(error);
+                throw new GradleException(error, e);
+            }
 
             if (extension.getDebugMode().get()) {
                 this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", data);
