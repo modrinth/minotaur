@@ -118,6 +118,8 @@ public class TaskModrinthUpload extends DefaultTask {
                 this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
                 this.addLoaderForPlugin("fabric-loom", "fabric");
                 this.addLoaderForPlugin("org.quiltmc.loom", "quilt");
+                this.addLoaderForPlugin("org.spongepowered.gradle.plugin", "sponge");
+                this.addLoaderForPlugin("io.papermc.paperweight.userdev", "paper");
             }
 
             if (extension.getLoaders().get().isEmpty()) {
