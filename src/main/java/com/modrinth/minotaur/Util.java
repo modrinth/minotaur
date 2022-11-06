@@ -13,6 +13,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.gradle.api.GradleException;
+import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.jetbrains.annotations.Nullable;
@@ -29,8 +30,8 @@ class Util {
     /**
      * @return The {@link ModrinthExtension} for the project
      */
-    static ModrinthExtension getExtension() {
-        return Minotaur.project.getExtensions().getByType(ModrinthExtension.class);
+    static ModrinthExtension getExtension(Project project) {
+        return project.getExtensions().getByType(ModrinthExtension.class);
     }
 
     /**
@@ -54,8 +55,8 @@ class Util {
      *
      * @return The upload API endpoint.
      */
-    static String getUploadEndpoint() {
-        String apiUrl = getExtension().getApiUrl().get();
+    static String getUploadEndpoint(Project project) {
+        String apiUrl = getExtension(project).getApiUrl().get();
         return apiUrl + (apiUrl.endsWith("/") ? "" : "/");
     }
 
@@ -65,8 +66,8 @@ class Util {
      * @param projectId ID or slug of the project to resolve
      * @return ID of the resolved project
      */
-    static String resolveId(String projectId) throws IOException {
-        return resolveId(projectId, Minotaur.project.getLogger());
+    static String resolveId(Project project, String projectId) throws IOException {
+        return resolveId(project, projectId, project.getLogger());
     }
 
     /**
@@ -76,10 +77,10 @@ class Util {
      * @param log Logger to use
      * @return ID of the resolved project
      */
-    static String resolveId(String projectId, Logger log) throws IOException {
+    static String resolveId(Project project, String projectId, Logger log) throws IOException {
         HttpClient client = createHttpClient();
-        HttpGet get = new HttpGet(String.format("%sproject/%s/check", getUploadEndpoint(), projectId));
-        get.addHeader("Authorization", getExtension().getToken().get());
+        HttpGet get = new HttpGet(String.format("%sproject/%s/check", getUploadEndpoint(project), projectId));
+        get.addHeader("Authorization", getExtension(project).getToken().get());
         HttpResponse response = client.execute(get);
 
         int code = response.getStatusLine().getStatusCode();
@@ -111,7 +112,7 @@ class Util {
      * @return A file handle for the resolved input. If the input can not be resolved this will be null or the fallback.
      */
     @Nullable
-    static File resolveFile(Object in) {
+    static File resolveFile(Project project, Object in) {
         if (in == null) {
             // If input is null we can't really do anything...
             return null;
@@ -133,6 +134,6 @@ class Util {
         }
 
         // None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
-        return Minotaur.project.file(in);
+        return project.file(in);
     }
 }
