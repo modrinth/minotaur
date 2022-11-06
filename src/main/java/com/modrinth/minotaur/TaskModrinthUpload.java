@@ -45,7 +45,7 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * The extension used for getting the data supplied in the buildscript.
      */
-    private final ModrinthExtension extension = getExtension();
+    private final ModrinthExtension extension = getExtension(this.getProject());
 
     /**
      * Easy way to access Gradle's logging.
@@ -132,7 +132,7 @@ public class TaskModrinthUpload extends DefaultTask {
             dependencies.addAll(extension.getDependencies().get());
             for (Dependency dependency : dependencies) {
                 if (dependency instanceof ModDependency) {
-                    String id = resolveId(((ModDependency) dependency).getProjectId(), log);
+                    String id = resolveId(this.getProject(), ((ModDependency) dependency).getProjectId(), log);
                     this.dependencies.add(new ModDependency(id, dependency.getDependencyType()));
                 } else {
                     this.dependencies.add(dependency);
@@ -141,11 +141,11 @@ public class TaskModrinthUpload extends DefaultTask {
 
             List<Object> fileObjects = new ArrayList<>();
             List<File> filesToUpload = new ArrayList<>();
-            fileObjects.add(Util.resolveFile(extension.getUploadFile().get()));
+            fileObjects.add(Util.resolveFile(this.getProject(), extension.getUploadFile().get()));
             fileObjects.addAll(extension.getAdditionalFiles().get());
 
             for (Object fileObject : fileObjects) {
-                final File resolvedFile = Util.resolveFile(fileObject);
+                final File resolvedFile = Util.resolveFile(this.getProject(), fileObject);
 
                 // Ensure the file actually exists before trying to upload it.
                 if (resolvedFile == null || !resolvedFile.exists()) {
@@ -175,7 +175,7 @@ public class TaskModrinthUpload extends DefaultTask {
      */
     public void upload(List<File> files) throws IOException {
         final HttpClient client = createHttpClient();
-        final HttpPost post = new HttpPost(getUploadEndpoint() + "version");
+        final HttpPost post = new HttpPost(getUploadEndpoint(this.getProject()) + "version");
 
         post.addHeader("Authorization", extension.getToken().get());
 
@@ -188,7 +188,7 @@ public class TaskModrinthUpload extends DefaultTask {
         }
 
         final VersionData data = new VersionData();
-        data.setProjectId(resolveId(extension.getProjectId().get()));
+        data.setProjectId(resolveId(this.getProject(), extension.getProjectId().get()));
         data.setVersionNumber(extension.getVersionNumber().get());
         data.setVersionTitle(extension.getVersionName().get());
         data.setChangelog(extension.getChangelog().get().replaceAll("\r\n", "\n"));
@@ -208,7 +208,7 @@ public class TaskModrinthUpload extends DefaultTask {
         form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
 
         for (int i = 0; i < files.size(); i++) {
-            log.debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint() + "version");
+            log.debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint(this.getProject()) + "version");
             form.addBinaryBody(String.valueOf(i), files.get(i));
         }
 

@@ -6,7 +6,6 @@ import org.gradle.api.Task;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-import org.jetbrains.annotations.ApiStatus;
 
 import static com.modrinth.minotaur.Util.getExtension;
 
@@ -15,20 +14,12 @@ import static com.modrinth.minotaur.Util.getExtension;
  */
 public class Minotaur implements Plugin<Project> {
     /**
-     * Internal utility for grabbing the project which Minotaur is applied to
-     */
-    @ApiStatus.Internal
-    public static Project project;
-
-    /**
      * Creates the {@link ModrinthExtension} for the project and registers the {@code modrinth} and
      * {@code modrinthSyncBody} tasks.
      * @param project The Gradle project which Minotaur is applied to
      */
     @Override
     public void apply(final Project project) {
-        Minotaur.project = project;
-
         project.getExtensions().create("modrinth", ModrinthExtension.class, project);
         project.getLogger().debug("Created the `modrinth` extension.");
 
@@ -48,7 +39,7 @@ public class Minotaur implements Plugin<Project> {
         project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
         project.afterEvaluate(evaluatedProject -> {
-            ModrinthExtension extension = getExtension();
+            ModrinthExtension extension = getExtension(evaluatedProject);
             Task task = evaluatedProject.getTasks().getByName("modrinth");
             if (extension.getUploadFile().getOrNull() != null) {
                 Object uploadFile = extension.getUploadFile().get();

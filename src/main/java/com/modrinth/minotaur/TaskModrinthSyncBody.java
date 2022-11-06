@@ -30,7 +30,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
     /**
      * The extension used for getting the data supplied in the buildscript.
      */
-    private final ModrinthExtension extension = getExtension();
+    private final ModrinthExtension extension = getExtension(this.getProject());
 
     /**
      * The response from the API when the body failed to upload.
@@ -53,7 +53,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
             String excludeRegex = "(?m)<!-- modrinth_exclude\\.start -->(.|\n|\r\n)*?<!-- modrinth_exclude\\.end -->";
 
             final HttpClient client = Util.createHttpClient();
-            final HttpPatch patch = new HttpPatch(getUploadEndpoint() + "project/" + resolveId(extension.getProjectId().get()));
+            final HttpPatch patch = new HttpPatch(getUploadEndpoint(this.getProject()) + "project/" + resolveId(this.getProject(), extension.getProjectId().get()));
 
             patch.addHeader("Authorization", extension.getToken().get());
 
