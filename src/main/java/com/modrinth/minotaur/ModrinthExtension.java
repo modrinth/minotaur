@@ -12,13 +12,12 @@ import org.gradle.api.provider.Property;
  * {...}} block in the buildscript.
  */
 public class ModrinthExtension extends DependencyDSL {
-    private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType;
+    private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom;
     private final Property<Object> uploadFile;
     private final ListProperty<Object> additionalFiles;
     private final ListProperty<String> gameVersions, loaders;
     private final ListProperty<Dependency> dependencies;
-    private final Property<Boolean> failSilently, detectLoaders, debugMode;
-    private final Property<String> syncBodyFrom;
+    private final Property<Boolean> failSilently, detectLoaders, debugMode, autoAddDependsOn;
 
     /**
      * The default API URL in use for uploading. Exposed as a fallback utility.
@@ -62,6 +61,7 @@ public class ModrinthExtension extends DependencyDSL {
         detectLoaders = project.getObjects().property(Boolean.class).convention(true);
         debugMode = project.getObjects().property(Boolean.class).convention(false);
         syncBodyFrom = project.getObjects().property(String.class);
+        autoAddDependsOn = project.getObjects().property(Boolean.class).convention(true);
     }
 
     /**
@@ -178,5 +178,12 @@ public class ModrinthExtension extends DependencyDSL {
      */
     public Property<String> getSyncBodyFrom() {
         return this.syncBodyFrom;
+    }
+
+    /**
+     * @return Whether to automatically add the `dependsOn` information for upload files
+     */
+    public Property<Boolean> getAutoAddDependsOn() {
+        return autoAddDependsOn;
     }
 }

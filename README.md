@@ -125,24 +125,25 @@ Be careful with this task! Once a body is changed, you **cannot** get it back. Y
 
 The following properties can be set within the `modrinth {...}` block.
 
-| Property        | Required | Description                                                               | Default                                      |
-|-----------------|----------|---------------------------------------------------------------------------|----------------------------------------------|
-| apiURL          | false    | The API endpoint URL to use for uploading files.                          | `https://api.modrinth.com/v2`                |
-| token           | false    | A valid API token for the Modrinth API.                                   | `MODRINTH_TOKEN` environment variable        |
-| projectId       | true     | The ID of the project to upload to.                                       |                                              |
-| versionNumber   | false    | The version number of the version.                                        | `version` declaration                        |
-| versionName     | false    | The name of the version.                                                  | `versionNumber`                              |
-| changelog       | false    | The changelog for the file. Allows Markdown formatting.                   | `No changelog was specified.`                |
-| uploadFile      | true     | The file to upload. Can be an actual file or a file task.                 |                                              |
-| additionalFiles | false    | An array of additional files to be uploaded to a version.                 |                                              |
-| versionType     | false    | The stability level of the version. Can be `release`, `beta`, or `alpha`. | `release`                                    |
-| gameVersions    | true     | An array of game versions that this version supports.                     | Detected based on the Gradle plugins you use |
-| loaders         | false    | An array of mod loaders that this version supports.                       | Detected based on the Gradle plugins you use |
-| dependencies    | false    | Dependencies of the uploaded version.                                     |                                              |
-| failSilently    | false    | When true an upload failure will not fail your build.                     | `false`                                      |
-| detectLoaders   | false    | Whether mod loaders will be automatically detected.                       | `true`                                       |
-| debugMode       | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                      |
-| syncBodyFrom    | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                              |
+| Property         | Required | Description                                                               | Default                                      |
+|------------------|----------|---------------------------------------------------------------------------|----------------------------------------------|
+| apiURL           | false    | The API endpoint URL to use for uploading files.                          | `https://api.modrinth.com/v2`                |
+| token            | false    | A valid API token for the Modrinth API.                                   | `MODRINTH_TOKEN` environment variable        |
+| projectId        | true     | The ID of the project to upload to.                                       |                                              |
+| versionNumber    | false    | The version number of the version.                                        | `version` declaration                        |
+| versionName      | false    | The name of the version.                                                  | `versionNumber`                              |
+| changelog        | false    | The changelog for the file. Allows Markdown formatting.                   | `No changelog was specified.`                |
+| uploadFile       | true     | The file to upload. Can be an actual file or a file task.                 |                                              |
+| additionalFiles  | false    | An array of additional files to be uploaded to a version.                 |                                              |
+| versionType      | false    | The stability level of the version. Can be `release`, `beta`, or `alpha`. | `release`                                    |
+| gameVersions     | true     | An array of game versions that this version supports.                     | Detected based on the Gradle plugins you use |
+| loaders          | false    | An array of mod loaders that this version supports.                       | Detected based on the Gradle plugins you use |
+| dependencies     | false    | Dependencies of the uploaded version.                                     |                                              |
+| failSilently     | false    | When true an upload failure will not fail your build.                     | `false`                                      |
+| detectLoaders    | false    | Whether mod loaders will be automatically detected.                       | `true`                                       |
+| autoAddDependsOn | false    | Whether to automatically add task dependencies from upload files.         | `true`                                       |
+| debugMode        | false    | Doesn't actually upload the version, and prints the data to be uploaded.  | `false`                                      |
+| syncBodyFrom     | false    | The text to sync the body from in the `modrinthSyncBody` task.            |                                              |
 
 **Note:** In most scenarios the `gameVersions` and `loaders` properties can be detected automatically. This is done in environments using ForgeGradle and Fabric Loom.
 
