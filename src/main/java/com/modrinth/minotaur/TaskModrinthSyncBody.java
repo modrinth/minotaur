@@ -14,6 +14,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 import static com.modrinth.minotaur.Util.getExtension;
 import static com.modrinth.minotaur.Util.getUploadEndpoint;
 import static com.modrinth.minotaur.Util.resolveId;
@@ -50,7 +52,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
                 throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
             }
 
-            String excludeRegex = "(?m)<!-- modrinth_exclude\\.start -->(.|\n|\r\n)*?<!-- modrinth_exclude\\.end -->";
+            Pattern excludeRegex = Pattern.compile("<!-- modrinth_exclude\\.start -->.*?<!-- modrinth_exclude\\.end -->", Pattern.DOTALL);
 
             final HttpClient client = Util.createHttpClient();
             final HttpPatch patch = new HttpPatch(getUploadEndpoint(this.getProject()) + "project/" + resolveId(this.getProject(), extension.getProjectId().get()));
@@ -58,13 +60,9 @@ public class TaskModrinthSyncBody extends DefaultTask {
             patch.addHeader("Authorization", extension.getToken().get());
 
             JsonObject data = new JsonObject();
-            try {
-                data.addProperty("body", extension.getSyncBodyFrom().get().replaceAll("\r\n", "\n").replaceAll(excludeRegex, ""));
-            } catch (StackOverflowError e) {
-                String error = "StackOverflowError whilst trying to parse modrinth_exclude tags; please make the amount of text within each of these tags smaller";
-                this.getProject().getLogger().error(error);
-                throw new GradleException(error, e);
-            }
+            String body = extension.getSyncBodyFrom().get().replaceAll("\r\n", "\n");
+            body = excludeRegex.matcher(body).replaceAll("");
+            data.addProperty("body", body);
 
             if (extension.getDebugMode().get()) {
                 this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", data);
