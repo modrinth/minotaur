@@ -34,6 +34,7 @@ pluginManagement {
 The next step is to configure the task for uploading to Modrinth. This allows you to configure the upload and control when and how versions are uploaded.
 
 ```groovy
+// build.gradle
 modrinth {
     token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId = "my-project" // This can be the project ID or the slug. Either will work!
@@ -78,6 +79,7 @@ pluginManagement {
 The next step is to configure the task for uploading to Modrinth. This allows you to configure the upload and control when and how versions are uploaded.
 
 ```kotlin
+// build.gradle.kts
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN")) // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
     projectId.set("my-project") // This can be the project ID or the slug. Either will work!
@@ -103,6 +105,7 @@ In tandem with the `syncBodyFrom` property in your `modrinth {...}` block, you m
 
 For example:
 ```groovy
+// build.gradle
 modrinth {
     // ...
     syncBodyFrom = rootProject.file("README.md").text
