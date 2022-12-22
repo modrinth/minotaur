@@ -85,11 +85,8 @@ class Util {
 
         int code = response.getStatusLine().getStatusCode();
         if (code != 200) {
-            ResponseError errorInfo = createGsonInstance().fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-            if (errorInfo == null) {
-                errorInfo = new ResponseError();
-            }
-            String error = String.format("Project ID resolution for %s failed! Status: %s Error: %s Reason: %s", projectId, code, errorInfo.getError(), errorInfo.getDescription());
+            // TODO make this account for the returned error in Minotaur v3
+            String error = String.format("Failed to resolve project ID \"%s\"! Received status code %s", projectId, code);
             log.error(error);
             throw new GradleException(error);
         }
