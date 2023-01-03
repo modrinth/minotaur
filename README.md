@@ -48,6 +48,7 @@ modrinth {
         // The scope can be `required`, `optional`, `incompatible`, or `embedded`
         // The type can either be `project` or `version`
         required.project "fabric-api" // Creates a new required dependency on Fabric API
+        optional.version "sodium", "mc1.19.3-0.4.8" // Creates a new optional dependency on this specific version of Sodium
     }
 }
 ```
@@ -93,6 +94,7 @@ modrinth {
         // The scope can be `required`, `optional`, `incompatible`, or `embedded`
         // The type can either be `project` or `version`
         required.project("fabric-api") // Creates a new required dependency on Fabric API
+        optional.version("sodium", "mc1.19.3-0.4.8") // Creates a new optional dependency on this specific version of Sodium
     }
 }
 ```

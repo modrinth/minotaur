@@ -59,10 +59,10 @@ public class NamedDependency implements Named {
      */
     @NotNull
     public Dependency getDependency() {
-        if (this.projectId == null) {
-            return new VersionDependency(this.versionId, this.dependencyType);
+        if (this.versionId == null) {
+            return new ModDependency(this.projectId, this.dependencyType);
         }
-        return new ModDependency(this.projectId, this.dependencyType);
+        return new VersionDependency(this.projectId, this.versionId, this.dependencyType);
     }
 
     private void checkAll(@Nullable Object obj1, @Nullable Object obj2) {

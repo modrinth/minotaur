@@ -43,6 +43,16 @@ public class NamedDependencyContainer {
     }
 
     /**
+     * Creates a incompatible Dependency Container and applies the versionId property
+     *
+     * @param projectId the project id
+     * @param versionId the version number
+     */
+    public void version(final String projectId, final String versionId) {
+        this.dependencyContainer.add(new NamedDependency(projectId, versionId, this.dependencyType));
+    }
+
+    /**
      * Incompatible DependencyType container class
      */
     public static class Incompatible extends NamedDependencyContainer {
