@@ -17,34 +17,32 @@ public class Dependency {
      */
     @Expose
     @SerializedName("dependency_type")
-    private final String dependencyType;
+    private final DependencyType dependencyType;
 
     /**
      * Creates a new dependency relationship.
      *
-     * @param id   The ID of the project or version to create a dependency with.
      * @param type The type of dependency being created.
      */
     @ApiStatus.Internal
-    Dependency(String id, DependencyType type) {
-        this.dependencyType = type.toString().toLowerCase(Locale.ROOT);
+    Dependency(DependencyType type) {
+        this.dependencyType = type;
     }
 
     /**
      * Creates a new dependency relationship.
      *
-     * @param id   The ID of the project or version to create a dependency with.
      * @param type The type of dependency being created.
      */
     @ApiStatus.Internal
-    Dependency(String id, String type) {
-        this.dependencyType = type;
+    Dependency(String type) {
+        this.dependencyType = DependencyType.fromString(type);
     }
 
     /**
      * @return {@link #dependencyType}
      */
     public String getDependencyType() {
-        return this.dependencyType;
+        return this.dependencyType.toString();
     }
 }

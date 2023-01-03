@@ -2,10 +2,11 @@ package com.modrinth.minotaur.dependencies;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Locale;
+
 /**
  * The enum representing the three types of dependencies supported by Modrinth.
  */
-@SuppressWarnings("unused")
 public enum DependencyType {
     /**
      * The version requires an instance of the project/version to work.
@@ -24,9 +25,35 @@ public enum DependencyType {
      */
     @SerializedName("incompatible")
     INCOMPATIBLE,
+
     /**
      * The version contains this other project/version within it.
      */
     @SerializedName("embedded")
-    EMBEDDED
+    EMBEDDED;
+
+    public String toString() {
+        return this.name().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * @param in string input
+     * @return a {@link DependencyType} from a String
+     * @throws IllegalStateException when the input is not one of the recognized types
+     */
+    public static DependencyType fromString(String in) {
+        // Java 8 :evaporate:
+        if (in.equalsIgnoreCase("required")) {
+            return REQUIRED;
+        } else if (in.equalsIgnoreCase("optional")) {
+            return OPTIONAL;
+        } else if (in.equalsIgnoreCase("incompatible")) {
+            return INCOMPATIBLE;
+        } else if (in.equalsIgnoreCase("embedded")) {
+            return EMBEDDED;
+        }
+
+        throw new IllegalStateException("Invalid dependency type specified!" +
+            "Must be one of `required`, `optional`, `incompatible`, or `embedded`");
+    }
 }

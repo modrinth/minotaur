@@ -3,6 +3,7 @@ package com.modrinth.minotaur;
 import com.google.gson.Gson;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.ModDependency;
+import com.modrinth.minotaur.dependencies.VersionDependency;
 import com.modrinth.minotaur.request.VersionData;
 import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
@@ -28,10 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.modrinth.minotaur.Util.createHttpClient;
-import static com.modrinth.minotaur.Util.getExtension;
-import static com.modrinth.minotaur.Util.getUploadEndpoint;
-import static com.modrinth.minotaur.Util.resolveId;
+import static com.modrinth.minotaur.Util.*;
 
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
@@ -134,8 +132,12 @@ public class TaskModrinthUpload extends DefaultTask {
                 if (dependency instanceof ModDependency) {
                     String id = resolveId(this.getProject(), ((ModDependency) dependency).getProjectId(), log);
                     this.dependencies.add(new ModDependency(id, dependency.getDependencyType()));
+                } else if (dependency instanceof VersionDependency) {
+                    VersionDependency dep = (VersionDependency) dependency;
+                    String id = resolveVersionId(this.getProject(), dep.getProjectId(), dep.getVersionId(), log);
+                    this.dependencies.add(new VersionDependency(id, dependency.getDependencyType()));
                 } else {
-                    this.dependencies.add(dependency);
+                    throw new GradleException("Dependency was not an instance of ModDependency or VersionDependency!");
                 }
             }
 

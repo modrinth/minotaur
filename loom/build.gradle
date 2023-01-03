@@ -12,16 +12,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:0.12.12"
 }
 
-idea {
-    module {
-        downloadJavadoc = false
-        downloadSources = false
-    }
-}
-
-java {
-    withSourcesJar()
-}
+java.withSourcesJar()
 
 import com.modrinth.minotaur.dependencies.DependencyType
 import com.modrinth.minotaur.dependencies.ModDependency
@@ -29,18 +20,19 @@ import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
     apiUrl = STAGING_API_URL
-    projectId = "freeeedom"
+    projectId = "fred-3"
     uploadFile = remapJar
     additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
     versionType = "beta"
     dependencies = [
-            new ModDependency("big-mod", "optional"),
-            new VersionDependency("IgXqCrMH", DependencyType.INCOMPATIBLE)
+        new ModDependency("test-project", "optional"),
+        new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
     ]
     dependencies {
-        required.project "modmod"
-        incompatible.version "M8VeghJn"
-        embedded.project "updatefixerupper"
+        required.project "corrupted"
+        optional.version "UakHulqw"
+        incompatible.version "kdIr8lsr", "b1.2+mod"
+        embedded.project "sbbGxWge"
     }
     debugMode = true
 }

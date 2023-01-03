@@ -1,9 +1,6 @@
 package com.modrinth.minotaur;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.modrinth.minotaur.responses.ResponseError;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -99,6 +96,52 @@ class Util {
             throw new GradleException(error, new IllegalStateException(error));
         }
         return element.getAsJsonObject().get("id").getAsString();
+    }
+
+    /**
+     * Returns a project ID from a project ID or slug
+     *
+     * @param versionId ID or version number of the project to resolve
+     * @param log Logger to use
+     * @return ID of the resolved project
+     */
+    static String resolveVersionId(Project project, String projectId, String versionId, Logger log) throws IOException {
+        HttpClient client = createHttpClient();
+        HttpGet getVersion = new HttpGet(String.format("%sversion/%s", getUploadEndpoint(project), versionId));
+
+        if (client.execute(getVersion).getStatusLine().getStatusCode() == 200) {
+            return versionId;
+        }
+
+        String id = resolveId(project, projectId, log);
+        HttpGet getVersions = new HttpGet(String.format("%s/project/%s/version", getUploadEndpoint(project), id));
+        HttpResponse response = client.execute(getVersions);
+
+        int code = response.getStatusLine().getStatusCode();
+        if (code != 200) {
+            String error = String.format("Failed to resolve versions of project ID \"%s\"! Received status code %s", id, code);
+            log.error(error);
+            throw new GradleException(error, new IllegalStateException(error));
+        }
+
+        String returned = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        JsonElement versions = JsonParser.parseString(returned);
+        if (!versions.isJsonArray()) {
+            String error = "Invalid API response during version ID resolution! Expected JSON array but got: " + returned;
+            log.error(error);
+            throw new GradleException(error, new IllegalStateException(error));
+        }
+
+        for (JsonElement element : versions.getAsJsonArray()) {
+            JsonObject version = element.getAsJsonObject();
+            if (version.get("version_number").getAsString().equals(versionId)) {
+                return version.get("id").getAsString();
+            }
+        }
+
+        String error = String.format("Failed to resolve version number \"%s\"!", versionId);
+        log.error(error);
+        throw new GradleException(error);
     }
 
     /**

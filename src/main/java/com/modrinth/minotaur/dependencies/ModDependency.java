@@ -3,6 +3,8 @@ package com.modrinth.minotaur.dependencies;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Locale;
+
 /**
  * Class for making a dependency on a mod.
  */
@@ -23,7 +25,7 @@ public class ModDependency extends Dependency {
      * @param type The type of dependency being created.
      */
     public ModDependency(String id, DependencyType type) {
-        super(id, type);
+        super(type.toString().toLowerCase(Locale.ROOT));
         this.projectId = id;
     }
 
@@ -34,7 +36,7 @@ public class ModDependency extends Dependency {
      * @param type The type of dependency being created.
      */
     public ModDependency(String id, String type) {
-        super(id, type);
+        super(type);
         this.projectId = id;
     }
 
