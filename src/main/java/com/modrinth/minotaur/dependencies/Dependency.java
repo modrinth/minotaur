@@ -25,8 +25,8 @@ public class Dependency {
      * @param type The type of dependency being created.
      */
     @ApiStatus.Internal
-    Dependency(String type) {
-        this.dependencyType = DependencyType.fromString(type);
+    Dependency(DependencyType type) {
+        this.dependencyType = type;
     }
 
     /**
@@ -35,8 +35,8 @@ public class Dependency {
      * @param type The type of dependency being created.
      */
     @ApiStatus.Internal
-    Dependency(DependencyType type) {
-        this.dependencyType = type;
+    Dependency(String type) {
+        this.dependencyType = DependencyType.fromString(type);
     }
 
     /**
