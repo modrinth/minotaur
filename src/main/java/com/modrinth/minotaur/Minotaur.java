@@ -10,7 +10,7 @@ import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.modrinth.minotaur.Util.getExtension;
+import static com.modrinth.minotaur.Util.ext;
 
 /**
  * The main class for Minotaur.
@@ -42,7 +42,7 @@ public class Minotaur implements Plugin<Project> {
         project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
         project.afterEvaluate(evaluatedProject -> {
-            ModrinthExtension extension = getExtension(evaluatedProject);
+            ModrinthExtension extension = ext(evaluatedProject);
 
             if (!extension.getAutoAddDependsOn().getOrElse(true)) {
                 return;

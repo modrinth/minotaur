@@ -7,6 +7,8 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
+import java.util.List;
+
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
  * {...}} block in the buildscript.
@@ -69,23 +71,23 @@ public class ModrinthExtension extends DependencyDSL {
      * advanced user configurations.
      * @return The URL used for communicating with Modrinth.
      */
-    public Property<String> getApiUrl() {
-        return this.apiUrl;
+    public String getApiUrl() {
+        return this.apiUrl.getOrNull();
     }
 
     /**
      * Make sure you keep this private!
      * @return The API token used to communicate with Modrinth.
      */
-    public Property<String> getToken() {
-        return this.token;
+    public String getToken() {
+        return this.token.getOrNull();
     }
 
     /**
      * @return The ID of the project to upload the file to.
      */
-    public Property<String> getProjectId() {
-        return this.projectId;
+    public String getProjectId() {
+        return this.projectId.getOrNull();
     }
 
     /**
@@ -103,10 +105,10 @@ public class ModrinthExtension extends DependencyDSL {
     }
 
     /**
-     * @return The version name of the project being uploaded. Defaults to the version number.
+     * @return A list or summary of each of the changes made to the project since the last update.
      */
-    public Property<String> getChangelog() {
-        return this.changelog;
+    public String getChangelog() {
+        return this.changelog.getOrNull();
     }
 
     /**
@@ -139,10 +141,24 @@ public class ModrinthExtension extends DependencyDSL {
     }
 
     /**
+     * @return The game versions of the game the version supports.
+     */
+    public List<String> gameVersions() {
+        return this.gameVersions.get();
+    }
+
+    /**
      * @return The mod loaders of the game the version supports.
      */
     public ListProperty<String> getLoaders() {
         return this.loaders;
+    }
+
+    /**
+     * @return The mod loaders of the game the version supports.
+     */
+    public List<String> loaders() {
+        return this.loaders.get();
     }
 
     /**
@@ -155,29 +171,29 @@ public class ModrinthExtension extends DependencyDSL {
     /**
      * @return Whether the build should continue even if the upload failed.
      */
-    public Property<Boolean> getFailSilently() {
-        return this.failSilently;
+    public boolean getFailSilently() {
+        return this.failSilently.get();
     }
 
     /**
      * @return Whether the plugin will try to define loaders based on other plugins in the project environment.
      */
-    public Property<Boolean> getDetectLoaders() {
-        return this.detectLoaders;
+    public boolean getDetectLoaders() {
+        return this.detectLoaders.get();
     }
 
     /**
      * @return Whether the plugin is in debug mode. Debug mode does not actually upload any files.
      */
-    public Property<Boolean> getDebugMode() {
-        return this.debugMode;
+    public boolean getDebugMode() {
+        return this.debugMode.get();
     }
 
     /**
      * @return The file to sync the project's body description from
      */
-    public Property<String> getSyncBodyFrom() {
-        return this.syncBodyFrom;
+    public String getSyncBodyFrom() {
+        return this.syncBodyFrom.getOrNull();
     }
 
     /**

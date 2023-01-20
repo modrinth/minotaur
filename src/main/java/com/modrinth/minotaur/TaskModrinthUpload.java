@@ -1,18 +1,12 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
-import com.modrinth.minotaur.dependencies.ModDependency;
-import com.modrinth.minotaur.dependencies.VersionDependency;
-import com.modrinth.minotaur.request.VersionData;
-import com.modrinth.minotaur.responses.ResponseError;
 import com.modrinth.minotaur.responses.ResponseUpload;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.util.EntityUtils;
+import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
+import masecla.modrinth4j.model.version.ProjectVersion;
+import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.ConfigurationContainer;
@@ -38,12 +32,12 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Constant gson instance used for deserializing the API responses.
      */
-    private final Gson GSON = Util.createGsonInstance();
+    private final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     /**
      * The extension used for getting the data supplied in the buildscript.
      */
-    private final ModrinthExtension extension = getExtension(this.getProject());
+    private final ModrinthExtension ext = ext(this.getProject());
 
     /**
      * Easy way to access Gradle's logging.
@@ -52,29 +46,34 @@ public class TaskModrinthUpload extends DefaultTask {
 
     /**
      * The response from the API when the file was uploaded successfully.
+     * @deprecated Please use {@link #newVersion} instead
      */
+    @SuppressWarnings("DeprecatedIsStillUsed")
     @Nullable
+    @Deprecated
     public ResponseUpload uploadInfo = null;
 
     /**
-     * The response from the API when the file failed to upload.
+     * The response from the API when the file was uploaded successfully.
      */
     @Nullable
-    public ResponseError errorInfo = null;
-    
+    public ProjectVersion newVersion = null;
+
     /**
      * Internal initially empty List to add Dependencies to if any were added
      */
-    private final List<Dependency> dependencies = new ArrayList<>();
+    private final List<ProjectDependency> dependencies = new ArrayList<>();
 
     /**
      * Checks if the upload was successful or not.
      *
      * @return Whether the file was successfully uploaded.
+     * @deprecated This check should be done manually
      */
     @SuppressWarnings("unused")
+    @Deprecated
     public boolean wasUploadSuccessful() {
-        return this.uploadInfo != null && this.errorInfo == null;
+        return this.newVersion != null;
     }
 
     /**
@@ -93,26 +92,26 @@ public class TaskModrinthUpload extends DefaultTask {
         log.lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
         try {
             // Add version number if it's null
-            if (extension.getVersionNumber().getOrNull() == null) {
-                extension.getVersionNumber().set(this.getProject().getVersion().toString());
+            if (ext.getVersionNumber().getOrNull() == null) {
+                ext.getVersionNumber().set(this.getProject().getVersion().toString());
             }
 
             // Add version name if it's null
-            if (extension.getVersionName().getOrNull() == null) {
-                extension.getVersionName().set(extension.getVersionNumber().get());
+            if (ext.getVersionName().getOrNull() == null) {
+                ext.getVersionName().set(ext.getVersionNumber().get());
             }
 
             // Attempt to automatically resolve the game version if one wasn't specified.
-            if (extension.getGameVersions().get().isEmpty()) {
+            if (ext.getGameVersions().get().isEmpty()) {
                 this.detectGameVersionForge();
                 this.detectGameVersionFabric();
             }
 
-            if (extension.getGameVersions().get().isEmpty()) {
+            if (ext.getGameVersions().get().isEmpty()) {
                 throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
             }
 
-            if (extension.getLoaders().get().isEmpty() && extension.getDetectLoaders().get()) {
+            if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders()) {
                 this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
                 this.addLoaderForPlugin("fabric-loom", "fabric");
                 this.addLoaderForPlugin("org.quiltmc.loom", "quilt");
@@ -120,34 +119,25 @@ public class TaskModrinthUpload extends DefaultTask {
                 this.addLoaderForPlugin("io.papermc.paperweight.userdev", "paper");
             }
 
-            if (extension.getLoaders().get().isEmpty()) {
+            if (ext.getLoaders().get().isEmpty()) {
                 throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
             }
             
             // Resolve dependencies
             List<Dependency> dependencies = new ArrayList<>();
-            dependencies.addAll(extension.getNamedDependenciesAsList());
-            dependencies.addAll(extension.getDependencies().get());
+            dependencies.addAll(ext.getNamedDependenciesAsList());
+            dependencies.addAll(ext.getDependencies().get());
             for (Dependency dependency : dependencies) {
-                if (dependency instanceof ModDependency) {
-                    String id = resolveId(this.getProject(), ((ModDependency) dependency).getProjectId(), log);
-                    this.dependencies.add(new ModDependency(id, dependency.getDependencyType()));
-                } else if (dependency instanceof VersionDependency) {
-                    VersionDependency dep = (VersionDependency) dependency;
-                    String id = resolveVersionId(this.getProject(), dep.getProjectId(), dep.getVersionId(), log);
-                    this.dependencies.add(new VersionDependency(id, dependency.getDependencyType()));
-                } else {
-                    throw new GradleException("Dependency was not an instance of ModDependency or VersionDependency!");
-                }
+                this.dependencies.add(dependency.toNew(this.getProject()));
             }
 
             List<Object> fileObjects = new ArrayList<>();
             List<File> filesToUpload = new ArrayList<>();
-            fileObjects.add(Util.resolveFile(this.getProject(), extension.getUploadFile().get()));
-            fileObjects.addAll(extension.getAdditionalFiles().get());
+            fileObjects.add(resolveFile(this.getProject(), ext.getUploadFile().get()));
+            fileObjects.addAll(ext.getAdditionalFiles().get());
 
             for (Object fileObject : fileObjects) {
-                final File resolvedFile = Util.resolveFile(this.getProject(), fileObject);
+                final File resolvedFile = resolveFile(this.getProject(), fileObject);
 
                 // Ensure the file actually exists before trying to upload it.
                 if (resolvedFile == null || !resolvedFile.exists()) {
@@ -160,7 +150,7 @@ public class TaskModrinthUpload extends DefaultTask {
 
             this.upload(filesToUpload);
         } catch (final Exception e) {
-            if (extension.getFailSilently().get()) {
+            if (ext.getFailSilently()) {
                 log.info("Failed to upload to Modrinth. Check logs for more info.");
                 log.error("Modrinth upload failed silently.", e);
             } else {
@@ -176,77 +166,44 @@ public class TaskModrinthUpload extends DefaultTask {
      * @throws IOException Whenever something goes wrong wit uploading the file.
      */
     public void upload(List<File> files) throws IOException {
-        final HttpClient client = createHttpClient();
-        final HttpPost post = new HttpPost(getUploadEndpoint(this.getProject()) + "version");
+        CreateVersionRequest data = CreateVersionRequest.builder()
+            .projectId(resolveId(this.getProject(), ext.getProjectId()))
+            .versionNumber(ext.getVersionNumber().get())
+            .name(ext.getVersionName().get())
+            .changelog(ext.getChangelog().replaceAll("\r\n", "\n"))
+            .versionType(ProjectVersion.VersionType.valueOf(ext.getVersionType().get().toLowerCase(Locale.ROOT)))
+            .gameVersions(ext.gameVersions().toArray(new String[0]))
+            .loaders(ext.loaders().toArray(new String[0]))
+            .dependencies(this.dependencies.toArray(new ProjectDependency[0]))
+            .files(files.toArray(new File[0]))
+            .primaryFile("0") // The primary file will always be of the first index in the list
+            .build();
 
-        validateToken(this.getProject());
-        post.addHeader("Authorization", extension.getToken().get());
-
-        final MultipartEntityBuilder form = MultipartEntityBuilder.create();
-
-        List<String> fileParts = new ArrayList<>();
-
-        for (int i = 0; i < files.size(); i++) {
-            fileParts.add(String.valueOf(i));
-        }
-
-        final VersionData data = new VersionData();
-        data.setProjectId(resolveId(this.getProject(), extension.getProjectId().get()));
-        data.setVersionNumber(extension.getVersionNumber().get());
-        data.setVersionTitle(extension.getVersionName().get());
-        data.setChangelog(extension.getChangelog().get().replaceAll("\r\n", "\n"));
-        data.setVersionType(extension.getVersionType().get().toLowerCase(Locale.ROOT));
-        data.setGameVersions(extension.getGameVersions().get());
-        data.setLoaders(extension.getLoaders().get());
-        data.setDependencies(this.dependencies);
-        data.setFileParts(fileParts);
-        data.setPrimaryFile("0"); // The primary file will always be of the first index in the list
-
-        if (extension.getDebugMode().get()) {
+        if (ext.getDebugMode()) {
             log.lifecycle("Full data to be sent for upload: {}", GSON.toJson(data));
             log.lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
             return;
         }
 
-        form.addTextBody("data", GSON.toJson(data), ContentType.APPLICATION_JSON);
+        ProjectVersion version = api(getProject()).versions().createProjectVersion(data).join();
+        this.newVersion = version;
+        //noinspection deprecation
+        this.uploadInfo = new ResponseUpload(version);
 
-        for (int i = 0; i < files.size(); i++) {
-            log.debug("Uploading {} to {}.", files.get(i).getPath(), getUploadEndpoint(this.getProject()) + "version");
-            form.addBinaryBody(String.valueOf(i), files.get(i));
+        String url = "";
+        if (ext.getApiUrl().equals(ModrinthExtension.DEFAULT_API_URL)) {
+            url = String.format("https://modrinth.com/mod/%s/version/%s", ext.getProjectId(), this.newVersion.getVersionNumber());
+        } else if (ext.getApiUrl().equals(ModrinthExtension.STAGING_API_URL)) {
+            url = String.format("https://staging.modrinth.com/mod/%s/version/%s", ext.getProjectId(), this.newVersion.getVersionNumber());
         }
 
-        post.setEntity(form.build());
-
-        final HttpResponse response = client.execute(post);
-        final int status = response.getStatusLine().getStatusCode();
-
-        if (status == 200) {
-            this.uploadInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseUpload.class);
-            assert this.uploadInfo.getVersionNumber() != null;
-
-            String url = "";
-            if (extension.getApiUrl().get().equals(ModrinthExtension.DEFAULT_API_URL)) {
-                url = String.format("https://modrinth.com/mod/%s/version/%s", extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
-            } else if (extension.getApiUrl().get().equals(ModrinthExtension.STAGING_API_URL)) {
-                url = String.format("https://staging.modrinth.com/mod/%s/version/%s", extension.getProjectId().get(), this.uploadInfo.getVersionNumber());
-            }
-
-            log.lifecycle(
-                "Successfully uploaded version {} to {} as version ID {}. {}",
-                this.uploadInfo.getVersionNumber(),
-                extension.getProjectId().get(),
-                this.uploadInfo.getId(),
-                url
-            );
-        } else {
-            this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-            if (this.errorInfo == null) {
-                this.errorInfo = new ResponseError();
-            }
-            String error = String.format("Upload failed! Status: %s Error: %s Reason: %s", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-            log.error(error);
-            throw new GradleException(error);
-        }
+        log.lifecycle(
+            "Successfully uploaded version {} to {} as version ID {}. {}",
+            this.newVersion.getVersionNumber(),
+            ext.getProjectId(),
+            this.newVersion.getId(),
+            url
+        );
     }
 
     /**
@@ -263,9 +220,9 @@ public class TaskModrinthUpload extends DefaultTask {
 
             if (forgeGameVersion != null && !forgeGameVersion.isEmpty()) {
                 log.debug("Detected fallback game version {} from ForgeGradle.", forgeGameVersion);
-                if (this.extension.getGameVersions().get().isEmpty()) {
+                if (this.ext.getGameVersions().get().isEmpty()) {
                     log.debug("Adding game version {} because the game versions list is empty.", forgeGameVersion);
-                    this.extension.getGameVersions().add(forgeGameVersion);
+                    this.ext.getGameVersions().add(forgeGameVersion);
                 }
             }
         }
@@ -283,9 +240,9 @@ public class TaskModrinthUpload extends DefaultTask {
             // https://github.com/FabricMC/fabric-loom/blob/9b2b857b38b4157b5ae468469c5d3bd6ef9fee35/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#L60
             final String loomGameVersion = configurations.getByName("minecraft").getDependencies().iterator().next().getVersion();
             assert loomGameVersion != null;
-            if (this.extension.getGameVersions().get().isEmpty()) {
+            if (this.ext.getGameVersions().get().isEmpty()) {
                 log.debug("Detected fallback game version {} from Loom.", loomGameVersion);
-                this.extension.getGameVersions().add(loomGameVersion);
+                this.ext.getGameVersions().add(loomGameVersion);
             } else {
                 log.debug("Detected fallback game version {} from Loom, but did not apply because game versions list is not empty.", loomGameVersion);
             }
@@ -304,7 +261,7 @@ public class TaskModrinthUpload extends DefaultTask {
         final AppliedPlugin plugin = this.getProject().getPluginManager().findPlugin(pluginName);
 
         if (plugin != null) {
-            extension.getLoaders().add(loaderName);
+            ext.getLoaders().add(loaderName);
             log.debug("Applying loader {} because plugin {} was found.", loaderName, pluginName);
         } else {
             log.debug("Could not automatically apply loader {} because plugin {} has not been applied.", loaderName, pluginName);

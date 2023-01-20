@@ -4,7 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * The enum representing the three version types available for versions.
+ * @deprecated Please use {@link masecla.modrinth4j.model.version.ProjectVersion.VersionType}
  */
+@Deprecated
 @SuppressWarnings("unused")
 public enum VersionType {
     /**

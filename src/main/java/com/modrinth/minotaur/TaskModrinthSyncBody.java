@@ -1,18 +1,10 @@
 package com.modrinth.minotaur;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.modrinth.minotaur.responses.ResponseError;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
+import masecla.modrinth4j.endpoints.project.ModifyProject.ModifyProjectRequest;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
@@ -23,72 +15,37 @@ import static com.modrinth.minotaur.Util.*;
  */
 public class TaskModrinthSyncBody extends DefaultTask {
     /**
-     * Constant gson instance used for deserializing the API responses.
-     */
-    private final Gson GSON = Util.createGsonInstance();
-
-    /**
-     * The extension used for getting the data supplied in the buildscript.
-     */
-    private final ModrinthExtension extension = getExtension(this.getProject());
-
-    /**
-     * The response from the API when the body failed to upload.
-     */
-    @Nullable
-    public ResponseError errorInfo = null;
-
-    /**
      * Uploads a body to a project, both of which are specified in {@link ModrinthExtension}.
      */
     @TaskAction
     public void apply() {
         this.getLogger().lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
+        final ModrinthExtension ext = ext(this.getProject());
         try {
-            if (extension.getSyncBodyFrom().getOrNull() == null) {
+            if (ext.getSyncBodyFrom() == null) {
                 this.getProject().getLogger().error("Sync project body task was called, but `syncBodyFrom` was null!");
                 throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
             }
 
-            Pattern excludeRegex = Pattern.compile("<!-- modrinth_exclude\\.start -->.*?<!-- modrinth_exclude\\.end -->", Pattern.DOTALL);
+            // This isn't used until later, but resolve it early anyway to throw invalid IDs early
+            final String id = resolveId(this.getProject(), ext.getProjectId());
 
-            final HttpClient client = Util.createHttpClient();
-            final HttpPatch patch = new HttpPatch(getUploadEndpoint(this.getProject()) + "project/" + resolveId(this.getProject(), extension.getProjectId().get()));
-
-            validateToken(this.getProject());
-            patch.addHeader("Authorization", extension.getToken().get());
-
-            JsonObject data = new JsonObject();
-            String body = extension.getSyncBodyFrom().get().replaceAll("\r\n", "\n");
+            final Pattern excludeRegex = Pattern.compile("<!-- modrinth_exclude\\.start -->.*?<!-- modrinth_exclude\\.end -->", Pattern.DOTALL);
+            String body = ext.getSyncBodyFrom().replaceAll("\r\n", "\n");
             body = excludeRegex.matcher(body).replaceAll("");
-            data.addProperty("body", body);
 
-            if (extension.getDebugMode().get()) {
+            if (ext.getDebugMode()) {
+                JsonObject data = new JsonObject();
+                data.addProperty("body", body);
                 this.getProject().getLogger().lifecycle("Full data to be sent for upload: {}", data);
                 this.getProject().getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload the body.");
                 return;
             }
 
-            try {
-                patch.setEntity(new StringEntity(GSON.toJson(data), ContentType.APPLICATION_JSON));
-            } catch (StackOverflowError e) {
-                String error = "StackOverflowError whilst trying to parse modrinth_exclude tags; please make the amount of text within each of these tags smaller";
-                this.getProject().getLogger().error(error);
-                throw new GradleException(error, e);
-            }
-
-            final HttpResponse response = client.execute(patch);
-            final int status = response.getStatusLine().getStatusCode();
-
-            if (status == 204) {
-                this.getProject().getLogger().lifecycle("Successfully synced body to project {}.", extension.getProjectId().get());
-            } else {
-                this.errorInfo = GSON.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-                this.getProject().getLogger().error("Syncing failed! Status: {} Error: {} Reason: {}", status, this.errorInfo.getError(), this.errorInfo.getDescription());
-                throw new GradleException("Syncing failed! Status: " + status + " Reason: " + this.errorInfo.getDescription());
-            }
+            api(this.getProject()).projects().modify(id, ModifyProjectRequest.builder().body(body).build()).join();
+            this.getProject().getLogger().lifecycle("Successfully synced body to project {}.", ext.getProjectId());
         } catch (final Exception e) {
-            if (extension.getFailSilently().get()) {
+            if (ext.getFailSilently()) {
                 this.getLogger().info("Failed to sync body to Modrinth. Check logs for more info.");
                 this.getLogger().error("Modrinth body sync failed silently.", e);
             } else {

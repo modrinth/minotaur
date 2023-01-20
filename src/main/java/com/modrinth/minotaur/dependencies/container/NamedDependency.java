@@ -21,7 +21,7 @@ public class NamedDependency implements Named {
     /**
      * Instantiates a new NamedDependency.
      *
-     * @param projectId      the projectId if not-null
+     * @param projectId      the getProjectId if not-null
      * @param versionId      the versionId if not-null
      * @param dependencyType the DependencyType
      */
@@ -34,7 +34,7 @@ public class NamedDependency implements Named {
     }
 
     /**
-     * @return the container id, is only of either projectId or versionId
+     * @return the container id, is only of either getProjectId or versionId
      */
     @NotNull
     @Override
@@ -67,7 +67,7 @@ public class NamedDependency implements Named {
 
     private void checkAll(@Nullable Object obj1, @Nullable Object obj2) {
         if (obj1 == null && obj2 == null) {
-            throw new GradleException("Both 'projectId' & 'versionId' cannot be null. At least 1 must be defined");
+            throw new GradleException("Both 'getProjectId' & 'versionId' cannot be null. At least 1 must be defined");
         }
     }
 }

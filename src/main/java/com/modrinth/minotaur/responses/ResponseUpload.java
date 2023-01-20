@@ -4,17 +4,20 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.request.VersionType;
+import masecla.modrinth4j.model.version.ProjectVersion;
+import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
+import masecla.modrinth4j.model.version.ProjectVersion.ProjectFile;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * This class defines a POJO that represents the API response for versions that have been successfully uploaded to
  * Modrinth.
+ * @deprecated Please use {@link masecla.modrinth4j.model.version.ProjectVersion}
  */
 @SuppressWarnings("unused")
+@Deprecated
 public class ResponseUpload {
     /**
      * The ID of the version, encoded as a base62 string.
@@ -212,6 +215,31 @@ public class ResponseUpload {
         return this.dependencies;
     }
 
+    public ResponseUpload(ProjectVersion newVersion) {
+        Collection<Dependency> deps = new ArrayList<>();
+        for (ProjectDependency dependency : newVersion.getDependencies()) {
+            deps.add(Dependency.fromNew(dependency));
+        }
+        Collection<VersionFile> files = new ArrayList<>();
+        for (ProjectFile file : newVersion.getFiles()) {
+            files.add(VersionFile.fromNew(file));
+        }
+        this.name = newVersion.getName();
+        this.versionNumber = newVersion.getVersionNumber();
+        this.changelog = newVersion.getChangelog();
+        this.dependencies = deps;
+        this.gameVersions = Arrays.asList(newVersion.getGameVersions());
+        this.versionType = VersionType.valueOf(newVersion.getVersionType().name());
+        this.loaders = Arrays.asList(newVersion.getLoaders());
+        this.featured = newVersion.isFeatured();
+        this.id = newVersion.getId();
+        this.projectId = newVersion.getProjectId();
+        this.authorId = newVersion.getAuthorId();
+        this.datePublished = Date.from(Instant.parse(newVersion.getDatePublished()));
+        this.downloads = newVersion.getDownloads();
+        this.files = files;
+    }
+
     /**
      * A single version file.
      */
@@ -271,6 +299,16 @@ public class ResponseUpload {
          */
         public boolean isPrimary() {
             return this.primary;
+        }
+
+        public static VersionFile fromNew(ProjectFile newFile) {
+            VersionFile file = new VersionFile();
+            file.hashes.put("sha1", newFile.getHashes().getSha1());
+            file.hashes.put("sha512", newFile.getHashes().getSha512());
+            file.url = newFile.getUrl();
+            file.filename = newFile.getFilename();
+            file.primary = newFile.isPrimary();
+            return file;
         }
     }
 }

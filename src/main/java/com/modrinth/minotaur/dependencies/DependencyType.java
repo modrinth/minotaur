@@ -1,6 +1,7 @@
 package com.modrinth.minotaur.dependencies;
 
 import com.google.gson.annotations.SerializedName;
+import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 
 import java.util.Locale;
 
@@ -37,23 +38,9 @@ public enum DependencyType {
     }
 
     /**
-     * @param in string input
-     * @return a {@link DependencyType} from a String
-     * @throws IllegalStateException when the input is not one of the recognized types
+     * Convert this old form to the new fancy form
      */
-    public static DependencyType fromString(String in) {
-        // Java 8 :evaporate:
-        if (in.equalsIgnoreCase("required")) {
-            return REQUIRED;
-        } else if (in.equalsIgnoreCase("optional")) {
-            return OPTIONAL;
-        } else if (in.equalsIgnoreCase("incompatible")) {
-            return INCOMPATIBLE;
-        } else if (in.equalsIgnoreCase("embedded")) {
-            return EMBEDDED;
-        }
-
-        throw new IllegalStateException("Invalid dependency type specified!" +
-            "Must be one of `required`, `optional`, `incompatible`, or `embedded`");
+    public ProjectDependencyType toNew() {
+        return ProjectDependencyType.valueOf(this.name().toUpperCase(Locale.ROOT));
     }
 }
