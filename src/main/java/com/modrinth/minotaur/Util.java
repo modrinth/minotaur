@@ -176,4 +176,29 @@ class Util {
         // None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
         return project.file(in);
     }
+
+    /**
+     * Validates that the token provided in the extension is valid.
+     *
+     * @param project Gradle project
+     */
+    static void validateToken(Project project) throws IOException {
+        if (System.getenv("GITHUB_ACTIONS") != null) {
+            return;
+        }
+
+        HttpClient client = createHttpClient();
+        Gson gson = createGsonInstance();
+        HttpGet get = new HttpGet(String.format("%suser", getUploadEndpoint(project)));
+        get.addHeader("Authorization", getExtension(project).getToken().get());
+        HttpResponse response = client.execute(get);
+
+        int code = response.getStatusLine().getStatusCode();
+        if (code != 200) {
+            ResponseError errorInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
+            String error = String.format("Failed to validate Modrinth token! Status: %s Error: %s Reason: %s", code, errorInfo.getError(), errorInfo.getDescription());
+            project.getLogger().error(error);
+            throw new GradleException(error);
+        }
+    }
 }

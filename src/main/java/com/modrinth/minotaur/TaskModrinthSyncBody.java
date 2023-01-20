@@ -16,9 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Pattern;
 
-import static com.modrinth.minotaur.Util.getExtension;
-import static com.modrinth.minotaur.Util.getUploadEndpoint;
-import static com.modrinth.minotaur.Util.resolveId;
+import static com.modrinth.minotaur.Util.*;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
@@ -57,6 +55,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
             final HttpClient client = Util.createHttpClient();
             final HttpPatch patch = new HttpPatch(getUploadEndpoint(this.getProject()) + "project/" + resolveId(this.getProject(), extension.getProjectId().get()));
 
+            validateToken(this.getProject());
             patch.addHeader("Authorization", extension.getToken().get());
 
             JsonObject data = new JsonObject();

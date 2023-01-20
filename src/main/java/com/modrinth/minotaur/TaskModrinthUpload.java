@@ -179,6 +179,7 @@ public class TaskModrinthUpload extends DefaultTask {
         final HttpClient client = createHttpClient();
         final HttpPost post = new HttpPost(getUploadEndpoint(this.getProject()) + "version");
 
+        validateToken(this.getProject());
         post.addHeader("Authorization", extension.getToken().get());
 
         final MultipartEntityBuilder form = MultipartEntityBuilder.create();
