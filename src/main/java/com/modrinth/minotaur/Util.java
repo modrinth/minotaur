@@ -183,7 +183,7 @@ class Util {
      * @param project Gradle project
      */
     static void validateToken(Project project) throws IOException {
-        String repo = System.getenv("GITHUB_ACTION_REPOSITORY");
+        String repo = System.getenv("GITHUB_REPOSITORY");
         if (repo.contains("minotaur")) {
             project.getLogger().info("Skipping token validation (GitHub repo {})", repo);
             return;
