@@ -3,7 +3,7 @@ plugins {
     id "com.modrinth.minotaur" version "2.+"
 }
 
-version = "1.0.370"
+version = "2.7.0.3"
 group = "com.modrinth.minotaur"
 
 dependencies {
@@ -23,7 +23,7 @@ modrinth {
     projectId = "fred-3"
     uploadFile = remapJar
     additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
-    versionType = "beta"
+    versionType = "alpha"
     dependencies = [
         new ModDependency("test-project", "optional"),
         new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)

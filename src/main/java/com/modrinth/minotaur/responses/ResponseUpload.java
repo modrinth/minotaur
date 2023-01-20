@@ -5,18 +5,19 @@ import com.google.gson.annotations.SerializedName;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.request.VersionType;
 import masecla.modrinth4j.model.version.ProjectVersion;
-import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectFile;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class defines a POJO that represents the API response for versions that have been successfully uploaded to
  * Modrinth.
- * @deprecated Please use {@link masecla.modrinth4j.model.version.ProjectVersion}
+ * @deprecated Please use {@link ProjectVersion}
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 @Deprecated
 public class ResponseUpload {
     /**
@@ -215,19 +216,17 @@ public class ResponseUpload {
         return this.dependencies;
     }
 
+    /**
+     * Constructs a {@link ResponseUpload} from a {@link ProjectVersion}
+     * @param newVersion {@link ProjectVersion} instance
+     */
+    @ApiStatus.Internal
     public ResponseUpload(ProjectVersion newVersion) {
-        Collection<Dependency> deps = new ArrayList<>();
-        for (ProjectDependency dependency : newVersion.getDependencies()) {
-            deps.add(Dependency.fromNew(dependency));
-        }
-        Collection<VersionFile> files = new ArrayList<>();
-        for (ProjectFile file : newVersion.getFiles()) {
-            files.add(VersionFile.fromNew(file));
-        }
         this.name = newVersion.getName();
         this.versionNumber = newVersion.getVersionNumber();
         this.changelog = newVersion.getChangelog();
-        this.dependencies = deps;
+        this.dependencies =
+            Arrays.stream(newVersion.getDependencies()).map(Dependency::fromNew).collect(Collectors.toList());
         this.gameVersions = Arrays.asList(newVersion.getGameVersions());
         this.versionType = VersionType.valueOf(newVersion.getVersionType().name());
         this.loaders = Arrays.asList(newVersion.getLoaders());
@@ -237,7 +236,8 @@ public class ResponseUpload {
         this.authorId = newVersion.getAuthorId();
         this.datePublished = Date.from(Instant.parse(newVersion.getDatePublished()));
         this.downloads = newVersion.getDownloads();
-        this.files = files;
+        this.files =
+            Arrays.stream(newVersion.getFiles()).map(VersionFile::fromNew).collect(Collectors.toList());
     }
 
     /**
@@ -301,8 +301,13 @@ public class ResponseUpload {
             return this.primary;
         }
 
+        /**
+         * @param newFile the {@link ProjectFile} to convert to a {@link VersionFile}
+         * @return a converted {@link VersionFile}
+         */
         public static VersionFile fromNew(ProjectFile newFile) {
             VersionFile file = new VersionFile();
+            file.hashes = new HashMap<>();
             file.hashes.put("sha1", newFile.getHashes().getSha1());
             file.hashes.put("sha512", newFile.getHashes().getSha512());
             file.url = newFile.getUrl();

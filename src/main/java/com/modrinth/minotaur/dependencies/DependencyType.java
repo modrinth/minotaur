@@ -38,9 +38,9 @@ public enum DependencyType {
     }
 
     /**
-     * Convert this old form to the new fancy form
+     * @return a converted {@link ProjectDependencyType}
      */
-    public ProjectDependencyType toNew() {
+    ProjectDependencyType toNew() {
         return ProjectDependencyType.valueOf(this.name().toUpperCase(Locale.ROOT));
     }
 }

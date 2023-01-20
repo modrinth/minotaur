@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
+import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import org.gradle.api.DefaultTask;
@@ -18,7 +19,6 @@ import org.gradle.api.tasks.TaskAction;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -91,6 +91,8 @@ public class TaskModrinthUpload extends DefaultTask {
     public void apply() {
         log.lifecycle("Minotaur: {}", this.getClass().getPackage().getImplementationVersion());
         try {
+            ModrinthAPI api = api(this.getProject());
+
             // Add version number if it's null
             if (ext.getVersionNumber().getOrNull() == null) {
                 ext.getVersionNumber().set(this.getProject().getVersion().toString());
@@ -111,7 +113,7 @@ public class TaskModrinthUpload extends DefaultTask {
                 throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
             }
 
-            if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders()) {
+            if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
                 this.addLoaderForPlugin("net.minecraftforge.gradle", "forge");
                 this.addLoaderForPlugin("fabric-loom", "fabric");
                 this.addLoaderForPlugin("org.quiltmc.loom", "quilt");
@@ -127,30 +129,30 @@ public class TaskModrinthUpload extends DefaultTask {
             List<Dependency> dependencies = new ArrayList<>();
             dependencies.addAll(ext.getNamedDependenciesAsList());
             dependencies.addAll(ext.getDependencies().get());
-            for (Dependency dependency : dependencies) {
-                this.dependencies.add(dependency.toNew(this.getProject()));
-            }
+            dependencies.stream()
+                .map(dependency -> dependency.toNew(this.getProject(), api, ext))
+                .forEach(this.dependencies::add);
 
             List<Object> fileObjects = new ArrayList<>();
             List<File> filesToUpload = new ArrayList<>();
             fileObjects.add(resolveFile(this.getProject(), ext.getUploadFile().get()));
             fileObjects.addAll(ext.getAdditionalFiles().get());
 
-            for (Object fileObject : fileObjects) {
-                final File resolvedFile = resolveFile(this.getProject(), fileObject);
+            fileObjects.forEach(file -> {
+                final File resolvedFile = resolveFile(this.getProject(), file);
 
                 // Ensure the file actually exists before trying to upload it.
                 if (resolvedFile == null || !resolvedFile.exists()) {
-                    log.error("The upload file is missing or null. {}", fileObject);
-                    throw new GradleException("The upload file is missing or null. " + fileObject);
+                    log.error("The upload file is missing or null. {}", file);
+                    throw new GradleException("The upload file is missing or null. " + file);
                 }
 
                 filesToUpload.add(resolvedFile);
-            }
+            });
 
-            this.upload(filesToUpload);
+            this.upload(filesToUpload, api);
         } catch (final Exception e) {
-            if (ext.getFailSilently()) {
+            if (ext.getFailSilently().get()) {
                 log.info("Failed to upload to Modrinth. Check logs for more info.");
                 log.error("Modrinth upload failed silently.", e);
             } else {
@@ -162,45 +164,46 @@ public class TaskModrinthUpload extends DefaultTask {
     /**
      * Uploads a file using the provided configuration.
      *
-     * @param files    The files to upload.
-     * @throws IOException Whenever something goes wrong wit uploading the file.
+     * @param files The files to upload.
+     * @param api   {@link ModrinthAPI} instance
      */
-    public void upload(List<File> files) throws IOException {
+    public void upload(List<File> files, ModrinthAPI api) {
+        String id = ext.getProjectId().get();
         CreateVersionRequest data = CreateVersionRequest.builder()
-            .projectId(resolveId(this.getProject(), ext.getProjectId()))
+            .projectId(api.projects().getProjectIdBySlug(id).join())
             .versionNumber(ext.getVersionNumber().get())
             .name(ext.getVersionName().get())
-            .changelog(ext.getChangelog().replaceAll("\r\n", "\n"))
-            .versionType(ProjectVersion.VersionType.valueOf(ext.getVersionType().get().toLowerCase(Locale.ROOT)))
-            .gameVersions(ext.gameVersions().toArray(new String[0]))
-            .loaders(ext.loaders().toArray(new String[0]))
+            .changelog(ext.getChangelog().get().replaceAll("\r\n", "\n"))
+            .versionType(ProjectVersion.VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
+            .gameVersions(ext.getGameVersions().get().toArray(new String[0]))
+            .loaders(ext.getLoaders().get().toArray(new String[0]))
             .dependencies(this.dependencies.toArray(new ProjectDependency[0]))
             .files(files.toArray(new File[0]))
-            .primaryFile("0") // The primary file will always be of the first index in the list
             .build();
 
-        if (ext.getDebugMode()) {
+        if (ext.getDebugMode().get()) {
             log.lifecycle("Full data to be sent for upload: {}", GSON.toJson(data));
             log.lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
             return;
         }
 
-        ProjectVersion version = api(getProject()).versions().createProjectVersion(data).join();
+        ProjectVersion version = api.versions().createProjectVersion(data).join();
         this.newVersion = version;
         //noinspection deprecation
         this.uploadInfo = new ResponseUpload(version);
 
+        String versionNumber = this.newVersion.getVersionNumber();
         String url = "";
-        if (ext.getApiUrl().equals(ModrinthExtension.DEFAULT_API_URL)) {
-            url = String.format("https://modrinth.com/mod/%s/version/%s", ext.getProjectId(), this.newVersion.getVersionNumber());
-        } else if (ext.getApiUrl().equals(ModrinthExtension.STAGING_API_URL)) {
-            url = String.format("https://staging.modrinth.com/mod/%s/version/%s", ext.getProjectId(), this.newVersion.getVersionNumber());
+        if (ext.getApiUrl().get().equals(ModrinthExtension.DEFAULT_API_URL)) {
+            url = String.format("https://modrinth.com/mod/%s/version/%s", id, versionNumber);
+        } else if (ext.getApiUrl().get().equals(ModrinthExtension.STAGING_API_URL)) {
+            url = String.format("https://staging.modrinth.com/mod/%s/version/%s", id, versionNumber);
         }
 
         log.lifecycle(
             "Successfully uploaded version {} to {} as version ID {}. {}",
-            this.newVersion.getVersionNumber(),
-            ext.getProjectId(),
+            versionNumber,
+            id,
             this.newVersion.getId(),
             url
         );

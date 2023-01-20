@@ -7,7 +7,6 @@ import com.google.gson.annotations.SerializedName;
  * @deprecated Please use {@link masecla.modrinth4j.model.version.ProjectVersion.VersionType}
  */
 @Deprecated
-@SuppressWarnings("unused")
 public enum VersionType {
     /**
      * The version is in a stable state.

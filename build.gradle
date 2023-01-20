@@ -25,20 +25,12 @@ repositories {
             includeGroup 'com.github.masecla22'
         }
     }
-    maven {
-        url "https://jitpack.io"
-    }
 }
 
 dependencies {
     compileOnly gradleApi()
-
-    api group: 'com.github.masecla22', name: 'Modrinth4J', version: 'master-SNAPSHOT'
-
-    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
-
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
+    api group: 'com.github.masecla22', name: 'Modrinth4J', version: '64b94fed9d'
 }
 
 gradlePlugin {
