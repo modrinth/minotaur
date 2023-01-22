@@ -22,7 +22,8 @@ class Util {
      * @throws EndpointException when the request to validate the token fails
      */
     static ModrinthAPI api(Project project) throws EndpointException {
-        String url = ext(project).getApiUrl().get();
+        ModrinthExtension ext = ext(project);
+        String url = ext.getApiUrl().get();
         if (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
@@ -31,6 +32,7 @@ class Util {
             .authorUsername("modrinth")
             .projectName("minotaur")
             .projectVersion(Util.class.getPackage().getImplementationVersion())
+            .contact(ext.getProjectId().get() + "/" + ext.getVersionNumber().get())
             .build();
 
         String token = ext(project).getToken().get();
