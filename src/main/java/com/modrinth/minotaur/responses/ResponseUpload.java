@@ -226,10 +226,10 @@ public class ResponseUpload {
         this.versionNumber = newVersion.getVersionNumber();
         this.changelog = newVersion.getChangelog();
         this.dependencies =
-            Arrays.stream(newVersion.getDependencies()).map(Dependency::fromNew).collect(Collectors.toList());
-        this.gameVersions = Arrays.asList(newVersion.getGameVersions());
+            newVersion.getDependencies().stream().map(Dependency::fromNew).collect(Collectors.toList());
+        this.gameVersions = newVersion.getGameVersions();
         this.versionType = VersionType.valueOf(newVersion.getVersionType().name());
-        this.loaders = Arrays.asList(newVersion.getLoaders());
+        this.loaders = newVersion.getLoaders();
         this.featured = newVersion.isFeatured();
         this.id = newVersion.getId();
         this.projectId = newVersion.getProjectId();
@@ -237,7 +237,7 @@ public class ResponseUpload {
         this.datePublished = Date.from(Instant.parse(newVersion.getDatePublished()));
         this.downloads = newVersion.getDownloads();
         this.files =
-            Arrays.stream(newVersion.getFiles()).map(VersionFile::fromNew).collect(Collectors.toList());
+            newVersion.getFiles().stream().map(VersionFile::fromNew).collect(Collectors.toList());
     }
 
     /**

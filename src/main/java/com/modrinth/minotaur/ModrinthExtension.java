@@ -7,8 +7,6 @@ import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
-import java.util.List;
-
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
  * {...}} block in the buildscript.

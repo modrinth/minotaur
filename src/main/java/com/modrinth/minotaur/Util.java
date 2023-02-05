@@ -3,6 +3,7 @@ package com.modrinth.minotaur;
 import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.exception.EndpointException;
 import masecla.modrinth4j.main.ModrinthAPI;
+import masecla.modrinth4j.model.user.ModrinthUser;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * Internal utility methods to make things easier and deduplicated
@@ -21,7 +23,7 @@ class Util {
      * @return A valid {@link ModrinthAPI} instance
      * @throws EndpointException when the request to validate the token fails
      */
-    static ModrinthAPI api(Project project) throws EndpointException {
+    static ModrinthAPI api(Project project) throws EndpointException, NullPointerException {
         ModrinthExtension ext = ext(project);
         String url = ext.getApiUrl().get();
         if (url.endsWith("/")) {
@@ -32,18 +34,19 @@ class Util {
             .authorUsername("modrinth")
             .projectName("minotaur")
             .projectVersion(Util.class.getPackage().getImplementationVersion())
-            .contact(ext.getProjectId().get() + "/" + ext.getVersionNumber().get())
+            .contact(ext.getProjectId().get() + "/" + resolveVersionNumber(project))
             .build();
 
         String token = ext(project).getToken().get();
         ModrinthAPI api = ModrinthAPI.rateLimited(agent, url, token);
 
         // Ensure validity of token unless in Minotaur CI
-        final String repo = System.getenv("GITHUB_REPOSITORY");
         if (token.equals("dummy_token_for_CI")) {
-            project.getLogger().info("Skipping token validation (GitHub repo {})", repo);
+            project.getLogger().info("Skipping token validation (GitHub repo {})", System.getenv("GITHUB_REPOSITORY"));
         } else {
-            api.users().getSelf().join();
+            ModrinthUser user = api.users().getSelf().join();
+            String username = Objects.requireNonNull(user.getUsername(), "Failed to resolve username from token");
+            project.getLogger().debug("Signed in as user {}", username);
         }
 
         return api;
@@ -55,6 +58,20 @@ class Util {
      */
     static ModrinthExtension ext(Project project) {
         return project.getExtensions().getByType(ModrinthExtension.class);
+    }
+
+    /**
+     * Safely resolves the version number.
+     *
+     * @param project The Gradle project to resolve the extension and version from
+     * @return The extension version number if set; otherwise, the Gradle project version.
+     */
+    static String resolveVersionNumber(Project project) {
+        ModrinthExtension ext = ext(project);
+        if (ext.getVersionNumber().getOrNull() == null) {
+            ext.getVersionNumber().set(project.getVersion().toString());
+        }
+        return ext.getVersionNumber().get();
     }
 
     /**
