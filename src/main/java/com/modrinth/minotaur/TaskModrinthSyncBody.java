@@ -10,7 +10,8 @@ import org.gradle.api.tasks.TaskAction;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.api;
+import static com.modrinth.minotaur.Util.ext;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.

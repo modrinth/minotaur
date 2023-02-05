@@ -4,13 +4,11 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.modrinth.minotaur.ModrinthExtension;
 import masecla.modrinth4j.endpoints.version.GetProjectVersions.GetProjectVersionsRequest;
-import masecla.modrinth4j.exception.EndpointException;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.List;
