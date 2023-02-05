@@ -95,12 +95,15 @@ public class Dependency {
      * @return ID of the resolved project
      */
     private String resolveVersionId(String projectId, String versionId, ModrinthAPI api, ModrinthExtension ext) {
-        try {
+        attempt: try {
             // First check to see if the version is simply a version ID. Return it if so.
             ProjectVersion version = api.versions().getVersion(versionId).join();
             return version.getId();
         } catch (Exception ignored) {
             // Seems it wasn't a version ID. Try to extract a version number.
+            if (projectId == null) {
+                break attempt;
+            }
             GetProjectVersionsRequest filter = GetProjectVersionsRequest.builder()
                 .loaders(ext.getLoaders().get())
                 .gameVersions(ext.getGameVersions().get())
@@ -115,6 +118,6 @@ public class Dependency {
         }
 
         // Input wasn't a version ID or a version number
-        throw new GradleException("Failed to resolve version number \"" + versionId + "\"!");
+        throw new GradleException("Failed to resolve version \"" + versionId + "\"!");
     }
 }
