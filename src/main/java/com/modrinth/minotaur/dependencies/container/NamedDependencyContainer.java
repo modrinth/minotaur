@@ -25,7 +25,7 @@ public class NamedDependencyContainer {
     }
 
     /**
-     * Creates an incompatible Dependency Container and applies the getProjectId property
+     * Creates an incompatible Dependency Container and applies the projectId property
      *
      * @param projectId the project id
      */
