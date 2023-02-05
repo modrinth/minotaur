@@ -55,7 +55,6 @@ public class Dependency {
     }
 
     /**
-     * @param project Gradle project the plugin is applied to
      * @param api {@link ModrinthAPI} instance
      * @param ext {@link ModrinthExtension} instance
      * @return a {@link ProjectDependency} instance from a {@link Dependency}
