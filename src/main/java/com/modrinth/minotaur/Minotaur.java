@@ -38,12 +38,11 @@ public class Minotaur implements Plugin<Project> {
         }
         File warningFile = path.resolve("2.7.0-warning-shown").toFile();
         if (!warningFile.exists()) {
-            project.getLogger().warn(
-                "You are running a version of Minotaur that may contain unintentional breaking changes.\n" +
-                    "If a build of yours worked in v2.6.0 but broke in v2.7.0, " +
-                    "PLEASE report this immediately either via emailing support@modrinth.com " +
-                    "or by opening a GitHub issue on https://github.com/modrinth/minotaur/issues.\n" +
-                    "This warning will not be shown again.");
+            project.getLogger().warn("\n[Minotaur Warning] You are running a version of Minotaur that may contain " +
+                "unintentional breaking changes.\n[Minotaur Warning] If a build of yours worked in v2.6.0 but broke in " +
+                "v2.7.0, PLEASE report this immediately either via emailing support@modrinth.com or by opening a GitHub " +
+                "issue on https://github.com/modrinth/minotaur/issues.\n[Minotaur Warning] This warning will not be " +
+                "shown again.\n");
             try {
                 //noinspection ResultOfMethodCallIgnored
                 warningFile.createNewFile();
