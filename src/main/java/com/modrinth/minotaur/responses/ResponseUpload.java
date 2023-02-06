@@ -8,7 +8,6 @@ import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectFile;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -234,7 +233,7 @@ public class ResponseUpload {
         this.id = newVersion.getId();
         this.projectId = newVersion.getProjectId();
         this.authorId = newVersion.getAuthorId();
-        this.datePublished = Date.from(Instant.parse(newVersion.getDatePublished()));
+        this.datePublished = Date.from(newVersion.getDatePublished());
         this.downloads = newVersion.getDownloads();
         this.files =
             newVersion.getFiles().stream().map(VersionFile::fromNew).collect(Collectors.toList());

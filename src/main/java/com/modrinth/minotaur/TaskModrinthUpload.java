@@ -140,9 +140,7 @@ public class TaskModrinthUpload extends DefaultTask {
             List<ProjectDependency> dependencies = new ArrayList<>();
             protoDependencies.addAll(ext.getNamedDependenciesAsList());
             protoDependencies.addAll(ext.getDependencies().get());
-            protoDependencies.stream()
-                .map(dependency -> dependency.toNew(api, ext))
-                .forEach(dependencies::add);
+            protoDependencies.stream().map(dependency -> dependency.toNew(api, ext)).forEach(dependencies::add);
 
             // Get each of the files, starting with the primary file
             List<File> files = new ArrayList<>();
