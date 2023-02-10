@@ -2,7 +2,7 @@ package com.modrinth.minotaur;
 
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
-import com.modrinth.minotaur.request.VersionType;
+import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.Project;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
@@ -103,7 +103,7 @@ public class ModrinthExtension extends DependencyDSL {
     }
 
     /**
-     * @return The version name of the project being uploaded. Defaults to the version number.
+     * @return A list or summary of each of the changes made to the project since the last update.
      */
     public Property<String> getChangelog() {
         return this.changelog;

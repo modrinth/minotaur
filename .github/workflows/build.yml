@@ -41,4 +41,4 @@ jobs:
         run: ./gradlew fg:modrinth loom:modrinth
         if: ${{ !contains(github.event.head_commit.message, 'skip test') }}
         env:
-          MODRINTH_TOKEN: dummy_token_does_not_matter_because_debugMode
+          MODRINTH_TOKEN: dummy_token_for_CI

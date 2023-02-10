@@ -4,17 +4,20 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.request.VersionType;
+import masecla.modrinth4j.model.version.ProjectVersion;
+import masecla.modrinth4j.model.version.ProjectVersion.ProjectFile;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class defines a POJO that represents the API response for versions that have been successfully uploaded to
  * Modrinth.
+ * @deprecated Please use {@link ProjectVersion}
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
+@Deprecated
 public class ResponseUpload {
     /**
      * The ID of the version, encoded as a base62 string.
@@ -213,6 +216,30 @@ public class ResponseUpload {
     }
 
     /**
+     * Constructs a {@link ResponseUpload} from a {@link ProjectVersion}
+     * @param newVersion {@link ProjectVersion} instance
+     */
+    @ApiStatus.Internal
+    public ResponseUpload(ProjectVersion newVersion) {
+        this.name = newVersion.getName();
+        this.versionNumber = newVersion.getVersionNumber();
+        this.changelog = newVersion.getChangelog();
+        this.dependencies =
+            newVersion.getDependencies().stream().map(Dependency::fromNew).collect(Collectors.toList());
+        this.gameVersions = newVersion.getGameVersions();
+        this.versionType = VersionType.valueOf(newVersion.getVersionType().name());
+        this.loaders = newVersion.getLoaders();
+        this.featured = newVersion.isFeatured();
+        this.id = newVersion.getId();
+        this.projectId = newVersion.getProjectId();
+        this.authorId = newVersion.getAuthorId();
+        this.datePublished = Date.from(newVersion.getDatePublished());
+        this.downloads = newVersion.getDownloads();
+        this.files =
+            newVersion.getFiles().stream().map(VersionFile::fromNew).collect(Collectors.toList());
+    }
+
+    /**
      * A single version file.
      */
     public static class VersionFile {
@@ -271,6 +298,21 @@ public class ResponseUpload {
          */
         public boolean isPrimary() {
             return this.primary;
+        }
+
+        /**
+         * @param newFile the {@link ProjectFile} to convert to a {@link VersionFile}
+         * @return a converted {@link VersionFile}
+         */
+        public static VersionFile fromNew(ProjectFile newFile) {
+            VersionFile file = new VersionFile();
+            file.hashes = new HashMap<>();
+            file.hashes.put("sha1", newFile.getHashes().getSha1());
+            file.hashes.put("sha512", newFile.getHashes().getSha512());
+            file.url = newFile.getUrl();
+            file.filename = newFile.getFilename();
+            file.primary = newFile.isPrimary();
+            return file;
         }
     }
 }

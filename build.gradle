@@ -2,7 +2,7 @@ plugins {
     id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
-version = '2.7.0'
+version = '2.7.0-beta.3'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -18,12 +18,9 @@ repositories {
 
 dependencies {
     compileOnly gradleApi()
-
-    implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.10'
-
     compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
+    //noinspection VulnerableLibrariesLocal
+    api group: 'dev.masecla', name: 'Modrinth4J', version: '2.0.0'
 }
 
 gradlePlugin {

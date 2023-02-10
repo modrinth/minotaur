@@ -3,8 +3,6 @@ package com.modrinth.minotaur.dependencies;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Locale;
-
 /**
  * Class for making a dependency on a specific version.
  */

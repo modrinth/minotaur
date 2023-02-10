@@ -1,147 +1,77 @@
 package com.modrinth.minotaur;
 
-import com.google.gson.*;
-import com.modrinth.minotaur.responses.ResponseError;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.gradle.api.GradleException;
+import masecla.modrinth4j.client.agent.UserAgent;
+import masecla.modrinth4j.exception.EndpointException;
+import masecla.modrinth4j.main.ModrinthAPI;
+import masecla.modrinth4j.model.user.ModrinthUser;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * Internal utility methods to make things easier and deduplicated
  */
+@ApiStatus.Internal
 class Util {
     /**
+     * @param project Gradle project for getting various info from
+     * @return A valid {@link ModrinthAPI} instance
+     * @throws EndpointException when the request to validate the token fails
+     */
+    static ModrinthAPI api(Project project) throws EndpointException, NullPointerException {
+        ModrinthExtension ext = ext(project);
+        String url = ext.getApiUrl().get();
+        if (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+
+        UserAgent agent = UserAgent.builder()
+            .authorUsername("modrinth")
+            .projectName("minotaur")
+            .projectVersion(Util.class.getPackage().getImplementationVersion())
+            .contact(ext.getProjectId().get() + "/" + resolveVersionNumber(project))
+            .build();
+
+        String token = ext(project).getToken().get();
+        ModrinthAPI api = ModrinthAPI.rateLimited(agent, url, token);
+
+        // Ensure validity of token unless in Minotaur CI
+        if (token.equals("dummy_token_for_CI")) {
+            project.getLogger().info("Skipping token validation (GitHub repo {})", System.getenv("GITHUB_REPOSITORY"));
+        } else {
+            ModrinthUser user = api.users().getSelf().join();
+            String username = Objects.requireNonNull(user.getUsername(), "Failed to resolve username from token");
+            project.getLogger().debug("Signed in as user {}", username);
+        }
+
+        return api;
+    }
+
+    /**
+     * @param project Gradle project for getting various info from
      * @return The {@link ModrinthExtension} for the project
      */
-    static ModrinthExtension getExtension(Project project) {
+    static ModrinthExtension ext(Project project) {
         return project.getExtensions().getByType(ModrinthExtension.class);
     }
 
     /**
-     * @return A new {@link HttpClient} with our desired settings
-     */
-    static HttpClient createHttpClient() {
-        RequestConfig rc = RequestConfig.custom().setCookieSpec(CookieSpecs.IGNORE_COOKIES).build();
-        String ua = "modrinth/minotaur " + Util.class.getPackage().getImplementationVersion();
-        return HttpClientBuilder.create().setDefaultRequestConfig(rc).setUserAgent(ua).build();
-    }
-
-    /**
-     * @return A new {@link Gson} instance with our desired settings
-     */
-    static Gson createGsonInstance() {
-        return new GsonBuilder().setPrettyPrinting().create();
-    }
-
-    /**
-     * Provides the upload API endpoint to use.
+     * Safely resolves the version number.
      *
-     * @return The upload API endpoint.
+     * @param project The Gradle project to resolve the extension and version from
+     * @return The extension version number if set; otherwise, the Gradle project version.
      */
-    static String getUploadEndpoint(Project project) {
-        String apiUrl = getExtension(project).getApiUrl().get();
-        return apiUrl + (apiUrl.endsWith("/") ? "" : "/");
-    }
-
-    /**
-     * Returns a project ID from a project ID or slug
-     *
-     * @param projectId ID or slug of the project to resolve
-     * @return ID of the resolved project
-     */
-    static String resolveId(Project project, String projectId) throws IOException {
-        return resolveId(project, projectId, project.getLogger());
-    }
-
-    /**
-     * Returns a project ID from a project ID or slug
-     *
-     * @param projectId ID or slug of the project to resolve
-     * @param log Logger to use
-     * @return ID of the resolved project
-     */
-    static String resolveId(Project project, String projectId, Logger log) throws IOException {
-        HttpClient client = createHttpClient();
-        HttpGet get = new HttpGet(String.format("%sproject/%s/check", getUploadEndpoint(project), projectId));
-        get.addHeader("Authorization", getExtension(project).getToken().get());
-        HttpResponse response = client.execute(get);
-
-        int code = response.getStatusLine().getStatusCode();
-        if (code != 200) {
-            // TODO make this account for the returned error in Minotaur v3
-            String error = String.format("Failed to resolve project ID \"%s\"! Received status code %s", projectId, code);
-            log.error(error);
-            throw new GradleException(error);
+    static String resolveVersionNumber(Project project) {
+        ModrinthExtension ext = ext(project);
+        if (ext.getVersionNumber().getOrNull() == null) {
+            ext.getVersionNumber().set(project.getVersion().toString());
         }
-
-        String returned = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-        JsonElement element = JsonParser.parseString(returned);
-        if (!element.isJsonObject() || !element.getAsJsonObject().has("id")) {
-            String error = "Invalid API response during project ID resolution! Expected JSON with an ID field but got: " + returned;
-            log.error(error);
-            throw new GradleException(error, new IllegalStateException(error));
-        }
-        return element.getAsJsonObject().get("id").getAsString();
-    }
-
-    /**
-     * Returns a project ID from a project ID or slug
-     *
-     * @param versionId ID or version number of the project to resolve
-     * @param log Logger to use
-     * @return ID of the resolved project
-     */
-    static String resolveVersionId(Project project, String projectId, String versionId, Logger log) throws IOException {
-        HttpClient client = createHttpClient();
-        HttpGet getVersion = new HttpGet(String.format("%sversion/%s", getUploadEndpoint(project), versionId));
-
-        if (client.execute(getVersion).getStatusLine().getStatusCode() == 200) {
-            return versionId;
-        }
-
-        String id = resolveId(project, projectId, log);
-        HttpGet getVersions = new HttpGet(String.format("%s/project/%s/version", getUploadEndpoint(project), id));
-        HttpResponse response = client.execute(getVersions);
-
-        int code = response.getStatusLine().getStatusCode();
-        if (code != 200) {
-            String error = String.format("Failed to resolve versions of project ID \"%s\"! Received status code %s", id, code);
-            log.error(error);
-            throw new GradleException(error, new IllegalStateException(error));
-        }
-
-        String returned = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-        JsonElement versions = JsonParser.parseString(returned);
-        if (!versions.isJsonArray()) {
-            String error = "Invalid API response during version ID resolution! Expected JSON array but got: " + returned;
-            log.error(error);
-            throw new GradleException(error, new IllegalStateException(error));
-        }
-
-        for (JsonElement element : versions.getAsJsonArray()) {
-            JsonObject version = element.getAsJsonObject();
-            if (version.get("version_number").getAsString().equals(versionId)) {
-                return version.get("id").getAsString();
-            }
-        }
-
-        String error = String.format("Failed to resolve version number \"%s\"!", versionId);
-        log.error(error);
-        throw new GradleException(error);
+        return ext.getVersionNumber().get();
     }
 
     /**
@@ -175,32 +105,5 @@ class Util {
 
         // None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
         return project.file(in);
-    }
-
-    /**
-     * Validates that the token provided in the extension is valid.
-     *
-     * @param project Gradle project
-     */
-    static void validateToken(Project project) throws IOException {
-        String repo = System.getenv("GITHUB_REPOSITORY");
-        if (repo.contains("minotaur")) {
-            project.getLogger().info("Skipping token validation (GitHub repo {})", repo);
-            return;
-        }
-
-        HttpClient client = createHttpClient();
-        Gson gson = createGsonInstance();
-        HttpGet get = new HttpGet(String.format("%suser", getUploadEndpoint(project)));
-        get.addHeader("Authorization", getExtension(project).getToken().get());
-        HttpResponse response = client.execute(get);
-
-        int code = response.getStatusLine().getStatusCode();
-        if (code != 200) {
-            ResponseError errorInfo = gson.fromJson(EntityUtils.toString(response.getEntity()), ResponseError.class);
-            String error = String.format("Failed to validate Modrinth token! Status: %s Error: %s Reason: %s", code, errorInfo.getError(), errorInfo.getDescription());
-            project.getLogger().error(error);
-            throw new GradleException(error);
-        }
     }
 }
