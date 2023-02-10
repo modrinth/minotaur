@@ -1,15 +1,15 @@
 pluginManagement {
-    repositories {
-        mavenLocal()
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-        gradlePluginPortal()
-        mavenCentral()
-    }
+	repositories {
+		mavenLocal()
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		gradlePluginPortal()
+		mavenCentral()
+	}
 }
 rootProject.name = 'Minotaur'
 if (!System.getenv().EXCLUDE_SUBPROJECTS) {
-    include 'fg', 'loom'
+	include 'fg', 'loom'
 }

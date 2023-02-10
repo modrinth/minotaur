@@ -1,16 +1,16 @@
 buildscript {
-    repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
-    }
+	repositories {
+		maven { url = 'https://files.minecraftforge.net/maven' }
+	}
+	dependencies {
+		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.+', changing: true
+	}
 }
 
 plugins {
-    id "com.modrinth.minotaur" version "2.+"
-    id "java"
-    id "idea"
+	id "com.modrinth.minotaur" version "2.+"
+	id "java"
+	id "idea"
 }
 
 apply plugin: 'net.minecraftforge.gradle'
@@ -19,11 +19,11 @@ version = "1.0.371"
 group = "com.modrinth.minotaur"
 
 minecraft {
-    mappings channel: "official", version: "1.18.1"
+	mappings channel: "official", version: "1.18.1"
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:1.18.1-39.0.9"
+	minecraft "net.minecraftforge:forge:1.18.1-39.0.9"
 }
 
 java.withSourcesJar()
@@ -33,24 +33,24 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-    apiUrl = STAGING_API_URL
-    projectId = "fred-3"
-    uploadFile = jar
-    additionalFiles = [project.file("build/libs/fg-$version-sources.jar")]
-    versionType = "beta"
-    dependencies = [
-        new ModDependency("test-project", "optional"),
-        new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
-    ]
-    dependencies {
-        required.project "corrupted"
-        optional.version "UakHulqw"
-        incompatible.version "kdIr8lsr", "b1.2+mod"
-        embedded.project "sbbGxWge"
-    }
-    debugMode = true
+	apiUrl = STAGING_API_URL
+	projectId = "fred-3"
+	uploadFile = jar
+	additionalFiles = [project.file("build/libs/fg-$version-sources.jar")]
+	versionType = "beta"
+	dependencies = [
+		new ModDependency("test-project", "optional"),
+		new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
+	]
+	dependencies {
+		required.project "corrupted"
+		optional.version "UakHulqw"
+		incompatible.version "kdIr8lsr", "b1.2+mod"
+		embedded.project "sbbGxWge"
+	}
+	debugMode = true
 }
 
 tasks.modrinth.doLast {
-    if (!modrinth.debugMode && tasks.modrinth.wasUploadSuccessful()) println tasks.modrinth.uploadInfo.id
+	if (!modrinth.debugMode && tasks.modrinth.wasUploadSuccessful()) println tasks.modrinth.uploadInfo.id
 }

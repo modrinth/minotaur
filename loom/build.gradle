@@ -1,15 +1,15 @@
 plugins {
-    id "fabric-loom" version "1.0.+"
-    id "com.modrinth.minotaur" version "2.+"
+	id "fabric-loom" version "1.0.+"
+	id "com.modrinth.minotaur" version "2.+"
 }
 
 version = "2.7.0.3"
 group = "com.modrinth.minotaur"
 
 dependencies {
-    minecraft "com.mojang:minecraft:1.17.1"
-    mappings "net.fabricmc:yarn:1.17.1+build.65:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.12.12"
+	minecraft "com.mojang:minecraft:1.17.1"
+	mappings "net.fabricmc:yarn:1.17.1+build.65:v2"
+	modImplementation "net.fabricmc:fabric-loader:0.12.12"
 }
 
 java.withSourcesJar()
@@ -19,20 +19,20 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-    apiUrl = STAGING_API_URL
-    projectId = "fred-3"
-    uploadFile = remapJar
-    additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
-    versionType = "alpha"
-    dependencies = [
-        new ModDependency("test-project", "optional"),
-        new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
-    ]
-    dependencies {
-        required.project "corrupted"
-        optional.version "UakHulqw"
-        incompatible.version "kdIr8lsr", "b1.2+mod"
-        embedded.project "sbbGxWge"
-    }
-    debugMode = true
+	apiUrl = STAGING_API_URL
+	projectId = "fred-3"
+	uploadFile = remapJar
+	additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
+	versionType = "alpha"
+	dependencies = [
+		new ModDependency("test-project", "optional"),
+		new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
+	]
+	dependencies {
+		required.project "corrupted"
+		optional.version "UakHulqw"
+		incompatible.version "kdIr8lsr", "b1.2+mod"
+		embedded.project "sbbGxWge"
+	}
+	debugMode = true
 }
