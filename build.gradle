@@ -1,8 +1,8 @@
 plugins {
-    id 'com.gradle.plugin-publish' version '1.1.0'
+	id 'com.gradle.plugin-publish' version '1.1.0'
 }
 
-version = '2.7.0-beta.3'
+version = '2.7.0'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -13,55 +13,55 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    compileOnly gradleApi()
-    compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
-    //noinspection VulnerableLibrariesLocal
-    api group: 'dev.masecla', name: 'Modrinth4J', version: '2.0.0'
+	compileOnly gradleApi()
+	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
+	//noinspection VulnerableLibrariesLocal
+	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.0.0'
 }
 
 gradlePlugin {
-    plugins {
-        minotaur {
-            id = 'com.modrinth.minotaur'
-            implementationClass = 'com.modrinth.minotaur.Minotaur'
-            displayName = 'Minotaur'
-        }
-    }
+	plugins {
+		minotaur {
+			id = 'com.modrinth.minotaur'
+			implementationClass = 'com.modrinth.minotaur.Minotaur'
+			displayName = 'Minotaur'
+		}
+	}
 }
 
 pluginBundle {
-    website = 'https://modrinth.com'
-    vcsUrl = 'https://github.com/modrinth/minotaur'
-    description = 'Modrinth plugin for publishing builds to the website!'
-    tags = ['modrinth', 'publish', 'mods', 'minecraft']
+	website = 'https://modrinth.com'
+	vcsUrl = 'https://github.com/modrinth/minotaur'
+	description = 'Modrinth plugin for publishing builds to the website!'
+	tags = ['modrinth', 'publish', 'mods', 'minecraft']
 }
 
 jar {
-    manifest {
-        attributes([
-                'Timestamp'               : System.currentTimeMillis(),
-                'Specification-Title'     : project.archivesBaseName,
-                'Specification-Vendor'    : vendor,
-                'Specification-Version'   : project.version,
-                'Implementation-Title'    : project.archivesBaseName,
-                'Implementation-Version'  : project.version,
-                'Implementation-Vendor'   : vendor,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
-        ])
-    }
+	manifest {
+		attributes([
+			'Timestamp'               : System.currentTimeMillis(),
+			'Specification-Title'     : project.archivesBaseName,
+			'Specification-Vendor'    : vendor,
+			'Specification-Version'   : project.version,
+			'Implementation-Title'    : project.archivesBaseName,
+			'Implementation-Version'  : project.version,
+			'Implementation-Vendor'   : vendor,
+			'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+			'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})"
+		])
+	}
 }
 
 java {
-    withSourcesJar()
-    withJavadocJar()
+	withSourcesJar()
+	withJavadocJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release.set(8)
+	it.options.encoding = "UTF-8"
+	it.options.release.set(8)
 }
