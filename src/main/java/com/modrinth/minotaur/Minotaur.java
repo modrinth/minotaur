@@ -75,7 +75,7 @@ public class Minotaur implements Plugin<Project> {
 			}
 
 			evaluatedProject.getTasks().named("modrinth", TaskModrinthUpload.class).configure(task -> {
-				task.getWiredInputFiles().from(ext.getUploadFileProperty());
+				task.getWiredInputFiles().from(ext.getFile());
 
 				ext.getAdditionalFiles().get().forEach(file -> {
 					if (file == null) {

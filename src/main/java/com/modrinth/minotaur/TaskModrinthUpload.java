@@ -158,7 +158,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Get each of the files, starting with the primary file
 			List<File> files = new ArrayList<>();
-			files.add(ext.getUploadFileProperty().get().getAsFile());
+			files.add(ext.getFile().get().getAsFile());
 
 			// Convert each of the Object files from the extension to a proper File
 			ext.getAdditionalFiles().get().forEach(file -> {
