@@ -11,7 +11,10 @@ import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -24,7 +27,7 @@ import static com.modrinth.minotaur.Util.*;
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
-public class TaskModrinthUpload extends DefaultTask {
+public abstract class TaskModrinthUpload extends DefaultTask {
 	/**
 	 * The response from the API when the file was uploaded successfully.
 	 */
@@ -54,6 +57,16 @@ public class TaskModrinthUpload extends DefaultTask {
 	public boolean wasUploadSuccessful() {
 		return newVersion != null;
 	}
+
+	/**
+	 * Input property used to add automatic task dependencies.
+	 *
+	 * @return property
+	 */
+	@InputFiles
+	@Optional
+	@ApiStatus.Internal
+	public abstract ConfigurableFileCollection getWiredInputFiles();
 
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
@@ -145,7 +158,7 @@ public class TaskModrinthUpload extends DefaultTask {
 
 			// Get each of the files, starting with the primary file
 			List<File> files = new ArrayList<>();
-			files.add(resolveFile(getProject(), ext.getUploadFile().get()));
+			files.add(ext.getFile().get().getAsFile());
 
 			// Convert each of the Object files from the extension to a proper File
 			ext.getAdditionalFiles().get().forEach(file -> {

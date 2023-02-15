@@ -4,6 +4,7 @@ import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.Project;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 
@@ -13,7 +14,8 @@ import org.gradle.api.provider.Property;
  */
 public class ModrinthExtension extends DependencyDSL {
 	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom;
-	private final Property<Object> uploadFile;
+	private final Property<Object> legacyUploadFile;
+	private final RegularFileProperty file;
 	private final ListProperty<Object> additionalFiles;
 	private final ListProperty<String> gameVersions, loaders;
 	private final ListProperty<Dependency> dependencies;
@@ -51,7 +53,8 @@ public class ModrinthExtension extends DependencyDSL {
 		versionNumber = project.getObjects().property(String.class);
 		versionName = project.getObjects().property(String.class);
 		changelog = project.getObjects().property(String.class).convention(DEFAULT_CHANGELOG);
-		uploadFile = project.getObjects().property(Object.class);
+		legacyUploadFile = project.getObjects().property(Object.class);
+		file = project.getObjects().fileProperty().convention(legacyUploadFile.flatMap(o -> Util.resolveFileProperty(project, o)));
 		additionalFiles = project.getObjects().listProperty(Object.class).empty();
 		versionType = project.getObjects().property(String.class).convention(DEFAULT_VERSION_TYPE);
 		gameVersions = project.getObjects().listProperty(String.class).empty();
@@ -116,7 +119,16 @@ public class ModrinthExtension extends DependencyDSL {
 	 * {@link Util#resolveFile(Project, Object)}.
 	 */
 	public Property<Object> getUploadFile() {
-		return this.uploadFile;
+		return this.legacyUploadFile;
+	}
+
+	/**
+	 * The upload artifact file.
+	 *
+	 * @return file property
+	 */
+	public RegularFileProperty getFile() {
+		return this.file;
 	}
 
 	/**
