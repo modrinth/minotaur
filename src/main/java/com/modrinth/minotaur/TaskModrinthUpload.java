@@ -13,6 +13,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
@@ -98,19 +99,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Attempt to automatically resolve the loader if none were specified.
 			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
-				Map<String, String> pluginLoaderMap = new HashMap<>();
-				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
-				pluginLoaderMap.put("fabric-loom", "fabric");
-				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
-				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
-				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
-
-				pluginLoaderMap.forEach((plugin, loader) -> {
-					if (pluginManager.hasPlugin(plugin)) {
-						getLogger().debug("Adding loader {} because plugin {} was found.", loader, plugin);
-						ext.getLoaders().add(loader);
-					}
-				});
+				autoDetectLoaders(ext, pluginManager);
 			}
 
 			if (ext.getLoaders().get().isEmpty()) {
@@ -219,6 +208,42 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			} else {
 				throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
 			}
+		}
+	}
+
+	private void autoDetectLoaders(ModrinthExtension ext, PluginManager pluginManager) {
+		Map<String, String> pluginLoaderMap = new HashMap<>();
+		pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
+		pluginLoaderMap.put("org.quiltmc.loom", "quilt");
+		pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
+		pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
+		pluginLoaderMap.put("xyz.jpenilla.run-paper", "paper");
+		pluginLoaderMap.put("xyz.jpenilla.run-waterfall", "waterfall");
+		pluginLoaderMap.put("xyz.jpenilla.run-velocity", "velocity");
+
+		pluginLoaderMap.forEach((plugin, loader) -> {
+			if (pluginManager.hasPlugin(plugin)) {
+				getLogger().debug("Adding loader '{}' because plugin '{}' was found.", loader, plugin);
+				add(ext.getLoaders(), loader);
+			}
+		});
+
+		if (!ext.getLoaders().get().contains("quilt") && getProject().getExtensions().findByName("loom") != null) {
+			String loomPlatform = getProject().getProviders().gradleProperty("loom.platform").getOrNull();
+			if (loomPlatform != null && loomPlatform.equalsIgnoreCase("forge")) {
+				getLogger().debug("Adding loader 'forge' because 'loom' extension was found and loom.platform=forge.");
+				add(ext.getLoaders(), "forge");
+			} else {
+				getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
+				add(ext.getLoaders(), "fabric");
+			}
+		}
+	}
+
+	// needed because loaders is a list, not a set
+	private static  <T> void add(final ListProperty<T> list, final T element) {
+		if (!list.get().contains(element)) {
+			list.add(element);
 		}
 	}
 }
