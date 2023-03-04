@@ -2,15 +2,9 @@ package com.modrinth.minotaur;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
-import org.gradle.api.UncheckedIOException;
 import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 import static com.modrinth.minotaur.Util.ext;
 
@@ -26,29 +20,6 @@ public class Minotaur implements Plugin<Project> {
 	 */
 	@Override
 	public void apply(final Project project) {
-		Path path = project.getRootProject().getProjectDir().toPath().resolve(".gradle").resolve("minotaur");
-		if (Files.notExists(path)) {
-			try {
-				Files.createDirectories(path);
-			} catch (IOException e) {
-				throw new UncheckedIOException("Could not create path at " + path.toAbsolutePath(), e);
-			}
-		}
-		File warningFile = path.resolve("2.7.0-warning-shown").toFile();
-		if (!warningFile.exists()) {
-			project.getLogger().warn("\n[Minotaur Warning] You are running a version of Minotaur that may contain " +
-				"unintentional breaking changes.\n[Minotaur Warning] If a build of yours worked in v2.6.0 but broke in " +
-				"v2.7.0, PLEASE report this immediately either via emailing support@modrinth.com or by opening a GitHub " +
-				"issue on https://github.com/modrinth/minotaur/issues.\n[Minotaur Warning] This warning will not be " +
-				"shown again.\n");
-			try {
-				//noinspection ResultOfMethodCallIgnored
-				warningFile.createNewFile();
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
-			}
-		}
-
 		project.getExtensions().create("modrinth", ModrinthExtension.class, project);
 		project.getLogger().debug("Created the `modrinth` extension.");
 
