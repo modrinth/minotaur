@@ -100,7 +100,33 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Attempt to automatically resolve the loader if none were specified.
 			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
-				autoDetectLoaders(ext, pluginManager);
+				Map<String, String> pluginLoaderMap = new HashMap<>();
+				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
+				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
+				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
+				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
+				pluginLoaderMap.put("xyz.jpenilla.run-paper", "paper");
+				pluginLoaderMap.put("xyz.jpenilla.run-waterfall", "waterfall");
+				pluginLoaderMap.put("xyz.jpenilla.run-velocity", "velocity");
+
+				pluginLoaderMap.forEach((plugin, loader) -> {
+					if (pluginManager.hasPlugin(plugin)) {
+						getLogger().debug("Adding loader '{}' because plugin '{}' was found.", loader, plugin);
+						add(ext.getLoaders(), loader);
+					}
+				});
+
+				if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
+					&& getProject().getExtensions().findByName("loom") != null) {
+					String loomPlatform = getProject().getProviders().gradleProperty("loom.platform").getOrNull();
+					if (loomPlatform != null) {
+						getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
+						add(ext.getLoaders(), loomPlatform);
+					} else {
+						getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
+						add(ext.getLoaders(), "fabric");
+					}
+				}
 			}
 
 			if (ext.getLoaders().get().isEmpty()) {
@@ -109,7 +135,37 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Attempt to automatically resolve the game version if none were specified.
 			if (ext.getGameVersions().get().isEmpty()) {
-				autoDetectGameVersions(ext, pluginManager);
+				if (ext.getLoaders().get().contains("forge") && pluginManager.hasPlugin("net.minecraftforge.gradle")) {
+					// ForgeGradle will store the game version here.
+					// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
+					String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
+
+					if (version != null) {
+						getLogger().debug("Adding fallback game version {} from ForgeGradle.", version);
+						add(ext.getGameVersions(), version);
+					}
+				}
+
+				if (ext.getLoaders().get().contains("fabric") || ext.getLoaders().get().contains("quilt")
+					|| (ext.getLoaders().get().contains("forge") && !pluginManager.hasPlugin("net.minecraftforge.gradle"))) {
+					if (getProject().getExtensions().findByName("loom") != null) {
+						// Use the same method Loom uses to get the version.
+						// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
+						String version = getProject().getConfigurations().getByName("minecraft")
+							.getDependencies().iterator().next().getVersion();
+
+						if (version != null) {
+							getLogger().debug("Adding fallback game version {} from Loom.", version);
+							add(ext.getGameVersions(), version);
+						}
+					}
+				}
+
+				if (ext.getLoaders().get().contains("paper") && getProject().getExtensions().findByName("paperweight") != null) {
+					final String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
+					getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
+					add(ext.getGameVersions(), mcVer);
+				}
 			}
 
 			if (ext.getGameVersions().get().isEmpty()) {
@@ -186,70 +242,6 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			} else {
 				throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
 			}
-		}
-	}
-
-	private void autoDetectLoaders(ModrinthExtension ext, PluginManager pluginManager) {
-		Map<String, String> pluginLoaderMap = new HashMap<>();
-		pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
-		pluginLoaderMap.put("org.quiltmc.loom", "quilt");
-		pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
-		pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
-		pluginLoaderMap.put("xyz.jpenilla.run-paper", "paper");
-		pluginLoaderMap.put("xyz.jpenilla.run-waterfall", "waterfall");
-		pluginLoaderMap.put("xyz.jpenilla.run-velocity", "velocity");
-
-		pluginLoaderMap.forEach((plugin, loader) -> {
-			if (pluginManager.hasPlugin(plugin)) {
-				getLogger().debug("Adding loader '{}' because plugin '{}' was found.", loader, plugin);
-				add(ext.getLoaders(), loader);
-			}
-		});
-
-		if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
-			&& getProject().getExtensions().findByName("loom") != null) {
-			String loomPlatform = getProject().getProviders().gradleProperty("loom.platform").getOrNull();
-			if (loomPlatform != null) {
-				getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
-				add(ext.getLoaders(), loomPlatform);
-			} else {
-				getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
-				add(ext.getLoaders(), "fabric");
-			}
-		}
-	}
-
-	private void autoDetectGameVersions(ModrinthExtension ext, PluginManager pluginManager) {
-		if (ext.getLoaders().get().contains("forge") && pluginManager.hasPlugin("net.minecraftforge.gradle")) {
-			// ForgeGradle will store the game version here.
-			// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
-			String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
-
-			if (version != null) {
-				getLogger().debug("Adding fallback game version {} from ForgeGradle.", version);
-				add(ext.getGameVersions(), version);
-			}
-		}
-
-		if (ext.getLoaders().get().contains("fabric") || ext.getLoaders().get().contains("quilt")
-			|| (ext.getLoaders().get().contains("forge") && !pluginManager.hasPlugin("net.minecraftforge.gradle"))) {
-			if (getProject().getExtensions().findByName("loom") != null) {
-				// Use the same method Loom uses to get the version.
-				// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
-				String version = getProject().getConfigurations().getByName("minecraft")
-					.getDependencies().iterator().next().getVersion();
-
-				if (version != null) {
-					getLogger().debug("Adding fallback game version {} from Loom.", version);
-					add(ext.getGameVersions(), version);
-				}
-			}
-		}
-
-		if (ext.getLoaders().get().contains("paper") && getProject().getExtensions().findByName("paperweight") != null) {
-			final String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
-			getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
-			add(ext.getGameVersions(), mcVer);
 		}
 	}
 
