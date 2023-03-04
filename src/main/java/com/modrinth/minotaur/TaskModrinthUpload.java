@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.responses.ResponseUpload;
+import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
@@ -108,30 +109,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Attempt to automatically resolve the game version if none were specified.
 			if (ext.getGameVersions().get().isEmpty()) {
-				if (ext.getLoaders().get().contains("forge")) {
-					if (pluginManager.hasPlugin("net.minecraftforge.gradle")) {
-						// ForgeGradle will store the game version here.
-						// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
-						String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
-						assert version != null;
-
-						getLogger().debug("Adding fallback game version {} from ForgeGradle.", version);
-						ext.getGameVersions().add(version);
-					}
-				}
-
-				if (ext.getLoaders().get().contains("fabric") || ext.getLoaders().get().contains("quilt")) {
-					if (pluginManager.hasPlugin("fabric-loom") || pluginManager.hasPlugin("org.quiltmc.loom")) {
-						// Use the same method Loom uses to get the version.
-						// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
-						String version = getProject().getConfigurations().getByName("minecraft")
-							.getDependencies().iterator().next().getVersion();
-						assert version != null;
-
-						getLogger().debug("Adding fallback game version {} from Loom.", version);
-						ext.getGameVersions().add(version);
-					}
-				}
+				autoDetectGameVersions(ext, pluginManager);
 			}
 
 			if (ext.getGameVersions().get().isEmpty()) {
@@ -237,6 +215,38 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
 				add(ext.getLoaders(), "fabric");
 			}
+		}
+	}
+
+	private void autoDetectGameVersions(ModrinthExtension ext, PluginManager pluginManager) {
+		if (ext.getLoaders().get().contains("forge") && pluginManager.hasPlugin("net.minecraftforge.gradle")) {
+			// ForgeGradle will store the game version here.
+			// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
+			String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
+			assert version != null;
+
+			getLogger().debug("Adding fallback game version {} from ForgeGradle.", version);
+			add(ext.getGameVersions(), version);
+		}
+
+		if (ext.getLoaders().get().contains("fabric") || ext.getLoaders().get().contains("quilt")
+			|| (ext.getLoaders().get().contains("forge") && !pluginManager.hasPlugin("net.minecraftforge.gradle"))) {
+			if (getProject().getExtensions().findByName("loom") != null) {
+				// Use the same method Loom uses to get the version.
+				// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
+				String version = getProject().getConfigurations().getByName("minecraft")
+					.getDependencies().iterator().next().getVersion();
+				assert version != null;
+
+				getLogger().debug("Adding fallback game version {} from Loom.", version);
+				add(ext.getGameVersions(), version);
+			}
+		}
+
+		if (ext.getLoaders().get().contains("paper") && getProject().getExtensions().findByName("paperweight") != null) {
+			final String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
+			getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
+			add(ext.getGameVersions(), mcVer);
 		}
 	}
 
