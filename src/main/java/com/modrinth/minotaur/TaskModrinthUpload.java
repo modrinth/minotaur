@@ -118,10 +118,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 				if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
 					&& getProject().getExtensions().findByName("loom") != null) {
-					String loomPlatform = getProject().getProviders().gradleProperty("loom.platform").getOrNull();
+					Object loomPlatform = getProject().findProperty("loom.platform");
 					if (loomPlatform != null) {
 						getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
-						add(ext.getLoaders(), loomPlatform);
+						add(ext.getLoaders(), (String) loomPlatform);
 					} else {
 						getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
 						add(ext.getLoaders(), "fabric");
