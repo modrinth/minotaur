@@ -69,7 +69,7 @@ public class Dependency {
 			return new ProjectDependency(null, id, null, dep.getDependencyType());
 		} else if (this instanceof VersionDependency) {
 			VersionDependency dep = (VersionDependency) this;
-			String versionId = resolveVersionId(dep.getProjectId(), dep.getVersionId(), api, ext);
+			String versionId = resolveVersionId(dep.getProjectId(), dep.getVersionId(), api);
 			return new ProjectDependency(versionId, dep.getProjectId(), null, dep.getDependencyType());
 		} else {
 			throw new GradleException("Dependency was not an instance of ModDependency or VersionDependency!");
@@ -94,30 +94,12 @@ public class Dependency {
 	 * @param versionId ID or version number of the project to resolve
 	 * @return ID of the resolved project
 	 */
-	private String resolveVersionId(String projectId, String versionId, ModrinthAPI api, ModrinthExtension ext) {
-		attempt: try {
-			// First check to see if the version is simply a version ID. Return it if so.
-			ProjectVersion version = api.versions().getVersion(versionId).join();
+	private String resolveVersionId(String projectId, String versionId, ModrinthAPI api) {
+		try {
+			ProjectVersion version = api.versions().getVersionByNumber(projectId, versionId).join();
 			return version.getId();
-		} catch (Exception ignored) {
-			// Seems it wasn't a version ID. Try to extract a version number.
-			if (projectId == null) {
-				break attempt;
-			}
-			GetProjectVersionsRequest filter = GetProjectVersionsRequest.builder()
-				.loaders(ext.getLoaders().get())
-				.gameVersions(ext.getGameVersions().get())
-				.build();
-			List<ProjectVersion> versions = api.versions().getProjectVersions(projectId, filter).join();
-
-			for (ProjectVersion version : versions) {
-				if (version.getVersionNumber().equals(versionId)) {
-					return version.getId();
-				}
-			}
+		} catch (Exception e) {
+			throw new GradleException("Failed to resolve version \"" + versionId + "\"!", e);
 		}
-
-		// Input wasn't a version ID or a version number
-		throw new GradleException("Failed to resolve version \"" + versionId + "\"!");
 	}
 }
