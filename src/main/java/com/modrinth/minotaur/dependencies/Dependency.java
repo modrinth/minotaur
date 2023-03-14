@@ -10,6 +10,7 @@ import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
@@ -94,9 +95,11 @@ public class Dependency {
 	 * @param versionId ID or version number of the project to resolve
 	 * @return ID of the resolved project
 	 */
-	private String resolveVersionId(String projectId, String versionId, ModrinthAPI api) {
+	private String resolveVersionId(@Nullable String projectId, String versionId, ModrinthAPI api) {
 		try {
-			ProjectVersion version = api.versions().getVersionByNumber(projectId, versionId).join();
+			ProjectVersion version = projectId == null
+				? api.versions().getVersion(versionId).join()
+				: api.versions().getVersionByNumber(projectId, versionId).join();
 			return version.getId();
 		} catch (Exception e) {
 			throw new GradleException("Failed to resolve version \"" + versionId + "\"!", e);
