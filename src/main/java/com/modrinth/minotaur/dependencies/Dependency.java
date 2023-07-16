@@ -9,7 +9,6 @@ import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -66,16 +65,15 @@ public class Dependency {
 			return new ProjectDependency(null, id, null, dep.getDependencyType());
 		} else if (this instanceof VersionDependency) {
 			VersionDependency dep = (VersionDependency) this;
-			SimpleEntry<String, String> projectInfo;
+			ProjectVersion version;
 			try {
-				ProjectVersion version = dep.getProjectId() == null
+				version = dep.getProjectId() == null
 					? api.versions().getVersion(dep.getVersionId()).join()
 					: api.versions().getVersionByNumber(dep.getProjectId(), dep.getVersionId()).join();
-				projectInfo = new SimpleEntry<>(version.getProjectId(), version.getId());
 			} catch (Exception e) {
 				throw new GradleException("Failed to resolve version \"" + dep.getVersionId() + "\"!", e);
 			}
-			return new ProjectDependency(projectInfo.getValue(), projectInfo.getKey(), null, dep.getDependencyType());
+			return new ProjectDependency(version.getId(), version.getProjectId(), null, dep.getDependencyType());
 		} else {
 			throw new GradleException("Dependency was not an instance of ModDependency or VersionDependency!");
 		}
