@@ -10,6 +10,13 @@ Still using Minotaur v1? You should switch as soon as possible, because it uses 
 
 To use this plugin you must add it to your Gradle build script. After that, you can use the `modrinth` task to upload the version to Modrinth.
 
+Minotaur requires a personal access token with the following scopes:
+- `USER_READ`
+- `CREATE_VERSION` (if running the `modrinth` task)
+- `PROJECT_WRITE` (if running the `modrinthSyncBody` task)
+
+You can generate a token on [the account settings page](https://modrinth.com/settings/account). If your provided token does not have all required scopes, you will get an error saying `Invalid Authentication Credentials`.
+
 ### Groovy
 
 <details open="open"><summary>Groovy DSL</summary>
@@ -36,7 +43,7 @@ The next step is to configure the task for uploading to Modrinth. This allows yo
 ```groovy
 // build.gradle
 modrinth {
-    token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+    token = System.getenv("MODRINTH_TOKEN") // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
     projectId = "my-project" // This can be the project ID or the slug. Either will work!
     versionNumber = "1.0.0" // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default -- can also be `beta` or `alpha`
@@ -82,7 +89,7 @@ The next step is to configure the task for uploading to Modrinth. This allows yo
 ```kotlin
 // build.gradle.kts
 modrinth {
-    token.set(System.getenv("MODRINTH_TOKEN")) // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+    token.set(System.getenv("MODRINTH_TOKEN")) // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
     projectId.set("my-project") // This can be the project ID or the slug. Either will work!
     versionNumber.set("1.0.0") // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType.set("release") // This is the default -- can also be `beta` or `alpha`
