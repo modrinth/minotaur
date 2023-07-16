@@ -1,8 +1,8 @@
 plugins {
-	id 'com.gradle.plugin-publish' version '1.1.0'
+	id 'com.gradle.plugin-publish' version '1.2.0'
 }
 
-version = '2.8.1'
+version = '2.8.2'
 group = 'com.modrinth.minotaur'
 archivesBaseName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -27,20 +27,17 @@ dependencies {
 }
 
 gradlePlugin {
+	website = 'https://modrinth.com'
+	vcsUrl = 'https://github.com/modrinth/minotaur'
 	plugins {
 		minotaur {
 			id = 'com.modrinth.minotaur'
 			implementationClass = 'com.modrinth.minotaur.Minotaur'
 			displayName = 'Minotaur'
+			description = 'Modrinth plugin for publishing builds to the website!'
+			// tags = ['modrinth', 'publish', 'mods', 'minecraft']
 		}
 	}
-}
-
-pluginBundle {
-	website = 'https://modrinth.com'
-	vcsUrl = 'https://github.com/modrinth/minotaur'
-	description = 'Modrinth plugin for publishing builds to the website!'
-	tags = ['modrinth', 'publish', 'mods', 'minecraft']
 }
 
 jar {

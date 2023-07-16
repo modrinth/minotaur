@@ -5,8 +5,8 @@ pluginManagement {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
-		gradlePluginPortal()
 		mavenCentral()
+		gradlePluginPortal()
 	}
 }
 rootProject.name = 'Minotaur'
