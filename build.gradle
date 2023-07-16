@@ -35,7 +35,7 @@ gradlePlugin {
 			implementationClass = 'com.modrinth.minotaur.Minotaur'
 			displayName = 'Minotaur'
 			description = 'Modrinth plugin for publishing builds to the website!'
-			// tags = ['modrinth', 'publish', 'mods', 'minecraft']
+			tags.addAll('modrinth', 'publish', 'mods', 'minecraft')
 		}
 	}
 }
