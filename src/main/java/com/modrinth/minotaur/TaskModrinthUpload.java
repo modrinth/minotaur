@@ -106,6 +106,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
 				Map<String, String> pluginLoaderMap = new HashMap<>();
 				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
+				pluginLoaderMap.put("net.neoforged.gradle", "neoforge");
 				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
 				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
 				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
@@ -139,34 +140,32 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Attempt to automatically resolve the game version if none were specified.
 			if (ext.getGameVersions().get().isEmpty()) {
-				if (ext.getLoaders().get().contains("forge") && pluginManager.hasPlugin("net.minecraftforge.gradle")) {
+				if (pluginManager.hasPlugin("net.minecraftforge.gradle") ||
+					pluginManager.hasPlugin("net.neoforged.gradle")) {
 					// ForgeGradle will store the game version here.
 					// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
 					String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
 
 					if (version != null) {
-						getLogger().debug("Adding fallback game version {} from ForgeGradle.", version);
+						getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
 						add(ext.getGameVersions(), version);
 					}
 				}
 
-				if (ext.getLoaders().get().contains("fabric") || ext.getLoaders().get().contains("quilt")
-					|| (ext.getLoaders().get().contains("forge") && !pluginManager.hasPlugin("net.minecraftforge.gradle"))) {
-					if (getProject().getExtensions().findByName("loom") != null) {
-						// Use the same method Loom uses to get the version.
-						// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
-						String version = getProject().getConfigurations().getByName("minecraft")
-							.getDependencies().iterator().next().getVersion();
+				if (getProject().getExtensions().findByName("loom") != null) {
+					// Use the same method Loom uses to get the version.
+					// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
+					String version = getProject().getConfigurations().getByName("minecraft")
+						.getDependencies().iterator().next().getVersion();
 
-						if (version != null) {
-							getLogger().debug("Adding fallback game version {} from Loom.", version);
-							add(ext.getGameVersions(), version);
-						}
+					if (version != null) {
+						getLogger().debug("Adding fallback game version {} from Loom.", version);
+						add(ext.getGameVersions(), version);
 					}
 				}
 
-				if (ext.getLoaders().get().contains("paper") && getProject().getExtensions().findByName("paperweight") != null) {
-					final String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
+				if (getProject().getExtensions().findByName("paperweight") != null) {
+					String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
 					getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
 					add(ext.getGameVersions(), mcVer);
 				}
