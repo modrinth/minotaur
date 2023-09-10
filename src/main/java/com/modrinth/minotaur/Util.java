@@ -1,9 +1,7 @@
 package com.modrinth.minotaur;
 
 import masecla.modrinth4j.client.agent.UserAgent;
-import masecla.modrinth4j.exception.EndpointException;
 import masecla.modrinth4j.main.ModrinthAPI;
-import masecla.modrinth4j.model.user.ModrinthUser;
 import org.gradle.api.Project;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
@@ -13,7 +11,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.Objects;
 
 /**
  * Internal utility methods to make things easier and deduplicated
@@ -23,9 +20,8 @@ class Util {
 	/**
 	 * @param project Gradle project for getting various info from
 	 * @return A valid {@link ModrinthAPI} instance
-	 * @throws EndpointException when the request to validate the token fails
 	 */
-	static ModrinthAPI api(Project project) throws EndpointException, NullPointerException {
+	static ModrinthAPI api(Project project) {
 		ModrinthExtension ext = ext(project);
 		String url = ext.getApiUrl().get();
 		if (url.endsWith("/")) {
@@ -39,19 +35,14 @@ class Util {
 			.contact(ext.getProjectId().get() + "/" + resolveVersionNumber(project))
 			.build();
 
-		String token = ext(project).getToken().get();
-		ModrinthAPI api = ModrinthAPI.rateLimited(agent, url, token);
-
-		// Ensure validity of token unless in Minotaur CI
-		if (token.equals("dummy_token_for_CI")) {
-			project.getLogger().info("Skipping token validation (GitHub repo {})", System.getenv("GITHUB_REPOSITORY"));
-		} else {
-			ModrinthUser user = api.users().getSelf().join();
-			String username = Objects.requireNonNull(user.getUsername(), "Failed to resolve username from token");
-			project.getLogger().debug("Signed in as user {}", username);
+		String token = ext.getToken().get();
+		if (token.startsWith("mra")) {
+			throw new RuntimeException("Token must be a personal-access token, not a session token!");
+		} else if (!token.startsWith("mrp")) {
+			project.getLogger().warn("Using GitHub tokens for authentication is deprecated. Please begin to use personal-access tokens.");
 		}
 
-		return api;
+		return ModrinthAPI.rateLimited(agent, url, token);
 	}
 
 	/**
