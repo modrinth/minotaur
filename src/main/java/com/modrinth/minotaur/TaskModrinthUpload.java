@@ -107,6 +107,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				Map<String, String> pluginLoaderMap = new HashMap<>();
 				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
 				pluginLoaderMap.put("net.neoforged.gradle", "neoforge");
+				pluginLoaderMap.put("net.neoforged.gradle.userdev", "neoforge");
 				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
 				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
 				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
@@ -141,14 +142,18 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			// Attempt to automatically resolve the game version if none were specified.
 			if (ext.getGameVersions().get().isEmpty()) {
 				if (pluginManager.hasPlugin("net.minecraftforge.gradle") ||
-					pluginManager.hasPlugin("net.neoforged.gradle")) {
-					// ForgeGradle will store the game version here.
-					// https://github.com/MinecraftForge/ForgeGradle/blob/FG_5.0/src/userdev/java/net/minecraftforge/gradle/userdev/MinecraftUserRepo.java#L199
-					String version = (String) getProject().getExtensions().getExtraProperties().get("MC_VERSION");
+					pluginManager.hasPlugin("net.neoforged.gradle") ||
+					pluginManager.hasPlugin("net.neoforged.gradle.userdev")) {
 
-					if (version != null) {
-						getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
-						add(ext.getGameVersions(), version);
+					String[] props = {"MC_VERSION", "minecraftVersion"};
+
+					for (String prop : props) {
+						String version = (String) getProject().getExtensions().getExtraProperties().get(prop);
+						if (version != null) {
+							getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
+							add(ext.getGameVersions(), version);
+							break;
+						}
 					}
 				}
 
