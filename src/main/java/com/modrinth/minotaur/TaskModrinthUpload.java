@@ -148,11 +148,15 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					String[] props = {"MC_VERSION", "minecraftVersion"};
 
 					for (String prop : props) {
-						String version = (String) getProject().getExtensions().getExtraProperties().get(prop);
-						if (version != null) {
-							getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
-							add(ext.getGameVersions(), version);
-							break;
+						try {
+							String version = (String) getProject().getExtensions().getExtraProperties().get(prop);
+							if (version != null) {
+								getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
+								add(ext.getGameVersions(), version);
+								break;
+							}
+						} catch (Exception e) {
+							getLogger().debug("Could not find property {}", prop);
 						}
 					}
 				}
