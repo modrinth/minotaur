@@ -17,7 +17,7 @@ public class ModrinthExtension extends DependencyDSL {
 	private final Property<Object> legacyUploadFile;
 	private final RegularFileProperty file;
 	private final ListProperty<Object> additionalFiles;
-	private final ListProperty<String> gameVersions, loaders;
+	public final ListProperty<String> gameVersions, loaders;
 	private final ListProperty<Dependency> dependencies;
 	private final Property<Boolean> failSilently, detectLoaders, debugMode, autoAddDependsOn;
 
