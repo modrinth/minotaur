@@ -40,8 +40,9 @@ public class NamedDependencyContainer {
 	 * @param versionIds the version id(s)
 	 */
 	public void version(final String... versionIds) {
-		for (String versionId : versionIds)
+		for (String versionId : versionIds) {
 			this.dependencyContainer.add(new NamedDependency(null, versionId, this.dependencyType));
+		}
 	}
 
 	/**
