@@ -30,8 +30,9 @@ public class NamedDependencyContainer {
 	 * @param projectIds the project id(s)
 	 */
 	public void project(final String... projectIds) {
-		for (String projectId : projectIds)
+		for (String projectId : projectIds) {
 			this.dependencyContainer.add(new NamedDependency(projectId, null, this.dependencyType));
+		}
 	}
 
 	/**
