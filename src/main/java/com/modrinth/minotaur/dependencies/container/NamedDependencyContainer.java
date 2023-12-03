@@ -27,19 +27,23 @@ public class NamedDependencyContainer {
 	/**
 	 * Creates an incompatible Dependency Container and applies the projectId property
 	 *
-	 * @param projectId the project id
+	 * @param projectIds the project id(s)
 	 */
-	public void project(final String projectId) {
-		this.dependencyContainer.add(new NamedDependency(projectId, null, this.dependencyType));
+	public void project(final String... projectIds) {
+		for (String projectId : projectIds) {
+			this.dependencyContainer.add(new NamedDependency(projectId, null, this.dependencyType));
+		}
 	}
 
 	/**
 	 * Creates a incompatible Dependency Container and applies the versionId property
 	 *
-	 * @param versionId the version id
+	 * @param versionIds the version id(s)
 	 */
-	public void version(final String versionId) {
-		this.dependencyContainer.add(new NamedDependency(null, versionId, this.dependencyType));
+	public void version(final String... versionIds) {
+		for (String versionId : versionIds) {
+			this.dependencyContainer.add(new NamedDependency(null, versionId, this.dependencyType));
+		}
 	}
 
 	/**
