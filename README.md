@@ -91,7 +91,7 @@ modrinth {
     versionNumber.set("1.0.0") // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType.set("release") // This is the default -- can also be `beta` or `alpha`
     uploadFile.set(tasks.jar) // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions.addAll(arrayOf("1.18", "1.18.1")) // Must be an array, even with only one version
+    gameVersions.addAll("1.18", "1.18.1") // Must be an array, even with only one version
     loaders.add("fabric") // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
         // scope.type
