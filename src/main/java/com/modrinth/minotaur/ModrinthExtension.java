@@ -32,6 +32,7 @@ public class ModrinthExtension extends DependencyDSL {
 	/**
 	 * The default token in use for uploading. Exposed as a fallback utility.
 	 */
+	@Deprecated
 	public static final String DEFAULT_TOKEN = System.getenv("MODRINTH_TOKEN");
 	/**
 	 * The default changelog if one was not provided. Exposed as a fallback utility.
@@ -48,7 +49,7 @@ public class ModrinthExtension extends DependencyDSL {
 	public ModrinthExtension(Project project) {
 		super(project.getObjects());
 		apiUrl = project.getObjects().property(String.class).convention(DEFAULT_API_URL);
-		token = project.getObjects().property(String.class).convention(DEFAULT_TOKEN);
+		token = project.getObjects().property(String.class).convention(project.getProviders().environmentVariable("MODRINTH_TOKEN"));
 		projectId = project.getObjects().property(String.class);
 		versionNumber = project.getObjects().property(String.class);
 		versionName = project.getObjects().property(String.class);
