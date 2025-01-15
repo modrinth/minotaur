@@ -1,14 +1,6 @@
-buildscript {
-	repositories {
-		maven { url = 'https://files.minecraftforge.net/maven' }
-	}
-	dependencies {
-		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '6.+', changing: true
-	}
-}
-
 plugins {
 	id "com.modrinth.minotaur" version "2.+"
+	id "net.minecraftforge.gradle" version "6.+"
 	id "java"
 	id "idea"
 }
