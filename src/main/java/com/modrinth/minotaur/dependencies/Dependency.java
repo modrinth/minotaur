@@ -73,6 +73,11 @@ public class Dependency {
 			} catch (Exception e) {
 				throw new GradleException("Failed to resolve version \"" + dep.getVersionId() + "\"!", e);
 			}
+
+			if (version == null) {
+				throw new GradleException(String.format("Failed to resolve version \"%s\"", dep.getVersionId()));
+			}
+
 			return new ProjectDependency(version.getId(), version.getProjectId(), null, dep.getDependencyType());
 		} else {
 			throw new GradleException("Dependency was not an instance of ModDependency or VersionDependency!");

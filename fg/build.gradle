@@ -25,20 +25,19 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-	apiUrl = STAGING_API_URL
-	projectId = "fred-3"
+	projectId = "mudmod"
 	uploadFile = jar
 	additionalFiles = [project.file("build/libs/fg-$version-sources.jar")]
 	versionType = "beta"
 	dependencies = [
 		new ModDependency("test-project", "optional"),
-		new VersionDependency("CE5sWFeF", DependencyType.INCOMPATIBLE)
+		new VersionDependency("dG06oDvH", DependencyType.INCOMPATIBLE)
 	]
 	dependencies {
 		required.project "corrupted"
-		optional.version "UakHulqw"
-		incompatible.version "kdIr8lsr", "b1.2+mod"
-		embedded.project "sbbGxWge"
+		optional.version "9MsDOrJE"
+		incompatible.version "mOgUt4GM", "13.0.0"
+		embedded.project "uiW75cBG"
 	}
 	debugMode = true
 }
