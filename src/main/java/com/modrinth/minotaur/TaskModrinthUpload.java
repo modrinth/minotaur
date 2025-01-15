@@ -93,7 +93,16 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 		try {
 			ModrinthAPI api = api(getProject());
 
-			String id = Objects.requireNonNull(api.projects().getProjectIdBySlug(ext.getProjectId().get()).join());
+			String slug = ext.getProjectId().get();
+			String id = api.projects().getProjectIdBySlug(slug).join();
+			if (id == null) {
+				if (ext.getDebugMode().get()) {
+					getLogger().error("Cannot find project with id '{}'.", slug);
+					id = "<unknown>";
+				} else {
+					throw new GradleException(String.format("Cannot find project with id '%s'", slug));
+				}
+			}
 			getLogger().debug("Uploading version to project {}", id);
 
 			// Add version name if it's null
@@ -248,7 +257,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			getLogger().lifecycle(
 				"Successfully uploaded version {} to {} ({}) as version ID {}. {}",
 				newVersion.getVersionNumber(),
-				ext.getProjectId().get(),
+				slug,
 				id,
 				newVersion.getId(),
 				String.format(
