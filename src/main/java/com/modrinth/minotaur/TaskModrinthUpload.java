@@ -117,6 +117,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
 				pluginLoaderMap.put("net.neoforged.gradle", "neoforge");
 				pluginLoaderMap.put("net.neoforged.gradle.userdev", "neoforge");
+				pluginLoaderMap.put("net.neoforged.moddev", "neoforge");
+				pluginLoaderMap.put("net.neoforged.moddev.legacyforge", "forge");
 				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
 				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
 				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
