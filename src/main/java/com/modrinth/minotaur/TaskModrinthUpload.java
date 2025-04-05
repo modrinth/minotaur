@@ -7,6 +7,8 @@ import com.modrinth.minotaur.responses.ResponseUpload;
 import com.modrinth.minotaur.scanner.JarInfectionScanner;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
+import masecla.modrinth4j.endpoints.version.ModifyVersion;
+import masecla.modrinth4j.endpoints.version.VersionEndpoints;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
@@ -229,18 +231,23 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				}
 			});
 
+			String changelog = ext.getChangelog().get().replaceAll("\r\n", "\n");
+			VersionEndpoints ve = api.versions();
+			ProjectVersion version;
+
 			// Start construction of the actual request!
 			CreateVersionRequest data = CreateVersionRequest.builder()
 				.projectId(id)
 				.versionNumber(versionNumber)
 				.name(ext.getVersionName().get())
-				.changelog(ext.getChangelog().get().replaceAll("\r\n", "\n"))
+				.changelog(changelog)
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
 				.gameVersions(ext.getGameVersions().get())
 				.loaders(ext.getLoaders().get())
 				.dependencies(dependencies)
 				.files(files)
 				.build();
+
 
 			// Return early in debug mode
 			if (ext.getDebugMode().get()) {
@@ -251,7 +258,48 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 
 			// Execute the request
-			ProjectVersion version = api.versions().createProjectVersion(data).join();
+			if ((version = ve.getVersionByNumber(slug, versionNumber).join()) != null) {
+				if (!ext.getAllowUploadToExistingVersion().get()) {
+					throw new GradleException(
+						String.format("Version with id {%s} and version number {%s} already exists", version.getId(), versionNumber));
+				}
+				getLogger().warn("Existing version detected, adding files directly, changelog may be overwritten.");
+
+				version.getDependencies().stream()
+					.filter(dependency -> !dependencies.contains(dependency))
+					.forEach(dependencies::add);
+
+				List<String> gameVersions = version.getGameVersions();
+				ext.getGameVersions().get().stream()
+					.filter(gameVersion -> !gameVersions.contains(gameVersion))
+					.forEach(gameVersions::add);
+
+				List<String> loaders = version.getLoaders();
+				ext.getLoaders().get().stream()
+					.filter(loader -> !loaders.contains(loader))
+					.forEach(loaders::add);
+
+				ModifyVersion.ModifyVersionRequest modifyData = ModifyVersion.ModifyVersionRequest.builder()
+					.gameVersions(gameVersions)
+					.dependencies(dependencies)
+					.loaders(loaders)
+					.changelog(changelog)
+					.build();
+
+				ve.addFilesToVersion(version.getId(), files);
+				version = ve.modifyProjectVersion(version.getId(), modifyData).join();
+			} else {
+				// Return early in debug mode
+				if (ext.getDebugMode().get()) {
+					Gson gson = new GsonBuilder().setPrettyPrinting().create();
+					getLogger().lifecycle("Full data to be sent for upload: {}", gson.toJson(data));
+					getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
+					return;
+				}
+				version = ve.createProjectVersion(data).join();
+			}
+
+
 			newVersion = version;
 			//noinspection deprecation
 			uploadInfo = new ResponseUpload(version);

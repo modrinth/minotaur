@@ -19,7 +19,7 @@ public class ModrinthExtension extends DependencyDSL {
 	private final ListProperty<Object> additionalFiles;
 	public final ListProperty<String> gameVersions, loaders;
 	private final ListProperty<Dependency> dependencies;
-	private final Property<Boolean> failSilently, detectLoaders, debugMode, autoAddDependsOn;
+	private final Property<Boolean> failSilently, detectLoaders, debugMode, autoAddDependsOn, allowUploadToExistingVersion;
 
 	/**
 	 * The default API URL in use for uploading. Exposed as a fallback utility.
@@ -66,6 +66,7 @@ public class ModrinthExtension extends DependencyDSL {
 		debugMode = project.getObjects().property(Boolean.class).convention(false);
 		syncBodyFrom = project.getObjects().property(String.class);
 		autoAddDependsOn = project.getObjects().property(Boolean.class).convention(true);
+		allowUploadToExistingVersion = project.getObjects().property(Boolean.class).convention(false);
 	}
 
 	/**
@@ -200,5 +201,12 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public Property<Boolean> getAutoAddDependsOn() {
 		return autoAddDependsOn;
+	}
+
+	/**
+	 * @return Wether to allow the attempt to add files to an existing version with the same version number when uploading
+	 */
+	public Property<Boolean> getAllowUploadToExistingVersion() {
+		return allowUploadToExistingVersion;
 	}
 }
