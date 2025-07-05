@@ -4,6 +4,9 @@ import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.Project;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.internal.file.FileResolver;
+import org.gradle.api.logging.LogLevel;
+import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
@@ -11,6 +14,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.nio.file.Path;
 
 /**
  * Internal utility methods to make things easier and deduplicated
@@ -18,11 +22,11 @@ import java.io.File;
 @ApiStatus.Internal
 class Util {
 	/**
-	 * @param project Gradle project for getting various info from
+	 * @param ext {@link ModrinthExtension} instance for obtaining info from
+	 * @param log Gradle logger used when non-PATs are in use
 	 * @return A valid {@link ModrinthAPI} instance
 	 */
-	static ModrinthAPI api(Project project) {
-		ModrinthExtension ext = ext(project);
+	static ModrinthAPI api(ModrinthExtension ext, Logger log) {
 		String url = ext.getApiUrl().get();
 		if (url.endsWith("/")) {
 			url = url.substring(0, url.length() - 1);
@@ -32,14 +36,14 @@ class Util {
 			.authorUsername("modrinth")
 			.projectName("minotaur")
 			.projectVersion(Util.class.getPackage().getImplementationVersion())
-			.contact(ext.getProjectId().get() + "/" + resolveVersionNumber(project))
+			.contact(ext.getProjectId().get() + "/" + resolveVersionNumber(ext, "unknown"))
 			.build();
 
 		String token = ext.getToken().get();
 		if (token.startsWith("mra")) {
 			throw new RuntimeException("Token must be a personal-access token, not a session token!");
 		} else if (!token.startsWith("mrp")) {
-			project.getLogger().warn("Using GitHub tokens for authentication is deprecated. Please begin to use personal-access tokens.");
+			log.log(LogLevel.WARN, "Using GitHub tokens for authentication is deprecated. Please begin to use personal-access tokens.");
 		}
 
 		return ModrinthAPI.rateLimited(agent, url, token);
@@ -49,6 +53,7 @@ class Util {
 	 * @param project Gradle project for getting various info from
 	 * @return The {@link ModrinthExtension} for the project
 	 */
+	@Deprecated
 	static ModrinthExtension ext(Project project) {
 		return project.getExtensions().getByType(ModrinthExtension.class);
 	}
@@ -56,13 +61,13 @@ class Util {
 	/**
 	 * Safely resolves the version number.
 	 *
-	 * @param project The Gradle project to resolve the extension and version from
-	 * @return The extension version number if set; otherwise, the Gradle project version.
+	 * @param ext The {@link ModrinthExtension} to resolve the version from
+	 * @param fallback Value if no value is provided in the extension
+	 * @return The extension version number if set; otherwise, the fallback param.
 	 */
-	static String resolveVersionNumber(Project project) {
-		ModrinthExtension ext = ext(project);
+	static String resolveVersionNumber(ModrinthExtension ext, String fallback) {
 		if (ext.getVersionNumber().getOrNull() == null) {
-			ext.getVersionNumber().set(project.getVersion().toString());
+			ext.getVersionNumber().set(fallback);
 		}
 		return ext.getVersionNumber().get();
 	}
@@ -75,7 +80,7 @@ class Util {
 	 * @return A file handle for the resolved input. If the input can not be resolved this will be null or the fallback.
 	 */
 	@Nullable
-	static File resolveFile(Project project, Object in) {
+	static File resolveFile(Object in) {
 		if (in == null) {
 			// If input is null we can't really do anything...
 			return null;
@@ -94,10 +99,13 @@ class Util {
 			if (provided instanceof AbstractArchiveTask) {
 				return ((AbstractArchiveTask) provided).getArchiveFile().get().getAsFile();
 			}
+		} else if (in instanceof Path) {
+			return ((Path) in).toFile();
+		} else if (in instanceof String) {
+			return new File((String) in);
 		}
 
-		// None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
-		return project.file(in);
+		throw new RuntimeException("Could not resolve file " + in);
 	}
 
 	static Provider<RegularFile> resolveFileProperty(Project project, Object in) {

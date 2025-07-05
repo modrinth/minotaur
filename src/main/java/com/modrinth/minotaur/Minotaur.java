@@ -6,8 +6,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
-import static com.modrinth.minotaur.Util.ext;
-
 /**
  * The main class for Minotaur.
  */
@@ -20,7 +18,8 @@ public class Minotaur implements Plugin<Project> {
 	 */
 	@Override
 	public void apply(final Project project) {
-		project.getExtensions().create("modrinth", ModrinthExtension.class, project);
+		ModrinthExtension extension =
+			project.getExtensions().create("modrinth", ModrinthExtension.class, project);
 		project.getLogger().debug("Created the `modrinth` extension.");
 
 		TaskContainer tasks = project.getTasks();
@@ -29,6 +28,24 @@ public class Minotaur implements Plugin<Project> {
 			task.setDescription("Upload project to Modrinth");
 			task.dependsOn(tasks.named("assemble"));
 			task.mustRunAfter(tasks.named("build"));
+			task.getModrinthExtension().set(extension);
+			task.getProjectVersion().set(project.getVersion().toString());
+			task.getPluginManager().set(project.getPluginManager());
+
+			if (project.findProperty("loom.platform") != null) {
+				task.getLoomPlatform().set((String) project.findProperty("loom.platform"));
+			}
+
+			if (extension.getGameVersions().get().isEmpty()) {
+				try {
+					task.getLoomMinecraftVersion().set(
+						project.getConfigurations().getByName("minecraft")
+							.getDependencies().iterator().next().getVersion()
+					);
+				} catch (Exception e) {
+					// do nothing
+				}
+			}
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
@@ -39,7 +56,7 @@ public class Minotaur implements Plugin<Project> {
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
 		project.afterEvaluate(evaluatedProject -> {
-			ModrinthExtension ext = ext(evaluatedProject);
+			ModrinthExtension ext = evaluatedProject.getExtensions().findByType(ModrinthExtension.class);
 
 			if (!ext.getAutoAddDependsOn().getOrElse(true)) {
 				return;

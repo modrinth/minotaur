@@ -28,7 +28,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
 				throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
 			}
 
-			ModrinthAPI api = api(getProject());
+			ModrinthAPI api = api(ext, getLogger());
 
 			// This isn't used until later, but resolve it early anyway to throw invalid IDs early
 			String id = Objects.requireNonNull(

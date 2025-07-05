@@ -14,8 +14,13 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.TaskAction;
@@ -74,6 +79,28 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@ApiStatus.Internal
 	public abstract ConfigurableFileCollection getWiredInputFiles();
 
+	@Input
+	@ApiStatus.Internal
+	abstract Property<ModrinthExtension> getModrinthExtension();
+
+	@Input
+	@ApiStatus.Internal
+	abstract Property<String> getProjectVersion();
+
+	@Input
+	@ApiStatus.Internal
+	abstract Property<PluginManager> getPluginManager();
+
+	@Input
+	@ApiStatus.Internal
+	@Optional
+	abstract Property<String> getLoomPlatform();
+
+	@Input
+	@ApiStatus.Internal
+	@Optional
+	abstract Property<String> getLoomMinecraftVersion();
+
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
@@ -88,10 +115,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@TaskAction
 	public void apply() {
 		getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
-		ModrinthExtension ext = ext(getProject());
-		PluginManager pluginManager = getProject().getPluginManager();
+		ModrinthExtension ext = getModrinthExtension().get();
+		PluginManager pluginManager = getPluginManager().get();
 		try {
-			ModrinthAPI api = api(getProject());
+			ModrinthAPI api = api(ext, getLogger());
 
 			String slug = ext.getProjectId().get();
 			String id = api.projects().getProjectIdBySlug(slug).join();
@@ -106,7 +133,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			getLogger().debug("Uploading version to project {}", id);
 
 			// Add version name if it's null
-			String versionNumber = resolveVersionNumber(getProject());
+			String versionNumber = resolveVersionNumber(ext, getProjectVersion().get());
 			if (ext.getVersionName().getOrNull() == null) {
 				ext.getVersionName().set(versionNumber);
 			}
@@ -134,11 +161,11 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				});
 
 				if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
-					&& getProject().getExtensions().findByName("loom") != null) {
-					Object loomPlatform = getProject().findProperty("loom.platform");
-					if (loomPlatform != null) {
+					&& getExtensions().findByName("loom") != null) {
+					if (getLoomPlatform().isPresent()) {
+						String loomPlatform = getLoomPlatform().get();
 						getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
-						add(ext.getLoaders(), (String) loomPlatform);
+						add(ext.getLoaders(), loomPlatform);
 					} else {
 						getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
 						add(ext.getLoaders(), "fabric");
@@ -160,7 +187,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 					for (String prop : props) {
 						try {
-							String version = (String) getProject().getExtensions().getExtraProperties().get(prop);
+							String version = (String) getExtensions().getExtraProperties().get(prop);
 							if (version != null) {
 								getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
 								add(ext.getGameVersions(), version);
@@ -172,11 +199,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					}
 				}
 
-				if (getProject().getExtensions().findByName("loom") != null) {
+				if (getExtensions().findByName("loom") != null) {
 					// Use the same method Loom uses to get the version.
 					// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
-					String version = getProject().getConfigurations().getByName("minecraft")
-						.getDependencies().iterator().next().getVersion();
+					String version = getLoomMinecraftVersion().getOrNull();
 
 					if (version != null) {
 						getLogger().debug("Adding fallback game version {} from Loom.", version);
@@ -184,8 +210,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					}
 				}
 
-				if (getProject().getExtensions().findByName("paperweight") != null) {
-					String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
+				if (getExtensions().findByName("paperweight") != null) {
+					String mcVer = getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
 					getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
 					add(ext.getGameVersions(), mcVer);
 				}
@@ -208,7 +234,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Convert each of the Object files from the extension to a proper File
 			ext.getAdditionalFiles().get().forEach(file -> {
-				File resolvedFile = resolveFile(getProject(), file);
+				File resolvedFile = resolveFile(file);
 
 				// Ensure the file actually exists before trying to upload it.
 				if (resolvedFile == null || !resolvedFile.exists()) {

@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "1.3.+"
+	id "fabric-loom" version "1.11.+"
 	id "com.modrinth.minotaur" version "2.+"
 }
 
@@ -19,8 +19,10 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
+	loaders = ['fabric']
+	gameVersions = ['1.17.1']
 	projectId = "mudmod"
-	uploadFile = remapJar
+	file = remapJar.archiveFile
 	additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
 	versionType = "alpha"
 	dependencies = [
