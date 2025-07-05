@@ -14,11 +14,9 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.plugins.ExtensionContainer;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
-import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
@@ -93,6 +91,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 	@Input
 	@ApiStatus.Internal
+	abstract Property<ExtensionContainer> getExtensionContainer();
+
+	@Input
+	@ApiStatus.Internal
 	@Optional
 	abstract Property<String> getLoomPlatform();
 
@@ -161,7 +163,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				});
 
 				if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
-					&& getExtensions().findByName("loom") != null) {
+					&& getExtensionContainer().get().findByName("loom") != null) {
 					if (getLoomPlatform().isPresent()) {
 						String loomPlatform = getLoomPlatform().get();
 						getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
@@ -187,7 +189,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 					for (String prop : props) {
 						try {
-							String version = (String) getExtensions().getExtraProperties().get(prop);
+							String version = (String) getExtensionContainer().get().getExtraProperties().get(prop);
 							if (version != null) {
 								getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
 								add(ext.getGameVersions(), version);
@@ -199,7 +201,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					}
 				}
 
-				if (getExtensions().findByName("loom") != null) {
+				if (getExtensionContainer().get().findByName("loom") != null) {
 					// Use the same method Loom uses to get the version.
 					// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
 					String version = getLoomMinecraftVersion().getOrNull();
@@ -210,8 +212,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					}
 				}
 
-				if (getExtensions().findByName("paperweight") != null) {
-					String mcVer = getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
+				if (getExtensionContainer().get().findByName("paperweight") != null) {
+					String mcVer = getExtensionContainer().get().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
 					getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
 					add(ext.getGameVersions(), mcVer);
 				}

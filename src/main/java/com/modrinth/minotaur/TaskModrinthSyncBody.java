@@ -5,7 +5,10 @@ import masecla.modrinth4j.endpoints.project.ModifyProject.ProjectModifications;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -15,14 +18,18 @@ import static com.modrinth.minotaur.Util.*;
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
  */
-public class TaskModrinthSyncBody extends DefaultTask {
+public abstract class TaskModrinthSyncBody extends DefaultTask {
+	@Input
+	@ApiStatus.Internal
+	abstract Property<ModrinthExtension> getModrinthExtension();
+
 	/**
 	 * Uploads a body to a project, both of which are specified in {@link ModrinthExtension}.
 	 */
 	@TaskAction
 	public void apply() {
 		getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
-		ModrinthExtension ext = ext(getProject());
+		ModrinthExtension ext = getModrinthExtension().get();
 		try {
 			if (ext.getSyncBodyFrom() == null) {
 				throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");

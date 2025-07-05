@@ -19,8 +19,6 @@ import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-	loaders = ['fabric']
-	gameVersions = ['1.17.1']
 	projectId = "mudmod"
 	file = remapJar.archiveFile
 	additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]

@@ -31,6 +31,7 @@ public class Minotaur implements Plugin<Project> {
 			task.getModrinthExtension().set(extension);
 			task.getProjectVersion().set(project.getVersion().toString());
 			task.getPluginManager().set(project.getPluginManager());
+			task.getExtensionContainer().set(project.getExtensions());
 
 			if (project.findProperty("loom.platform") != null) {
 				task.getLoomPlatform().set((String) project.findProperty("loom.platform"));
@@ -52,6 +53,7 @@ public class Minotaur implements Plugin<Project> {
 		tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
 			task.setGroup("publishing");
 			task.setDescription("Sync project description to Modrinth");
+			task.getModrinthExtension().set(extension);
 		});
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 

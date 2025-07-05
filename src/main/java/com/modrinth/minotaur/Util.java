@@ -50,15 +50,6 @@ class Util {
 	}
 
 	/**
-	 * @param project Gradle project for getting various info from
-	 * @return The {@link ModrinthExtension} for the project
-	 */
-	@Deprecated
-	static ModrinthExtension ext(Project project) {
-		return project.getExtensions().getByType(ModrinthExtension.class);
-	}
-
-	/**
 	 * Safely resolves the version number.
 	 *
 	 * @param ext The {@link ModrinthExtension} to resolve the version from
