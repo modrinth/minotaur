@@ -88,6 +88,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@TaskAction
 	public void apply() {
 		getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
+		notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 		ModrinthExtension ext = ext(getProject());
 		PluginManager pluginManager = getProject().getPluginManager();
 		try {

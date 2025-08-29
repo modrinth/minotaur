@@ -22,6 +22,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
 	@TaskAction
 	public void apply() {
 		getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
+		notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 		ModrinthExtension ext = ext(getProject());
 		try {
 			if (ext.getSyncBodyFrom() == null) {
