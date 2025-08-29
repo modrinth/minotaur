@@ -29,12 +29,14 @@ public class Minotaur implements Plugin<Project> {
 			task.setDescription("Upload project to Modrinth");
 			task.dependsOn(tasks.named("assemble"));
 			task.mustRunAfter(tasks.named("build"));
+			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
 		tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
 			task.setGroup("publishing");
 			task.setDescription("Sync project description to Modrinth");
+			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 		});
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
