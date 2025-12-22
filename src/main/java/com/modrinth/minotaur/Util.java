@@ -16,7 +16,7 @@ import java.io.File;
  * Internal utility methods to make things easier and deduplicated
  */
 @ApiStatus.Internal
-class Util {
+public class Util {
 	/**
 	 * @param project Gradle project for getting various info from
 	 * @return A valid {@link ModrinthAPI} instance
@@ -100,7 +100,7 @@ class Util {
 		return project.file(in);
 	}
 
-	static Provider<RegularFile> resolveFileProperty(Project project, Object in) {
+	public static Provider<RegularFile> resolveFileProperty(Project project, Object in) {
 		if (in == null) {
 			// If input is null we can't really do anything...
 			return project.getObjects().fileProperty();

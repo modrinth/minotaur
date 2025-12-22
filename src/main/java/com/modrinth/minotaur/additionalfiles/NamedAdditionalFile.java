@@ -1,7 +1,5 @@
-package com.modrinth.minotaur.additionalfiles.container;
+package com.modrinth.minotaur.additionalfiles;
 
-import com.modrinth.minotaur.additionalfiles.AdditionalFile;
-import com.modrinth.minotaur.additionalfiles.AdditionalFileType;
 import org.gradle.api.Named;
 import org.gradle.api.file.RegularFile;
 import org.jetbrains.annotations.NotNull;
@@ -40,15 +38,5 @@ public class NamedAdditionalFile implements Named {
 	 */
 	public AdditionalFileType getAdditionalFileType() {
 		return this.additionalFileType;
-	}
-
-	/**
-	 * Return this as a never null {@link AdditionalFile}.
-	 *
-	 * @return {@link AdditionalFile} dynamically created AdditionalFile
-	 */
-	@NotNull
-	public AdditionalFile getAdditionalFile() {
-		return new AdditionalFile(this.additionalFileType, this.file);
 	}
 }

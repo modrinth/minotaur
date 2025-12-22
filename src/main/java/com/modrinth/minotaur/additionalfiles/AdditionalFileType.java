@@ -1,7 +1,6 @@
 package com.modrinth.minotaur.additionalfiles;
 
 import com.google.gson.annotations.SerializedName;
-import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 
 import java.util.Locale;
 
@@ -54,7 +53,7 @@ public enum AdditionalFileType {
 	OTHER;
 
 	public String toString() {
-		return this.name().toLowerCase(Locale.ROOT);
+		return this.name().toLowerCase(Locale.ROOT).replace('_', '-');
 	}
 
 }

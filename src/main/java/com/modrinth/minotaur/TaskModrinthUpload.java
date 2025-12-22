@@ -218,6 +218,11 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				files.add(resolvedFile);
 			});
 
+			// TODO add this to actual additional files with specified file types
+			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file -> {
+				getLogger().warn("Additional file {} is {}", file.getName(), file.getAdditionalFileType());
+			});
+
 			// Scan detected files for presence of the Fractureiser malware
 			files.forEach(file -> {
 				try (ZipFile zipFile = new ZipFile(file)) {

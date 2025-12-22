@@ -1,8 +1,10 @@
 package com.modrinth.minotaur;
 
+import com.modrinth.minotaur.additionalfiles.AdditionalFileDSL;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
+import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
@@ -13,6 +15,7 @@ import org.gradle.api.provider.Property;
  * {...}} block in the buildscript.
  */
 public class ModrinthExtension extends DependencyDSL {
+	private final AdditionalFileDSL additionalFileDsl;
 	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom;
 	private final Property<Object> legacyUploadFile;
 	private final RegularFileProperty file;
@@ -48,6 +51,7 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public ModrinthExtension(Project project) {
 		super(project.getObjects());
+		additionalFileDsl = project.getObjects().newInstance(AdditionalFileDSL.class);
 		apiUrl = project.getObjects().property(String.class).convention(DEFAULT_API_URL);
 		token = project.getObjects().property(String.class).convention(project.getProviders().environmentVariable("MODRINTH_TOKEN"));
 		projectId = project.getObjects().property(String.class);
@@ -66,6 +70,14 @@ public class ModrinthExtension extends DependencyDSL {
 		debugMode = project.getObjects().property(Boolean.class).convention(false);
 		syncBodyFrom = project.getObjects().property(String.class);
 		autoAddDependsOn = project.getObjects().property(Boolean.class).convention(true);
+	}
+
+	public void additionalFiles(Action<? super AdditionalFileDSL> action) {
+		action.execute(additionalFileDsl);
+	}
+
+	public AdditionalFileDSL getAdditionalFileDsl() {
+		return additionalFileDsl;
 	}
 
 	/**

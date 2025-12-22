@@ -1,5 +1,5 @@
 plugins {
-	id "fabric-loom" version "1.3.+"
+	id "fabric-loom" version "1.14.+"
 	id "com.modrinth.minotaur" version "2.+"
 }
 
@@ -22,6 +22,10 @@ modrinth {
 	projectId = "mudmod"
 	uploadFile = remapJar
 	additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
+	additionalFiles {
+		signature remapJar
+		javadocJar project.file("build/libs/loom-$version-sources.jar")
+	}
 	versionType = "alpha"
 	dependencies = [
 		new ModDependency("test-project", "optional"),
