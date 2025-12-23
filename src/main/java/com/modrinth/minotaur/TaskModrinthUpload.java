@@ -203,8 +203,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			protoDependencies.stream().map(dependency -> dependency.toNew(api)).forEach(dependencies::add);
 
 			// Get each of the files, starting with the primary file
-			List<File> files = new ArrayList<>();
-			files.add(ext.getFile().get().getAsFile());
+			Map<File, String> files = new LinkedHashMap<>();
+			files.put(ext.getFile().get().getAsFile(), "primary");
 
 			// Convert each of the Object files from the extension to a proper File
 			ext.getAdditionalFiles().get().forEach(file -> {
@@ -215,20 +215,31 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					throw new GradleException("The upload file is missing or null. " + file);
 				}
 
-				files.add(resolvedFile);
+				String fileName = resolvedFile.getName();
+				String fileType = null;
+
+				// No switches in Java 8 :(
+				if (fileName.contains("-dev.jar")) {
+					fileType = "dev-jar";
+				} else if (fileName.contains("-sources.jar")) {
+					fileType = "sources-jar";
+				} else if (fileName.contains("-javadoc.jar")) {
+					fileType = "javadoc-jar";
+				} else if (fileName.contains("asc") || fileName.contains("gpg") || fileName.contains("sig")) {
+					fileType = "signature";
+				}
+
+				files.put(resolvedFile, fileType);
 			});
 
-			// TODO add this to actual additional files with specified file types
-			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file -> {
-				getLogger().warn("Additional file {} is {}", file.getName(), file.getAdditionalFileType());
-			});
+			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file ->
+				files.put(file.getFile().getAsFile(), file.getAdditionalFileType().toString()));
 
 			// Scan detected files for presence of the Fractureiser malware
-			files.forEach(file -> {
+			files.forEach((file, string) -> {
 				try (ZipFile zipFile = new ZipFile(file)) {
 					JarInfectionScanner.scan(getLogger(), zipFile);
-				} catch (ZipException e) {
-					getLogger().warn("Failed to scan {}. Not a valid zip or jar file", file.getName(), e);
+				} catch (ZipException ignored) {
 				} catch (IOException e) {
 					throw new GradleException(String.format("Failed to scan %s", file.getName()), e);
 				}

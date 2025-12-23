@@ -13,18 +13,20 @@ dependencies {
 }
 
 java.withSourcesJar()
+java.withJavadocJar()
 
 import com.modrinth.minotaur.dependencies.DependencyType
 import com.modrinth.minotaur.dependencies.ModDependency
 import com.modrinth.minotaur.dependencies.VersionDependency
 
 modrinth {
-	projectId = "mudmod"
+	projectId = "allergies"
 	uploadFile = remapJar
-	additionalFiles = [project.file("build/libs/loom-$version-sources.jar")]
+	additionalFiles = [project.file("build/devlibs/loom-$version-dev.jar")]
 	additionalFiles {
-		signature remapJar
-		javadocJar project.file("build/libs/loom-$version-sources.jar")
+		sourcesJar sourcesJar
+		javadocJar javadocJar
+		other 'build/loom-cache/remapped_working/remapped.net.fabricmc-fabric-loader-2b40239f-0.12.12.jar'
 	}
 	versionType = "alpha"
 	dependencies = [
@@ -34,9 +36,17 @@ modrinth {
 	dependencies {
 		required.project "corrupted"
 		optional.version "9MsDOrJE"
-		incompatible.version "mOgUt4GM", "13.0.0"
+		incompatible.version "AANobbMI", "mc1.21.11-0.8.2-fabric"
 		embedded.project "uiW75cBG"
 		required.version "modmenu", "11.0.2"
 	}
-	debugMode = true
+	//debugMode = true
+}
+
+tasks.withType(Jar) {
+	manifest {
+		attributes([
+				'Timestamp': System.currentTimeMillis(),
+		])
+	}
 }

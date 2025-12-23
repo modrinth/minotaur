@@ -31,6 +31,10 @@ public class NamedAdditionalFile implements Named {
 		return this.file.getAsFile().getName();
 	}
 
+	public RegularFile getFile() {
+		return file;
+	}
+
 	/**
 	 * Gets the AdditionalFileType as String.
 	 *

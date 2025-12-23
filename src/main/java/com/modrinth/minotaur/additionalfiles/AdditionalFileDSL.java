@@ -58,7 +58,7 @@ public class AdditionalFileDSL {
 	 *
 	 * @param file the file
 	 */
-	public void sourceJar(final Object file) {
+	public void sourcesJar(final Object file) {
 		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.SOURCES_JAR, Util.resolveFileProperty(project, file).get()));
 	}
 

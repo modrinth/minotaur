@@ -10,6 +10,7 @@ description = 'Modrinth plugin for publishing builds to the website!'
 String vendor = 'Modrinth'
 
 repositories {
+	mavenLocal()
 	mavenCentral()
 	gradlePluginPortal()
 }
@@ -17,7 +18,7 @@ repositories {
 dependencies {
 	compileOnly gradleApi()
 	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
-	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.2.0'
+	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.2.1-local.4'
 	api group: 'org.ow2.asm', name: 'asm', version: '9.5'
 	api group: 'org.ow2.asm', name: 'asm-tree', version: '9.5'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'

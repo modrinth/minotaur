@@ -53,7 +53,11 @@ public enum AdditionalFileType {
 	OTHER;
 
 	public String toString() {
-		return this.name().toLowerCase(Locale.ROOT).replace('_', '-');
+		if (this == OTHER) {
+			return null;
+		} else {
+			return this.name().toLowerCase(Locale.ROOT).replace('_', '-');
+		}
 	}
 
 }
