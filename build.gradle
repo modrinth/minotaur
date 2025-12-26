@@ -21,7 +21,7 @@ repositories {
 dependencies {
 	compileOnly gradleApi()
 	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
-	api shadow(group: 'com.modrinth', name: 'Modrinth4J-fork', version: '2.2.1')
+	implementation shadow(group: 'com.modrinth', name: 'Modrinth4J-fork', version: '2.2.1')
 	api group: 'org.ow2.asm', name: 'asm', version: '9.5'
 	api group: 'org.ow2.asm', name: 'asm-tree', version: '9.5'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'
