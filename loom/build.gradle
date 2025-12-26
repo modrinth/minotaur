@@ -40,7 +40,7 @@ modrinth {
 		embedded.project "uiW75cBG"
 		required.version "modmenu", "11.0.2"
 	}
-	//debugMode = true
+	debugMode = true
 }
 
 tasks.withType(Jar) {

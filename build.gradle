@@ -21,7 +21,7 @@ repositories {
 dependencies {
 	compileOnly gradleApi()
 	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
-	compileOnly shadow(group: 'com.modrinth', name: 'Modrinth4J-fork', version: '2.2.1')
+	api shadow(group: 'com.modrinth', name: 'Modrinth4J-fork', version: '2.2.1')
 	api group: 'org.ow2.asm', name: 'asm', version: '9.5'
 	api group: 'org.ow2.asm', name: 'asm-tree', version: '9.5'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'
@@ -62,6 +62,14 @@ tasks.named('shadowJar', com.github.jengelman.gradle.plugins.shadow.tasks.Shadow
 	configurations = [project.configurations.shadow]
 	dependencies {
 		include(dependency('com.modrinth:Modrinth4J-fork:2.2.1'))
+	}
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.shadow
+		}
 	}
 }
 
