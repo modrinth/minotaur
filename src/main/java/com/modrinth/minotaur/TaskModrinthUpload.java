@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.responses.ResponseUpload;
-import com.modrinth.minotaur.scanner.JarInfectionScanner;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
 import masecla.modrinth4j.main.ModrinthAPI;
@@ -23,10 +22,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 
 import static com.modrinth.minotaur.Util.*;
 
@@ -234,16 +230,6 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file ->
 				files.put(file.getFile().getAsFile(), file.getAdditionalFileType().toString()));
-
-			// Scan detected files for presence of the Fractureiser malware
-			files.forEach((file, string) -> {
-				try (ZipFile zipFile = new ZipFile(file)) {
-					JarInfectionScanner.scan(getLogger(), zipFile);
-				} catch (ZipException ignored) {
-				} catch (IOException e) {
-					throw new GradleException(String.format("Failed to scan %s", file.getName()), e);
-				}
-			});
 
 			// Start construction of the actual request!
 			CreateVersionRequest data = CreateVersionRequest.builder()
