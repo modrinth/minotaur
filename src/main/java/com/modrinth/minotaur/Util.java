@@ -16,7 +16,7 @@ import java.io.File;
  * Internal utility methods to make things easier and deduplicated
  */
 @ApiStatus.Internal
-class Util {
+public class Util {
 	/**
 	 * @param project Gradle project for getting various info from
 	 * @return A valid {@link ModrinthAPI} instance
@@ -49,7 +49,7 @@ class Util {
 	 * @param project Gradle project for getting various info from
 	 * @return The {@link ModrinthExtension} for the project
 	 */
-	static ModrinthExtension ext(Project project) {
+	public static ModrinthExtension ext(Project project) {
 		return project.getExtensions().getByType(ModrinthExtension.class);
 	}
 
@@ -59,7 +59,7 @@ class Util {
 	 * @param project The Gradle project to resolve the extension and version from
 	 * @return The extension version number if set; otherwise, the Gradle project version.
 	 */
-	static String resolveVersionNumber(Project project) {
+	public static String resolveVersionNumber(Project project) {
 		ModrinthExtension ext = ext(project);
 		if (ext.getVersionNumber().getOrNull() == null) {
 			ext.getVersionNumber().set(project.getVersion().toString());
@@ -100,7 +100,7 @@ class Util {
 		return project.file(in);
 	}
 
-	static Provider<RegularFile> resolveFileProperty(Project project, Object in) {
+	public static Provider<RegularFile> resolveFileProperty(Project project, Object in) {
 		if (in == null) {
 			// If input is null we can't really do anything...
 			return project.getObjects().fileProperty();

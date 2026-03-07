@@ -5,7 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
-import masecla.modrinth4j.endpoints.version.CreateVersion.CreateVersionRequest;
+import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion;
+import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion.TemporaryCreateVersionRequest;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
@@ -199,8 +200,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			protoDependencies.stream().map(dependency -> dependency.toNew(api)).forEach(dependencies::add);
 
 			// Get each of the files, starting with the primary file
-			List<File> files = new ArrayList<>();
-			files.add(ext.getFile().get().getAsFile());
+			Map<File, String> files = new LinkedHashMap<>();
+			files.put(ext.getFile().get().getAsFile(), "primary");
 
 			// Convert each of the Object files from the extension to a proper File
 			ext.getAdditionalFiles().get().forEach(file -> {
@@ -211,11 +212,28 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 					throw new GradleException("The upload file is missing or null. " + file);
 				}
 
-				files.add(resolvedFile);
+				String fileName = resolvedFile.getName();
+				String fileType = null;
+
+				// No switches in Java 8 :(
+				if (fileName.contains("-dev.jar")) {
+					fileType = "dev-jar";
+				} else if (fileName.contains("-sources.jar")) {
+					fileType = "sources-jar";
+				} else if (fileName.contains("-javadoc.jar")) {
+					fileType = "javadoc-jar";
+				} else if (fileName.contains("asc") || fileName.contains("gpg") || fileName.contains("sig")) {
+					fileType = "signature";
+				}
+
+				files.put(resolvedFile, fileType);
 			});
 
+			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file ->
+				files.put(file.getFile().getAsFile(), file.getAdditionalFileType().toString()));
+
 			// Start construction of the actual request!
-			CreateVersionRequest data = CreateVersionRequest.builder()
+			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
 				.projectId(id)
 				.versionNumber(versionNumber)
 				.name(ext.getVersionName().get())
@@ -236,7 +254,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 
 			// Execute the request
-			ProjectVersion version = api.versions().createProjectVersion(data).join();
+			ProjectVersion version = new TemporaryCreateVersion(getProject()).sendRequest(data).join();
+			//ProjectVersion version = api.versions().createProjectVersion(data).join();
 			newVersion = version;
 			//noinspection deprecation
 			uploadInfo = new ResponseUpload(version);

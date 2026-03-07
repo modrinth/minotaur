@@ -2,7 +2,7 @@ plugins {
 	id 'com.gradle.plugin-publish' version '1.2.0'
 }
 
-version = '2.8.10'
+version = '2.9.0'
 group = 'com.modrinth.minotaur'
 base.archivesName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
@@ -19,6 +19,7 @@ dependencies {
 	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
 	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.2.0'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'
+	compileOnly annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
 }
 
 gradlePlugin {
