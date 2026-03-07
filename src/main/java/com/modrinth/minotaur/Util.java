@@ -49,7 +49,7 @@ public class Util {
 	 * @param project Gradle project for getting various info from
 	 * @return The {@link ModrinthExtension} for the project
 	 */
-	static ModrinthExtension ext(Project project) {
+	public static ModrinthExtension ext(Project project) {
 		return project.getExtensions().getByType(ModrinthExtension.class);
 	}
 
@@ -59,7 +59,7 @@ public class Util {
 	 * @param project The Gradle project to resolve the extension and version from
 	 * @return The extension version number if set; otherwise, the Gradle project version.
 	 */
-	static String resolveVersionNumber(Project project) {
+	public static String resolveVersionNumber(Project project) {
 		ModrinthExtension ext = ext(project);
 		if (ext.getVersionNumber().getOrNull() == null) {
 			ext.getVersionNumber().set(project.getVersion().toString());
