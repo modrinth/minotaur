@@ -27,8 +27,6 @@ public class Minotaur implements Plugin<Project> {
 		tasks.register("modrinth", TaskModrinthUpload.class, task -> {
 			task.setGroup("publishing");
 			task.setDescription("Upload project to Modrinth");
-			task.dependsOn(tasks.named("assemble"));
-			task.mustRunAfter(tasks.named("build"));
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
@@ -48,6 +46,8 @@ public class Minotaur implements Plugin<Project> {
 			}
 
 			evaluatedProject.getTasks().named("modrinth", TaskModrinthUpload.class).configure(task -> {
+				task.dependsOn(evaluatedProject.getTasks().named("assemble"));
+				task.mustRunAfter(evaluatedProject.getTasks().named("build"));
 				task.getWiredInputFiles().from(ext.getFile());
 				task.getInputs().property("changelog", ext.getChangelog()).optional(true);
 
