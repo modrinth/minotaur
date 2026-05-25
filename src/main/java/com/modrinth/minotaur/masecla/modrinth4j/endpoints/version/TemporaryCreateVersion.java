@@ -99,6 +99,12 @@ public class TemporaryCreateVersion extends Endpoint<ProjectVersion, TemporaryCr
 		/** The requested status of the project */
 		private ProjectStatus requestedStatus;
 
+		/** The client side environment support setting */
+		private String clientSide;
+
+		/** The server side environment support setting */
+		private String serverSide;
+
 		/** The project ID of the version */
 		@NonNull
 		private String projectId;
