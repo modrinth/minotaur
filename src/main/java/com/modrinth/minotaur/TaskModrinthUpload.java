@@ -232,8 +232,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file ->
 				files.put(file.getFile().getAsFile(), file.getAdditionalFileType().toString()));
 
-			// Start construction of the actual request!
-			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
+			TemporaryCreateVersionRequest.TemporaryCreateVersionRequestBuilder dataBuilder = TemporaryCreateVersionRequest.builder()
 				.projectId(id)
 				.versionNumber(versionNumber)
 				.name(ext.getVersionName().get())
@@ -242,12 +241,20 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.gameVersions(ext.getGameVersions().get())
 				.loaders(ext.getLoaders().get())
 				.dependencies(dependencies)
-				.files(files)
-				.build();
+				.files(files);
+
+			if (ext.getClientSide().isPresent()) {
+				dataBuilder.clientSide(ext.getClientSide().get());
+			}
+			if (ext.getServerSide().isPresent()) {
+				dataBuilder.serverSide(ext.getServerSide().get());
+			}
+
+			TemporaryCreateVersionRequest data = dataBuilder.build();
 
 			// Return early in debug mode
 			if (ext.getDebugMode().get()) {
-				Gson gson = new GsonBuilder().setPrettyPrinting().create();
+				Gson gson = new GsonBuilder().setFieldNamingPolicy(com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).setPrettyPrinting().create();
 				getLogger().lifecycle("Full data to be sent for upload: {}", gson.toJson(data));
 				getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
 				return;

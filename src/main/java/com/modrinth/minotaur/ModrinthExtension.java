@@ -16,7 +16,7 @@ import org.gradle.api.provider.Property;
  */
 public class ModrinthExtension extends DependencyDSL {
 	private final AdditionalFileDSL additionalFileDsl;
-	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom;
+	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom, clientSide, serverSide;
 	private final Property<Object> legacyUploadFile;
 	private final RegularFileProperty file;
 	private final ListProperty<Object> additionalFiles;
@@ -70,6 +70,8 @@ public class ModrinthExtension extends DependencyDSL {
 		debugMode = project.getObjects().property(Boolean.class).convention(false);
 		syncBodyFrom = project.getObjects().property(String.class);
 		autoAddDependsOn = project.getObjects().property(Boolean.class).convention(true);
+		clientSide = project.getObjects().property(String.class);
+		serverSide = project.getObjects().property(String.class);
 	}
 
 	public void additionalFiles(Action<? super AdditionalFileDSL> action) {
@@ -205,6 +207,20 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public Property<String> getSyncBodyFrom() {
 		return this.syncBodyFrom;
+	}
+
+	/**
+	 * @return The client side environment setting (required, optional, unsupported, unknown)
+	 */
+	public Property<String> getClientSide() {
+		return this.clientSide;
+	}
+
+	/**
+	 * @return The server side environment setting (required, optional, unsupported, unknown)
+	 */
+	public Property<String> getServerSide() {
+		return this.serverSide;
 	}
 
 	/**
