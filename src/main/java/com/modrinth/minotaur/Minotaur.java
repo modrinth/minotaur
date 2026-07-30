@@ -52,7 +52,6 @@ public class Minotaur implements Plugin<Project> {
 			task.setDescription("Upload project to Modrinth");
 			task.dependsOn(tasks.named("assemble"));
 			task.mustRunAfter(tasks.named("build"));
-			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 
 			task.getFile().set(ext.getFile());
 			task.getAdditionalFiles().set(ext.getAdditionalFileDsl().getAdditionalFiles());
@@ -80,7 +79,6 @@ public class Minotaur implements Plugin<Project> {
 		tasks.register("modrinthSyncBody", TaskModrinthSyncBody.class, task -> {
 			task.setGroup("publishing");
 			task.setDescription("Sync project description to Modrinth");
-			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 
 			wireUpApiSettings(task.getApiSettings(), ext, makeResolvedVersion(project, ext));
 			task.getProjectId().set(ext.getProjectId());
