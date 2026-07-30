@@ -252,7 +252,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.projectId(id)
 				.versionNumber(versionNumber)
 				.name(ext.getVersionName().get())
-				.changelog(getChangelog().get().replaceAll("\r\n", "\n"))
+				.changelog(getChangelog().get().replace("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
 				.gameVersions(ext.getGameVersions().get())
 				.loaders(ext.getLoaders().get())
