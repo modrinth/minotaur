@@ -14,6 +14,7 @@ import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
@@ -155,11 +156,11 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@TaskAction
 	public void apply() {
 		if (getLoaders().get().isEmpty()) {
-			throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
+			throw new InvalidUserDataException("Cannot upload to Modrinth: no loaders specified!");
 		}
 
 		if (getGameVersions().get().isEmpty()) {
-			throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
+			throw new InvalidUserDataException("Cannot upload to Modrinth: no game versions specified!");
 		}
 
 		try {
