@@ -132,6 +132,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract Property<Boolean> getIsDryRun();
 
 	/**
+	 * @return the mod loaders which this build supports
+	 */
+	@Input
+	public abstract ListProperty<String> getLoaders();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -162,42 +168,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 			getLogger().debug("Uploading version to project {}", id);
 
-			// Attempt to automatically resolve the loader if none were specified.
-			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
-				Map<String, String> pluginLoaderMap = new HashMap<>();
-				pluginLoaderMap.put("net.minecraftforge.gradle", "forge");
-				pluginLoaderMap.put("net.neoforged.gradle", "neoforge");
-				pluginLoaderMap.put("net.neoforged.gradle.userdev", "neoforge");
-				pluginLoaderMap.put("net.neoforged.moddev", "neoforge");
-				pluginLoaderMap.put("net.neoforged.moddev.legacyforge", "forge");
-				pluginLoaderMap.put("org.quiltmc.loom", "quilt");
-				pluginLoaderMap.put("org.spongepowered.gradle.plugin", "sponge");
-				pluginLoaderMap.put("io.papermc.paperweight.userdev", "paper");
-				pluginLoaderMap.put("xyz.jpenilla.run-paper", "paper");
-				pluginLoaderMap.put("xyz.jpenilla.run-waterfall", "waterfall");
-				pluginLoaderMap.put("xyz.jpenilla.run-velocity", "velocity");
-
-				pluginLoaderMap.forEach((plugin, loader) -> {
-					if (pluginManager.hasPlugin(plugin)) {
-						getLogger().debug("Adding loader '{}' because plugin '{}' was found.", loader, plugin);
-						add(ext.getLoaders(), loader);
-					}
-				});
-
-				if (!ext.getLoaders().get().contains("quilt") // don't count quilt-loom twice
-					&& getProject().getExtensions().findByName("loom") != null) {
-					Object loomPlatform = getProject().findProperty("loom.platform");
-					if (loomPlatform != null) {
-						getLogger().debug("Adding loader '{}' because 'loom' extension was found and loom.platform={}.", loomPlatform, loomPlatform);
-						add(ext.getLoaders(), (String) loomPlatform);
-					} else {
-						getLogger().debug("Adding loader 'fabric' because 'loom' extension was found.");
-						add(ext.getLoaders(), "fabric");
-					}
-				}
-			}
-
-			if (ext.getLoaders().get().isEmpty()) {
+			if (getLoaders().get().isEmpty()) {
 				throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
 			}
 
@@ -283,7 +254,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.changelog(getChangelog().get().replace("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
 				.gameVersions(ext.getGameVersions().get())
-				.loaders(ext.getLoaders().get())
+				.loaders(getLoaders().get())
 				.dependencies(dependencies)
 				.files(files)
 				.build();
