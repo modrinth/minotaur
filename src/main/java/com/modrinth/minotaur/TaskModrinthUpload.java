@@ -15,9 +15,9 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
-import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.Optional;
 import org.jetbrains.annotations.ApiStatus;
@@ -90,6 +90,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	 */
 	@InputFiles
 	public abstract ConfigurableFileCollection getUntypedAdditionalFiles();
+
+	/**
+	 * @return the changelog text
+	 */
+	@Input
+	public abstract Property<String> getChangelog();
 
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
@@ -246,7 +252,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.projectId(id)
 				.versionNumber(versionNumber)
 				.name(ext.getVersionName().get())
-				.changelog(ext.getChangelog().get().replaceAll("\r\n", "\n"))
+				.changelog(getChangelog().get().replaceAll("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
 				.gameVersions(ext.getGameVersions().get())
 				.loaders(ext.getLoaders().get())
