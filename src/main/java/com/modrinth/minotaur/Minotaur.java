@@ -73,6 +73,7 @@ public class Minotaur implements Plugin<Project> {
 					deps.stream()
 				).collect(Collectors.toList())
 			));
+			task.getVersionType().set(ext.getVersionType());
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
