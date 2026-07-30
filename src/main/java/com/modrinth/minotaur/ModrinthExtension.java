@@ -135,9 +135,10 @@ public class ModrinthExtension extends DependencyDSL {
 	}
 
 	/**
-	 * @return The upload artifact file. This can be any object type that is resolvable by
-	 * {@link Util#resolveFile(Project, Object)}.
+	 * @return The upload artifact file
+	 * @deprecated Use {@link #getFile()} instead.
 	 */
+	@Deprecated
 	public Property<Object> getUploadFile() {
 		return this.legacyUploadFile;
 	}
