@@ -71,7 +71,7 @@ public abstract class TaskModrinthSyncBody extends DefaultTask {
 			getLogger().debug("Syncing body to project {}", id);
 
 			Pattern excludeRegex = Pattern.compile("<!-- modrinth_exclude\\.start -->.*?<!-- modrinth_exclude\\.end -->", Pattern.DOTALL);
-			String body = getSyncBodyFrom().get().replaceAll("\r\n", "\n");
+			String body = getSyncBodyFrom().get().replace("\r\n", "\n");
 			body = excludeRegex.matcher(body).replaceAll("");
 
 			if (getIsDryRun().get()) {
