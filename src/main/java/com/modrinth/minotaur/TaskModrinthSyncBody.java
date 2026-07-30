@@ -57,10 +57,6 @@ public abstract class TaskModrinthSyncBody extends DefaultTask {
 	public void apply() {
 		getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
 		try {
-			if (getSyncBodyFrom() == null) {
-				throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
-			}
-
 			ModrinthAPI api = Util.api(getLogger(), getApiSettings());
 
 			// This isn't used until later, but resolve it early anyway to throw invalid IDs early
