@@ -1,5 +1,6 @@
 package com.modrinth.minotaur;
 
+import com.modrinth.minotaur.dependencies.container.NamedDependency;
 import com.modrinth.minotaur.request.ModrinthApiSettings;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import org.gradle.api.Plugin;
@@ -11,6 +12,8 @@ import org.gradle.api.tasks.TaskContainer;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The main class for Minotaur.
@@ -64,6 +67,12 @@ public class Minotaur implements Plugin<Project> {
 			task.getIsDryRun().set(ext.getDebugMode());
 			task.getLoaders().set(getOrDetectLoaders(ext, project));
 			task.getGameVersions().set(getOrDetectGameVersions(ext, project));
+			task.getDependencies().set(ext.getDependencies().zip(ext.getNamedDependencies(), (deps, named) ->
+				Stream.concat(
+					named.stream().map(NamedDependency::getDependency),
+					deps.stream()
+				).collect(Collectors.toList())
+			));
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 

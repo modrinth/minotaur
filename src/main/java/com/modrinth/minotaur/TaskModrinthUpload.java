@@ -24,7 +24,10 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.modrinth.minotaur.Util.api;
@@ -143,6 +146,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract ListProperty<String> getGameVersions();
 
 	/**
+	 * @return the Modrinth project dependencies of this build
+	 */
+	@Input
+	public abstract ListProperty<Dependency> getDependencies();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -181,11 +190,9 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			getLogger().debug("Uploading version to project {}", id);
 
 			// Convert each of our proto-dependencies to a proper Modrinth4J ProjectDependency
-			List<Dependency> protoDependencies = new ArrayList<>();
-			List<ProjectDependency> dependencies = new ArrayList<>();
-			protoDependencies.addAll(ext.getNamedDependenciesAsList());
-			protoDependencies.addAll(ext.getDependencies().get());
-			protoDependencies.stream().map(dependency -> dependency.toNew(api)).forEach(dependencies::add);
+			List<ProjectDependency> dependencies = getDependencies().get().stream()
+				.map(dependency -> dependency.toNew(api))
+				.collect(Collectors.toList());
 
 			// Get each of the files, starting with the primary file
 			Map<File, String> files = new LinkedHashMap<>();

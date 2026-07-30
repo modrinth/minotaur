@@ -1,8 +1,8 @@
 package com.modrinth.minotaur.dependencies.container;
 
 import com.modrinth.minotaur.dependencies.Dependency;
-import org.gradle.api.NamedDomainObjectContainer;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * the Nested Dependencies configuration
  */
 public class DependencyDSL {
-	private final NamedDomainObjectContainer<NamedDependency> dependencies;
+	private final ListProperty<NamedDependency> dependencies;
 	private final NamedDependencyContainer.Incompatible incompatible;
 	private final NamedDependencyContainer.Optional optional;
 	private final NamedDependencyContainer.Required required;
@@ -25,7 +25,7 @@ public class DependencyDSL {
 	 */
 	@Inject
 	protected DependencyDSL(final ObjectFactory objects) {
-		this.dependencies = objects.domainObjectContainer(NamedDependency.class);
+		this.dependencies = objects.listProperty(NamedDependency.class).empty();
 		this.incompatible = objects.newInstance(NamedDependencyContainer.Incompatible.class, dependencies);
 		this.optional = objects.newInstance(NamedDependencyContainer.Optional.class, dependencies);
 		this.required = objects.newInstance(NamedDependencyContainer.Required.class, dependencies);
@@ -36,46 +36,43 @@ public class DependencyDSL {
 	 * Returns the complete NamedDependency container set mapped and collected as a {@literal List<Dependency>}
 	 *
 	 * @return {@literal List<Dependency>}
+	 * @deprecated this forces eager evaluation; use {@link #getNamedDependencies()} instead
 	 */
+	@Deprecated
 	public List<Dependency> getNamedDependenciesAsList() {
-		return this.dependencies.stream().map(NamedDependency::getDependency).collect(Collectors.toList());
+		return this.dependencies.get().stream().map(NamedDependency::getDependency).collect(Collectors.toList());
 	}
 
 	/**
-	 * Retrieve the reference to an {@link NamedDependencyContainer.Incompatible} instance.
-	 * Provided as a utility method for external uses.
-	 *
-	 * @return incompatible {@link NamedDependencyContainer.Incompatible}
+	 * @return the complete NamedDependency container set
+	 */
+	public ListProperty<NamedDependency> getNamedDependencies() {
+		return this.dependencies;
+	}
+
+	/**
+	 * @return the dependency container for incompatible dependencies
 	 */
 	public NamedDependencyContainer.Incompatible getIncompatible() {
 		return this.incompatible;
 	}
 
 	/**
-	 * Retrieve the reference to an {@link NamedDependencyContainer.Optional} instance.
-	 * Provided as a utility method for external uses.
-	 *
-	 * @return optional {@link NamedDependencyContainer.Optional}
+	 * @return the dependency container for optional dependencies
 	 */
 	public NamedDependencyContainer.Optional getOptional() {
 		return this.optional;
 	}
 
 	/**
-	 * Retrieve the reference to an {@link NamedDependencyContainer.Required} instance.
-	 * Provided as a utility method for external uses.
-	 *
-	 * @return required {@link NamedDependencyContainer.Required}
+	 * @return the dependency container for required dependencies
 	 */
 	public NamedDependencyContainer.Required getRequired() {
 		return this.required;
 	}
 
 	/**
-	 * Retrieve the reference to an {@link NamedDependencyContainer.Embedded} instance.
-	 * Provided as a utility method for external uses.
-	 *
-	 * @return embedded {@link NamedDependencyContainer.Embedded}
+	 * @return the dependency container for embedded dependencies
 	 */
 	public NamedDependencyContainer.Embedded getEmbedded() {
 		return this.embedded;

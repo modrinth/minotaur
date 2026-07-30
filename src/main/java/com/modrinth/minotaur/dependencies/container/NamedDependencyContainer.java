@@ -1,31 +1,25 @@
 package com.modrinth.minotaur.dependencies.container;
 
 import com.modrinth.minotaur.dependencies.DependencyType;
-import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.provider.ListProperty;
 
 import javax.inject.Inject;
 
 /**
- * The root NamedDependencyContainer class
+ * A proxy to a dependency collection that exposes a DSL for adding dependencies by project ID or version ID.
  */
 public class NamedDependencyContainer {
-	private final NamedDomainObjectContainer<NamedDependency> dependencyContainer;
+	private final ListProperty<NamedDependency> dependencyContainer;
 	private final DependencyType dependencyType;
 
-	/**
-	 * Instantiates a new Dependency object.
-	 *
-	 * @param container      {@literal NamedDomainObjectContainer<NamedDependency>}
-	 * @param dependencyType {@link DependencyType}
-	 */
 	@Inject
-	protected NamedDependencyContainer(NamedDomainObjectContainer<NamedDependency> container, DependencyType dependencyType) {
-		this.dependencyContainer = container;
+	protected NamedDependencyContainer(ListProperty<NamedDependency> dependencyContainer, DependencyType dependencyType) {
+		this.dependencyContainer = dependencyContainer;
 		this.dependencyType = dependencyType;
 	}
 
 	/**
-	 * Creates an incompatible Dependency Container and applies the projectId property
+	 * Adds dependencies to this container by project ID
 	 *
 	 * @param projectIds the project id(s)
 	 */
@@ -36,7 +30,7 @@ public class NamedDependencyContainer {
 	}
 
 	/**
-	 * Creates a incompatible Dependency Container and applies the versionId property
+	 * Adds dependencies to this container by version ID
 	 *
 	 * @param versionIds the version id(s)
 	 */
@@ -47,7 +41,7 @@ public class NamedDependencyContainer {
 	}
 
 	/**
-	 * Creates a incompatible Dependency Container and applies the versionId property
+	 * Adds a dependency to this container by project ID and version ID
 	 *
 	 * @param projectId the project id
 	 * @param versionId the version number
@@ -56,62 +50,30 @@ public class NamedDependencyContainer {
 		this.dependencyContainer.add(new NamedDependency(projectId, versionId, this.dependencyType));
 	}
 
-	/**
-	 * Incompatible DependencyType container class
-	 */
 	public static class Incompatible extends NamedDependencyContainer {
-		/**
-		 * Instantiates a new incompatible object.
-		 *
-		 * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
-		 */
 		@Inject
-		public Incompatible(NamedDomainObjectContainer<NamedDependency> container) {
+		public Incompatible(ListProperty<NamedDependency> container) {
 			super(container, DependencyType.INCOMPATIBLE);
 		}
 	}
 
-	/**
-	 * Optional DependencyType container class
-	 */
 	public static class Optional extends NamedDependencyContainer {
-		/**
-		 * Instantiates a new optional object.
-		 *
-		 * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
-		 */
 		@Inject
-		public Optional(NamedDomainObjectContainer<NamedDependency> container) {
+		public Optional(ListProperty<NamedDependency> container) {
 			super(container, DependencyType.OPTIONAL);
 		}
 	}
 
-	/**
-	 * Required DependencyType container class
-	 */
 	public static class Required extends NamedDependencyContainer {
-		/**
-		 * Instantiates a new required object.
-		 *
-		 * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
-		 */
 		@Inject
-		public Required(NamedDomainObjectContainer<NamedDependency> container) {
+		public Required(ListProperty<NamedDependency> container) {
 			super(container, DependencyType.REQUIRED);
 		}
 	}
 
-	/**
-	 * Embedded DependencyType container class
-	 */
 	public static class Embedded extends NamedDependencyContainer {
-		/**
-		 * Instantiates a new required object.
-		 *
-		 * @param container {@literal NamedDomainObjectContainer<NamedDependency>}
-		 */
 		@Inject
-		public Embedded(NamedDomainObjectContainer<NamedDependency> container) {
+		public Embedded(ListProperty<NamedDependency> container) {
 			super(container, DependencyType.EMBEDDED);
 		}
 	}
