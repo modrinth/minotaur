@@ -5,12 +5,13 @@ import masecla.modrinth4j.endpoints.project.ModifyProject.ProjectModifications;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
+import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.ext;
 
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
@@ -28,7 +29,8 @@ public class TaskModrinthSyncBody extends DefaultTask {
 				throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
 			}
 
-			ModrinthAPI api = api(getProject());
+			Project project = getProject();
+			ModrinthAPI api = Util.api(project.getLogger(), ext.getApiUrl().get(), ext.getToken().get(), ext.getProjectId().get(), Util.resolveVersionNumber(project));
 
 			// This isn't used until later, but resolve it early anyway to throw invalid IDs early
 			String id = Objects.requireNonNull(

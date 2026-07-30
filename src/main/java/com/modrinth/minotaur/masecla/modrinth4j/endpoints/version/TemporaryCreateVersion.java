@@ -16,28 +16,14 @@
  */
 package com.modrinth.minotaur.masecla.modrinth4j.endpoints.version;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
-import com.google.gson.*;
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-
-import com.modrinth.minotaur.ModrinthExtension;
 import com.modrinth.minotaur.Util;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import lombok.Builder.Default;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.SneakyThrows;
 import masecla.modrinth4j.client.HttpClient;
 import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.client.instances.RatelimitedHttpClient;
@@ -52,7 +38,17 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import org.gradle.api.Project;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This endpoint is used to create a new version.
@@ -180,36 +176,17 @@ public class TemporaryCreateVersion extends Endpoint<ProjectVersion, TemporaryCr
 	/**
 	 * This constructor is used to create a new instance of the endpoint.
 	 */
-	public TemporaryCreateVersion(Project project) {
-		super(httpClient(project), new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+	public TemporaryCreateVersion(Logger logger, String apiUrl, String token, String projectId, String versionNumber) {
+		super(httpClient(logger, apiUrl, token, projectId, versionNumber), new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
 			.registerTypeAdapter(FacetCollection.class, new FacetCollection.FacetAdapter())
 			.registerTypeAdapter(ModrinthPermissionMask.class, new ModrinthPermissionMask.ModrinthPermissionMaskAdapter())
 			.registerTypeAdapter(Instant.class, new ISOTimeAdapter())
 			.create());
 	}
 
-	private static HttpClient httpClient(Project project) {
-		ModrinthExtension ext = Util.ext(project);
-		String url = ext.getApiUrl().get();
-		if (url.endsWith("/")) {
-			url = url.substring(0, url.length() - 1);
-		}
-
-		UserAgent agent = UserAgent.builder()
-			.authorUsername("modrinth")
-			.projectName("minotaur")
-			.projectVersion(Util.class.getPackage().getImplementationVersion())
-			.contact(ext.getProjectId().get() + "/" + Util.resolveVersionNumber(project))
-			.build();
-
-		String token = ext.getToken().get();
-		if (token.startsWith("mra")) {
-			throw new RuntimeException("Token must be a personal-access token, not a session token!");
-		} else if (!token.startsWith("mrp")) {
-			project.getLogger().warn("Using GitHub tokens for authentication is deprecated. Please begin to use personal-access tokens.");
-		}
-
-		return new RatelimitedHttpClient(agent, url, token);
+	private static HttpClient httpClient(Logger logger, String apiUrl, String token, String projectId, String versionNumber) {
+		UserAgent agent = Util.buildUserAgent(logger, token, projectId, versionNumber);
+		return new RatelimitedHttpClient(agent, Util.stripTrailingSlash(apiUrl), token);
 	}
 
 	/**

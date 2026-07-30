@@ -27,7 +27,8 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.modrinth.minotaur.Util.*;
+import static com.modrinth.minotaur.Util.api;
+import static com.modrinth.minotaur.Util.ext;
 
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
@@ -128,7 +129,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 		ModrinthExtension ext = ext(getProject());
 		PluginManager pluginManager = getProject().getPluginManager();
 		try {
-			ModrinthAPI api = api(getProject());
+			String versionNumber = getVersionNumber().get();
+			ModrinthAPI api = api(getLogger(), ext.getApiUrl().get(), ext.getToken().get(), ext.getProjectId().get(), versionNumber);
 
 			String slug = ext.getProjectId().get();
 			String id = api.projects().getProjectIdBySlug(slug).join();
@@ -142,7 +144,6 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 			getLogger().debug("Uploading version to project {}", id);
 
-			String versionNumber = getVersionNumber().get();
 			// Attempt to automatically resolve the loader if none were specified.
 			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
 				Map<String, String> pluginLoaderMap = new HashMap<>();
@@ -278,7 +279,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 
 			// Execute the request
-			ProjectVersion version = new TemporaryCreateVersion(getProject()).sendRequest(data).join();
+			ProjectVersion version = new TemporaryCreateVersion(getLogger(), ext.getApiUrl().get(), ext.getToken().get(), data.getProjectId(), data.getVersionNumber())
+				.sendRequest(data).join();
 			//ProjectVersion version = api.versions().createProjectVersion(data).join();
 			newVersion = version;
 			//noinspection deprecation
