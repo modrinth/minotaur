@@ -8,7 +8,6 @@ import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreat
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion.TemporaryCreateVersionRequest;
 import com.modrinth.minotaur.request.ModrinthApiSettings;
 import com.modrinth.minotaur.responses.ResponseUpload;
-import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
@@ -17,7 +16,6 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
@@ -138,6 +136,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract ListProperty<String> getLoaders();
 
 	/**
+	 * @return the game versions which this build supports
+	 */
+	@Input
+	public abstract ListProperty<String> getGameVersions();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -154,10 +158,13 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			throw new GradleException("Cannot upload to Modrinth: no loaders specified!");
 		}
 
+		if (getGameVersions().get().isEmpty()) {
+			throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
+		}
+
 		try {
 			getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
 			ModrinthExtension ext = ext(getProject());
-			PluginManager pluginManager = getProject().getPluginManager();
 			ModrinthAPI api = api(getLogger(), getApiSettings());
 
 			String slug = getProjectId().get();
@@ -171,51 +178,6 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				}
 			}
 			getLogger().debug("Uploading version to project {}", id);
-
-			// Attempt to automatically resolve the game version if none were specified.
-			if (ext.getGameVersions().get().isEmpty()) {
-				if (pluginManager.hasPlugin("net.minecraftforge.gradle") ||
-					pluginManager.hasPlugin("net.neoforged.gradle") ||
-					pluginManager.hasPlugin("net.neoforged.gradle.userdev")) {
-
-					String[] props = {"MC_VERSION", "minecraftVersion"};
-
-					for (String prop : props) {
-						try {
-							String version = (String) getProject().getExtensions().getExtraProperties().get(prop);
-							if (version != null) {
-								getLogger().debug("Adding fallback game version {} from ForgeGradle/NeoGradle.", version);
-								add(ext.getGameVersions(), version);
-								break;
-							}
-						} catch (Exception e) {
-							getLogger().debug("Could not find property {}", prop);
-						}
-					}
-				}
-
-				if (getProject().getExtensions().findByName("loom") != null) {
-					// Use the same method Loom uses to get the version.
-					// https://github.com/FabricMC/fabric-loom/blob/97f594da8e132c3d33cf39fe8d7cc0e76d84aeb6/src/main/java/net/fabricmc/loom/configuration/DependencyInfo.java#LL60C26-L60C56
-					String version = getProject().getConfigurations().getByName("minecraft")
-						.getDependencies().iterator().next().getVersion();
-
-					if (version != null) {
-						getLogger().debug("Adding fallback game version {} from Loom.", version);
-						add(ext.getGameVersions(), version);
-					}
-				}
-
-				if (getProject().getExtensions().findByName("paperweight") != null) {
-					String mcVer = getProject().getExtensions().getByType(PaperweightUserExtension.class).getMinecraftVersion().get();
-					getLogger().debug("Adding fallback game version {} from paperweight-userdev.", mcVer);
-					add(ext.getGameVersions(), mcVer);
-				}
-			}
-
-			if (ext.getGameVersions().get().isEmpty()) {
-				throw new GradleException("Cannot upload to Modrinth: no game versions specified!");
-			}
 
 			// Convert each of our proto-dependencies to a proper Modrinth4J ProjectDependency
 			List<Dependency> protoDependencies = new ArrayList<>();
@@ -253,7 +215,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.name(getVersionName().get())
 				.changelog(getChangelog().get().replace("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
-				.gameVersions(ext.getGameVersions().get())
+				.gameVersions(getGameVersions().get())
 				.loaders(getLoaders().get())
 				.dependencies(dependencies)
 				.files(files)
@@ -314,12 +276,5 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			fileType = "signature";
 		}
 		return fileType;
-	}
-
-	// avoid adding duplicates to `ListProperty`s
-	private static <T> void add(final ListProperty<T> list, final T element) {
-		if (!list.get().contains(element)) {
-			list.add(element);
-		}
 	}
 }
