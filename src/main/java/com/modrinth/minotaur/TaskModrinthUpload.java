@@ -100,6 +100,18 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract Property<Boolean> getFailSilently();
 
 	/**
+	 * @return the version number of the build
+	 */
+	@Input
+	public abstract Property<String> getVersionNumber();
+
+	/**
+	 * @return the version name of the build
+	 */
+	@Input
+	public abstract Property<String> getVersionName();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -130,12 +142,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 			getLogger().debug("Uploading version to project {}", id);
 
-			// Add version name if it's null
-			String versionNumber = resolveVersionNumber(getProject());
-			if (ext.getVersionName().getOrNull() == null) {
-				ext.getVersionName().set(versionNumber);
-			}
-
+			String versionNumber = getVersionNumber().get();
 			// Attempt to automatically resolve the loader if none were specified.
 			if (ext.getLoaders().get().isEmpty() && ext.getDetectLoaders().get()) {
 				Map<String, String> pluginLoaderMap = new HashMap<>();
@@ -253,7 +260,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
 				.projectId(id)
 				.versionNumber(versionNumber)
-				.name(ext.getVersionName().get())
+				.name(getVersionName().get())
 				.changelog(getChangelog().get().replace("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
 				.gameVersions(ext.getGameVersions().get())

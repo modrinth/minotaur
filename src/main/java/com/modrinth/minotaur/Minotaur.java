@@ -32,6 +32,8 @@ public class Minotaur implements Plugin<Project> {
 			task.getUntypedAdditionalFiles().from(ext.getAdditionalFiles());
 			task.getChangelog().set(ext.getChangelog());
 			task.getFailSilently().set(ext.getFailSilently());
+			task.getVersionNumber().set(ext.getVersionNumber().orElse(project.getVersion().toString()));
+			task.getVersionName().set(ext.getVersionName().orElse(task.getVersionNumber()));
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
