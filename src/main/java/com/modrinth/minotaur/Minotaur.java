@@ -83,6 +83,10 @@ public class Minotaur implements Plugin<Project> {
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 
 			wireUpApiSettings(task.getApiSettings(), ext, makeResolvedVersion(project, ext));
+			task.getProjectId().set(ext.getProjectId());
+			task.getSyncBodyFrom().set(ext.getSyncBodyFrom());
+			task.getIsDryRun().set(ext.getDebugMode());
+			task.getFailSilently().set(ext.getFailSilently());
 		});
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 		project.getLogger().debug("Successfully applied the Modrinth plugin!");
