@@ -94,6 +94,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract Property<String> getChangelog();
 
 	/**
+	 * @return whether the build should continue even if the upload failed
+	 */
+	@Input
+	public abstract Property<Boolean> getFailSilently();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -101,7 +107,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	 *   <li>Resolves each file or task to be uploaded, ensuring they're all valid</li>
 	 *   <li>Uploads these files to the Modrinth API under a new version</li>
 	 * </ol>
-	 * This is all in a try/catch block so that, if {@link ModrinthExtension#getFailSilently()} is enabled, it won't
+	 * This is all in a try/catch block so that, if {@link #getFailSilently()} is enabled, it won't
 	 * fail the build if it fails to upload the version to Modrinth.
 	 */
 	@TaskAction
@@ -285,7 +291,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				)
 			);
 		} catch (Exception e) {
-			if (ext.getFailSilently().get()) {
+			if (getFailSilently().get()) {
 				getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
 				getLogger().error("Modrinth upload failed silently.", e);
 			} else {
