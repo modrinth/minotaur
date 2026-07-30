@@ -28,6 +28,8 @@ public class Minotaur implements Plugin<Project> {
 			task.dependsOn(tasks.named("assemble"));
 			task.mustRunAfter(tasks.named("build"));
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
+
+			task.getAdditionalFiles().set(ext.getAdditionalFileDsl().getAdditionalFiles());
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 

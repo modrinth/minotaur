@@ -2,11 +2,12 @@ package com.modrinth.minotaur;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.modrinth.minotaur.additionalfiles.TypedFileCollection;
 import com.modrinth.minotaur.dependencies.Dependency;
-import com.modrinth.minotaur.responses.ResponseUpload;
-import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion.TemporaryCreateVersionRequest;
+import com.modrinth.minotaur.responses.ResponseUpload;
+import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.main.ModrinthAPI;
 import masecla.modrinth4j.model.version.ProjectVersion;
 import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependency;
@@ -70,6 +71,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@Optional
 	@ApiStatus.Internal
 	public abstract ConfigurableFileCollection getWiredInputFiles();
+
+	/**
+	 * @return additional files to upload alongside the main file
+	 */
+	@Nested
+	public abstract ListProperty<TypedFileCollection> getAdditionalFiles();
 
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
@@ -229,8 +236,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				files.put(resolvedFile, fileType);
 			});
 
-			ext.getAdditionalFileDsl().getNamedAdditionalFilesAsList().forEach(file ->
-				files.put(file.getFile().getAsFile(), file.getAdditionalFileType().toString()));
+			getAdditionalFiles().get().forEach(typedFiles -> {
+				String type = typedFiles.getType().get().toString();
+				typedFiles.getFiles().forEach(file -> files.put(file, type));
+			});
 
 			// Start construction of the actual request!
 			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()

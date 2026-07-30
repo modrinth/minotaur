@@ -1,39 +1,21 @@
 package com.modrinth.minotaur.additionalfiles;
 
-import com.modrinth.minotaur.Util;
-import org.gradle.api.NamedDomainObjectContainer;
-import org.gradle.api.Project;
+import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * the Nested AdditionalFiles configuration
  */
-public class AdditionalFileDSL {
-	private final Project project;
-	private final NamedDomainObjectContainer<NamedAdditionalFile> additionalFiles;
-
-	/**
-	 * Instantiates a new additionalFiles configuration.
-	 *
-	 * @param project Project
-	 */
+public abstract class AdditionalFileDSL {
 	@Inject
-	public AdditionalFileDSL(final Project project) {
-		this.project = project;
-		this.additionalFiles = project.getObjects().domainObjectContainer(NamedAdditionalFile.class);
-	}
+	protected abstract ObjectFactory getObjects();
 
 	/**
-	 * Returns the complete NamedAdditionalFile container set mapped and collected as a {@literal List<AdditionalFile>}
-	 *
-	 * @return {@literal List<AdditionalFile>}
+	 * @return additional files to be uploaded alongside the main file
 	 */
-	public List<NamedAdditionalFile> getNamedAdditionalFilesAsList() {
-		return new ArrayList<>(this.additionalFiles);
-	}
+	public abstract ListProperty<TypedFileCollection> getAdditionalFiles();
 
 	/**
 	 * Creates a required resource pack AdditionalFile Container
@@ -41,7 +23,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void requiredResourcePack(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.REQUIRED_RESOURCE_PACK, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.REQUIRED_RESOURCE_PACK, file);
 	}
 
 	/**
@@ -50,7 +32,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void optionalResourcePack(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.OPTIONAL_RESOURCE_PACK, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.OPTIONAL_RESOURCE_PACK, file);
 	}
 
 	/**
@@ -59,7 +41,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void sourcesJar(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.SOURCES_JAR, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.SOURCES_JAR, file);
 	}
 
 	/**
@@ -68,7 +50,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void devJar(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.DEV_JAR, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.DEV_JAR, file);
 	}
 
 	/**
@@ -77,7 +59,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void javadocJar(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.JAVADOC_JAR, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.JAVADOC_JAR, file);
 	}
 
 	/**
@@ -86,7 +68,7 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void signature(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.SIGNATURE, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.SIGNATURE, file);
 	}
 
 	/**
@@ -95,6 +77,13 @@ public class AdditionalFileDSL {
 	 * @param file the file
 	 */
 	public void other(final Object file) {
-		this.additionalFiles.add(new NamedAdditionalFile(AdditionalFileType.OTHER, Util.resolveFileProperty(project, file).get()));
+		addTyped(AdditionalFileType.OTHER, file);
+	}
+
+	private void addTyped(AdditionalFileType type, Object file) {
+		TypedFileCollection namedFiles = getObjects().newInstance(TypedFileCollection.class);
+		namedFiles.getType().set(type);
+		namedFiles.getFiles().from(file);
+		this.getAdditionalFiles().add(namedFiles);
 	}
 }
