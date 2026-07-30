@@ -9,13 +9,14 @@ import masecla.modrinth4j.model.version.ProjectVersion.ProjectDependencyType;
 import org.gradle.api.GradleException;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 
 /**
  * Represents the superclass for {@link ModDependency} and {@link VersionDependency}.
  */
-public class Dependency {
+public class Dependency implements Serializable {
 
 	/**
 	 * The {@link ProjectDependencyType} of the dependency.
