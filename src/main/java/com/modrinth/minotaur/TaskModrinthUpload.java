@@ -188,46 +188,17 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				throw new InvalidUserDataException("Cannot upload to Modrinth: invalid version type specified: " + getVersionType().get(), e);
 			}
 
+			Map<File, String> files = gatherFilesToUpload();
 			ModrinthAPI api = api(getLogger(), getApiSettings());
 
 			String slug = getProjectId().get();
-			String id = api.projects().getProjectIdBySlug(slug).join();
-			if (id == null) {
-				if (getIsDryRun().get()) {
-					getLogger().error("Cannot find project with id '{}'.", slug);
-					id = "<unknown>";
-				} else {
-					throw new GradleException(String.format("Cannot find project with id '%s'", slug));
-				}
-			}
+			String id = getMyIdFromApi(api, slug);
 			getLogger().debug("Uploading version to project {}", id);
 
 			// Convert each of our proto-dependencies to a proper Modrinth4J ProjectDependency
 			List<ProjectDependency> dependencies = getDependencies().get().stream()
 				.map(dependency -> dependency.toNew(api))
 				.collect(Collectors.toList());
-
-			// Get each of the files, starting with the primary file
-			Map<File, String> files = new LinkedHashMap<>();
-			files.put(getFile().get().getAsFile(), "primary");
-
-			// Convert each of the Object files from the extension to a proper File
-			getUntypedAdditionalFiles().forEach(resolvedFile -> {
-				String fileType = guessUploadFileType(resolvedFile.getName());
-				files.put(resolvedFile, fileType);
-			});
-
-			getAdditionalFiles().get().forEach(typedFiles -> {
-				String type = typedFiles.getType().get().toString();
-				typedFiles.getFiles().forEach(file -> files.put(file, type));
-			});
-
-			List<File> missingFiles = files.keySet().stream()
-				.filter(file -> !file.isFile())
-				.collect(Collectors.toList());
-			if (!missingFiles.isEmpty()) {
-				throw new GradleException("Missing some of the files we need to upload: " + missingFiles);
-			}
 
 			// Start construction of the actual request!
 			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
@@ -281,6 +252,44 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
 			}
 		}
+	}
+
+	private String getMyIdFromApi(ModrinthAPI api, String slug) {
+		String id = api.projects().getProjectIdBySlug(slug).join();
+		if (id == null) {
+			if (getIsDryRun().get()) {
+				getLogger().error("Cannot find project with id '{}'.", slug);
+				id = "<unknown>";
+			} else {
+				throw new GradleException(String.format("Cannot find project with id '%s'", slug));
+			}
+		}
+		return id;
+	}
+
+	private Map<File, String> gatherFilesToUpload() {
+		// Get each of the files, starting with the primary file
+		Map<File, String> files = new LinkedHashMap<>();
+		files.put(getFile().get().getAsFile(), "primary");
+
+		// Convert each of the Object files from the extension to a proper File
+		getUntypedAdditionalFiles().forEach(resolvedFile -> {
+			String fileType = guessUploadFileType(resolvedFile.getName());
+			files.put(resolvedFile, fileType);
+		});
+
+		getAdditionalFiles().get().forEach(typedFiles -> {
+			String type = typedFiles.getType().get().toString();
+			typedFiles.getFiles().forEach(file -> files.put(file, type));
+		});
+
+		List<File> missingFiles = files.keySet().stream()
+			.filter(file -> !file.isFile())
+			.collect(Collectors.toList());
+		if (!missingFiles.isEmpty()) {
+			throw new GradleException("Missing some of the files we need to upload: " + missingFiles);
+		}
+		return files;
 	}
 
 	private static @Nullable String guessUploadFileType(String fileName) {
