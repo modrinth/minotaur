@@ -1,7 +1,9 @@
 package com.modrinth.minotaur;
 
+import com.modrinth.minotaur.request.ModrinthApiSettings;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 
 /**
@@ -32,8 +34,10 @@ public class Minotaur implements Plugin<Project> {
 			task.getUntypedAdditionalFiles().from(ext.getAdditionalFiles());
 			task.getChangelog().set(ext.getChangelog());
 			task.getFailSilently().set(ext.getFailSilently());
-			task.getVersionNumber().set(ext.getVersionNumber().orElse(project.getVersion().toString()));
+			Provider<String> resolvedVersion = makeResolvedVersion(project, ext);
+			task.getVersionNumber().set(resolvedVersion);
 			task.getVersionName().set(ext.getVersionName().orElse(task.getVersionNumber()));
+			wireUpApiSettings(task.getApiSettings(), ext, resolvedVersion);
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
@@ -41,8 +45,21 @@ public class Minotaur implements Plugin<Project> {
 			task.setGroup("publishing");
 			task.setDescription("Sync project description to Modrinth");
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
+
+			wireUpApiSettings(task.getApiSettings(), ext, makeResolvedVersion(project, ext));
 		});
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 		project.getLogger().debug("Successfully applied the Modrinth plugin!");
+	}
+
+	private static Provider<String> makeResolvedVersion(Project project, ModrinthExtension ext) {
+		return ext.getVersionNumber().orElse(project.getVersion().toString());
+	}
+
+	private static void wireUpApiSettings(ModrinthApiSettings settings, ModrinthExtension ext, Provider<String> resolvedVersion) {
+		settings.getApiUrl().set(ext.getApiUrl());
+		settings.getToken().set(ext.getToken());
+		settings.getProjectId().set(ext.getProjectId());
+		settings.getVersionNumber().set(resolvedVersion);
 	}
 }

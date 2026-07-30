@@ -1,11 +1,12 @@
 package com.modrinth.minotaur;
 
 import com.google.gson.JsonObject;
+import com.modrinth.minotaur.request.ModrinthApiSettings;
 import masecla.modrinth4j.endpoints.project.ModifyProject.ProjectModifications;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
-import org.gradle.api.Project;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.UntrackedTask;
 
@@ -18,7 +19,13 @@ import static com.modrinth.minotaur.Util.ext;
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
  */
 @UntrackedTask(because = "edits data remotely on Modrinth")
-public class TaskModrinthSyncBody extends DefaultTask {
+public abstract class TaskModrinthSyncBody extends DefaultTask {
+	/**
+	 * @return the Modrinth API settings
+	 */
+	@Nested
+	public abstract ModrinthApiSettings getApiSettings();
+
 	/**
 	 * Uploads a body to a project, both of which are specified in {@link ModrinthExtension}.
 	 */
@@ -31,8 +38,7 @@ public class TaskModrinthSyncBody extends DefaultTask {
 				throw new GradleException("Sync project body task was called, but `syncBodyFrom` was null!");
 			}
 
-			Project project = getProject();
-			ModrinthAPI api = Util.api(project.getLogger(), ext.getApiUrl().get(), ext.getToken().get(), ext.getProjectId().get(), Util.resolveVersionNumber(project));
+			ModrinthAPI api = Util.api(getLogger(), getApiSettings());
 
 			// This isn't used until later, but resolve it early anyway to throw invalid IDs early
 			String id = Objects.requireNonNull(

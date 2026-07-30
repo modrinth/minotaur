@@ -1,5 +1,6 @@
 package com.modrinth.minotaur;
 
+import com.modrinth.minotaur.request.ModrinthApiSettings;
 import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.Project;
@@ -14,9 +15,12 @@ public class Util {
 	/**
 	 * @return A valid {@link ModrinthAPI} instance
 	 */
-	static ModrinthAPI api(Logger logger, String apiUrl, String token, String projectId, String versionNumber) {
-		UserAgent agent = buildUserAgent(logger, token, projectId, versionNumber);
-		return ModrinthAPI.rateLimited(agent, stripTrailingSlash(apiUrl), token);
+	static ModrinthAPI api(Logger logger, ModrinthApiSettings settings) {
+		validateToken(logger, settings.getToken().get());
+		return ModrinthAPI.rateLimited(
+			buildUserAgent(settings),
+			stripTrailingSlash(settings.getApiUrl().get()),
+			settings.getToken().get());
 	}
 
 	public static String stripTrailingSlash(String url) {
@@ -26,20 +30,21 @@ public class Util {
 		return url;
 	}
 
-	public static UserAgent buildUserAgent(Logger logger, String token, String projectId, String versionNumber) {
-		UserAgent agent = UserAgent.builder()
+	public static UserAgent buildUserAgent(ModrinthApiSettings settings) {
+		return UserAgent.builder()
 			.authorUsername("modrinth")
 			.projectName("minotaur")
 			.projectVersion(Util.class.getPackage().getImplementationVersion())
-			.contact(projectId + "/" + versionNumber)
+			.contact(settings.getProjectId().get() + "/" + settings.getVersionNumber().get())
 			.build();
+	}
 
+	public static void validateToken(Logger logger, String token) {
 		if (token.startsWith("mra")) {
 			throw new RuntimeException("Token must be a personal-access token, not a session token!");
 		} else if (!token.startsWith("mrp")) {
 			logger.warn("Using GitHub tokens for authentication is deprecated. Please begin to use personal-access tokens.");
 		}
-		return agent;
 	}
 
 	/**

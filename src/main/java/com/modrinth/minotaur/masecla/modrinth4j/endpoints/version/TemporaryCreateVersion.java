@@ -22,10 +22,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.modrinth.minotaur.Util;
+import com.modrinth.minotaur.request.ModrinthApiSettings;
 import lombok.*;
 import lombok.Builder.Default;
 import masecla.modrinth4j.client.HttpClient;
-import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.client.instances.RatelimitedHttpClient;
 import masecla.modrinth4j.endpoints.generic.Endpoint;
 import masecla.modrinth4j.model.adapters.ISOTimeAdapter;
@@ -176,17 +176,20 @@ public class TemporaryCreateVersion extends Endpoint<ProjectVersion, TemporaryCr
 	/**
 	 * This constructor is used to create a new instance of the endpoint.
 	 */
-	public TemporaryCreateVersion(Logger logger, String apiUrl, String token, String projectId, String versionNumber) {
-		super(httpClient(logger, apiUrl, token, projectId, versionNumber), new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+	public TemporaryCreateVersion(Logger logger, ModrinthApiSettings settings) {
+		super(httpClient(logger, settings), new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
 			.registerTypeAdapter(FacetCollection.class, new FacetCollection.FacetAdapter())
 			.registerTypeAdapter(ModrinthPermissionMask.class, new ModrinthPermissionMask.ModrinthPermissionMaskAdapter())
 			.registerTypeAdapter(Instant.class, new ISOTimeAdapter())
 			.create());
 	}
 
-	private static HttpClient httpClient(Logger logger, String apiUrl, String token, String projectId, String versionNumber) {
-		UserAgent agent = Util.buildUserAgent(logger, token, projectId, versionNumber);
-		return new RatelimitedHttpClient(agent, Util.stripTrailingSlash(apiUrl), token);
+	private static HttpClient httpClient(Logger logger, ModrinthApiSettings settings) {
+		Util.validateToken(logger, settings.getToken().get());
+		return new RatelimitedHttpClient(
+			Util.buildUserAgent(settings),
+			Util.stripTrailingSlash(settings.getApiUrl().get()),
+			settings.getToken().get());
 	}
 
 	/**

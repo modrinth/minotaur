@@ -6,6 +6,7 @@ import com.modrinth.minotaur.additionalfiles.TypedFileCollection;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion.TemporaryCreateVersionRequest;
+import com.modrinth.minotaur.request.ModrinthApiSettings;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import masecla.modrinth4j.main.ModrinthAPI;
@@ -113,6 +114,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract Property<String> getVersionName();
 
 	/**
+	 * @return the Modrinth API settings
+	 */
+	@Nested
+	public abstract ModrinthApiSettings getApiSettings();
+
+	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
 	 * <ol>
 	 *   <li>Attempts to automatically resolve various metadata items if not specified, throwing an exception if some
@@ -129,8 +136,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 		ModrinthExtension ext = ext(getProject());
 		PluginManager pluginManager = getProject().getPluginManager();
 		try {
-			String versionNumber = getVersionNumber().get();
-			ModrinthAPI api = api(getLogger(), ext.getApiUrl().get(), ext.getToken().get(), ext.getProjectId().get(), versionNumber);
+			ModrinthAPI api = api(getLogger(), getApiSettings());
 
 			String slug = ext.getProjectId().get();
 			String id = api.projects().getProjectIdBySlug(slug).join();
@@ -260,7 +266,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			// Start construction of the actual request!
 			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
 				.projectId(id)
-				.versionNumber(versionNumber)
+				.versionNumber(getVersionNumber().get())
 				.name(getVersionName().get())
 				.changelog(getChangelog().get().replace("\r\n", "\n"))
 				.versionType(VersionType.valueOf(ext.getVersionType().get().toUpperCase(Locale.ROOT)))
@@ -279,7 +285,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			}
 
 			// Execute the request
-			ProjectVersion version = new TemporaryCreateVersion(getLogger(), ext.getApiUrl().get(), ext.getToken().get(), data.getProjectId(), data.getVersionNumber())
+			ProjectVersion version = new TemporaryCreateVersion(getLogger(), getApiSettings())
 				.sendRequest(data).join();
 			//ProjectVersion version = api.versions().createProjectVersion(data).join();
 			newVersion = version;
