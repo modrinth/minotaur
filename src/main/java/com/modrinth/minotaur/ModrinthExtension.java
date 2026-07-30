@@ -5,13 +5,19 @@ import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.Action;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.util.concurrent.Callable;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
@@ -50,7 +56,7 @@ public class ModrinthExtension extends DependencyDSL {
 	public static final String DEFAULT_VERSION_TYPE = "release";
 
 	@Inject
-	public ModrinthExtension(ProviderFactory providers, ObjectFactory objects) {
+	public ModrinthExtension(ProviderFactory providers, ObjectFactory objects, ProjectLayout layout) {
 		super(objects);
 		additionalFileDsl = objects.newInstance(AdditionalFileDSL.class);
 		apiUrl = objects.property(String.class).convention(DEFAULT_API_URL);
@@ -60,7 +66,7 @@ public class ModrinthExtension extends DependencyDSL {
 		versionName = objects.property(String.class);
 		changelog = objects.property(String.class).convention(DEFAULT_CHANGELOG);
 		legacyUploadFile = objects.property(Object.class);
-		file = objects.fileProperty();
+		file = objects.fileProperty().convention(resolveLegacyFile(objects, layout, legacyUploadFile));
 		additionalFiles = objects.listProperty(Object.class).empty();
 		versionType = objects.property(String.class).convention(DEFAULT_VERSION_TYPE);
 		gameVersions = objects.listProperty(String.class).empty();
@@ -213,5 +219,14 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public Property<Boolean> getAutoAddDependsOn() {
 		return autoAddDependsOn;
+	}
+
+	private static Provider<RegularFile> resolveLegacyFile(ObjectFactory objects, ProjectLayout layout, Property<Object> legacyFile) {
+		ConfigurableFileCollection legacyFiles = objects.fileCollection();
+		legacyFiles.from((Callable<Object>) legacyFile::getOrNull);
+
+		Provider<File> singleLegacyFile = legacyFiles.getElements()
+			.map(files -> files.isEmpty() ? null : files.iterator().next().getAsFile());
+		return layout.file(singleLegacyFile);
 	}
 }
