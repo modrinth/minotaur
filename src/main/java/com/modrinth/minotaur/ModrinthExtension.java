@@ -216,7 +216,9 @@ public class ModrinthExtension extends DependencyDSL {
 
 	/**
 	 * @return Whether to automatically add the `dependsOn` information for upload files
+	 * @deprecated No longer does anything; Gradle does this for us.
 	 */
+	@Deprecated
 	public Property<Boolean> getAutoAddDependsOn() {
 		return autoAddDependsOn;
 	}
