@@ -15,15 +15,17 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.FileSystemLocation;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.Optional;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.modrinth.minotaur.Util.*;
 
@@ -74,9 +76,20 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 	/**
 	 * @return additional files to upload alongside the main file
+	 * @see #getUntypedAdditionalFiles()
 	 */
 	@Nested
 	public abstract ListProperty<TypedFileCollection> getAdditionalFiles();
+
+	/**
+	 * Gets a collection of additional files to upload alongside the main file.
+	 * Similar to {@link #getAdditionalFiles()}, but does not specify the type of the files, and instead relies on
+	 * the file name to determine the type.
+	 *
+	 * @return additional files to upload alongside the main file
+	 */
+	@InputFiles
+	public abstract ConfigurableFileCollection getUntypedAdditionalFiles();
 
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
@@ -211,28 +224,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			files.put(ext.getFile().get().getAsFile(), "primary");
 
 			// Convert each of the Object files from the extension to a proper File
-			ext.getAdditionalFiles().get().forEach(file -> {
-				File resolvedFile = resolveFile(getProject(), file);
-
-				// Ensure the file actually exists before trying to upload it.
-				if (resolvedFile == null || !resolvedFile.exists()) {
-					throw new GradleException("The upload file is missing or null. " + file);
-				}
-
-				String fileName = resolvedFile.getName();
-				String fileType = null;
-
-				// No switches in Java 8 :(
-				if (fileName.contains("-dev.jar")) {
-					fileType = "dev-jar";
-				} else if (fileName.contains("-sources.jar")) {
-					fileType = "sources-jar";
-				} else if (fileName.contains("-javadoc.jar")) {
-					fileType = "javadoc-jar";
-				} else if (fileName.contains("asc") || fileName.contains("gpg") || fileName.contains("sig")) {
-					fileType = "signature";
-				}
-
+			getUntypedAdditionalFiles().forEach(resolvedFile -> {
+				String fileType = guessUploadFileType(resolvedFile.getName());
 				files.put(resolvedFile, fileType);
 			});
 
@@ -240,6 +233,13 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				String type = typedFiles.getType().get().toString();
 				typedFiles.getFiles().forEach(file -> files.put(file, type));
 			});
+
+			List<File> missingFiles = files.keySet().stream()
+				.filter(file -> !file.isFile())
+				.collect(Collectors.toList());
+			if (!missingFiles.isEmpty()) {
+				throw new GradleException("Missing some of the files we need to upload: " + missingFiles);
+			}
 
 			// Start construction of the actual request!
 			TemporaryCreateVersionRequest data = TemporaryCreateVersionRequest.builder()
@@ -290,6 +290,22 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
 			}
 		}
+	}
+
+	private static @Nullable String guessUploadFileType(String fileName) {
+		String fileType = null;
+
+		// No switches in Java 8 :(
+		if (fileName.contains("-dev.jar")) {
+			fileType = "dev-jar";
+		} else if (fileName.contains("-sources.jar")) {
+			fileType = "sources-jar";
+		} else if (fileName.contains("-javadoc.jar")) {
+			fileType = "javadoc-jar";
+		} else if (fileName.contains("asc") || fileName.contains("gpg") || fileName.contains("sig")) {
+			fileType = "signature";
+		}
+		return fileType;
 	}
 
 	// avoid adding duplicates to `ListProperty`s

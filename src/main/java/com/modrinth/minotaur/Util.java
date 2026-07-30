@@ -3,14 +3,7 @@ package com.modrinth.minotaur;
 import masecla.modrinth4j.client.agent.UserAgent;
 import masecla.modrinth4j.main.ModrinthAPI;
 import org.gradle.api.Project;
-import org.gradle.api.file.RegularFile;
-import org.gradle.api.provider.Provider;
-import org.gradle.api.tasks.TaskProvider;
-import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 /**
  * Internal utility methods to make things easier and deduplicated
@@ -65,66 +58,5 @@ public class Util {
 			ext.getVersionNumber().set(project.getVersion().toString());
 		}
 		return ext.getVersionNumber().get();
-	}
-
-	/**
-	 * Attempts to resolve a file using an arbitrary object provided by a user defined gradle
-	 * task.
-	 *
-	 * @param in The arbitrary input object from the user.
-	 * @return A file handle for the resolved input. If the input can not be resolved this will be null or the fallback.
-	 */
-	@Nullable
-	static File resolveFile(Project project, Object in) {
-		if (in == null) {
-			// If input is null we can't really do anything...
-			return null;
-		} else if (in instanceof File) {
-			// If the file is a Java file handle no additional handling is needed.
-			return (File) in;
-		} else if (in instanceof AbstractArchiveTask) {
-			// Grabs the file from an archive task. Allows build scripts to do things like the jar task directly.
-			return ((AbstractArchiveTask) in).getArchiveFile().get().getAsFile();
-		} else if (in instanceof TaskProvider<?>) {
-			// Grabs the file from an archive task wrapped in a provider. Allows Kotlin DSL buildscripts to also specify
-			// the jar task directly, rather than having to call #get() before running.
-			Object provided = ((TaskProvider<?>) in).get();
-
-			// Check to see if the task provided is actually an AbstractArchiveTask.
-			if (provided instanceof AbstractArchiveTask) {
-				return ((AbstractArchiveTask) provided).getArchiveFile().get().getAsFile();
-			}
-		}
-
-		// None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
-		return project.file(in);
-	}
-
-	public static Provider<RegularFile> resolveFileProperty(Project project, Object in) {
-		if (in == null) {
-			// If input is null we can't really do anything...
-			return project.getObjects().fileProperty();
-		} else if (in instanceof File) {
-			// If the file is a Java file handle no additional handling is needed.
-			return project.getLayout().file(project.provider(() -> (File) in));
-		} else if (in instanceof AbstractArchiveTask) {
-			// Grabs the file from an archive task. Allows build scripts to do things like the jar task directly.
-			return ((AbstractArchiveTask) in).getArchiveFile();
-		} else if (in instanceof TaskProvider<?>) {
-			// Grabs the file from an archive task wrapped in a provider. Allows Kotlin DSL buildscripts to also specify
-			// the jar task directly, rather than having to call #get() before running.
-			Object provided = ((TaskProvider<?>) in).get();
-
-			return ((TaskProvider<?>) in).flatMap(task -> {
-				// Check to see if the task provided is actually an AbstractArchiveTask.
-				if (provided instanceof AbstractArchiveTask) {
-					return ((AbstractArchiveTask) provided).getArchiveFile();
-				}
-				return project.getLayout().file(project.provider(() -> project.file(in)));
-			});
-		}
-
-		// None of the previous checks worked. Fall back to Gradle's built-in file resolution mechanics.
-		return project.getLayout().file(project.provider(() -> project.file(in)));
 	}
 }

@@ -30,6 +30,7 @@ public class Minotaur implements Plugin<Project> {
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 
 			task.getAdditionalFiles().set(ext.getAdditionalFileDsl().getAdditionalFiles());
+			task.getUntypedAdditionalFiles().from(ext.getAdditionalFiles());
 		});
 		project.getLogger().debug("Registered the `modrinth` task.");
 
