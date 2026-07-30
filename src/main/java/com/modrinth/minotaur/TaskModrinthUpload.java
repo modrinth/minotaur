@@ -312,7 +312,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				newVersion.getId(),
 				String.format(
 					"%s/project/%s/version/%s",
-					ext.getApiUrl().get().replaceFirst("-?api", "").replaceFirst("/?v2/?", "").replaceFirst("//\\.", "//"),
+					getApiSettings().getApiUrl().get().replaceFirst("-?api", "").replaceFirst("/?v2/?", "").replaceFirst("//\\.", "//"),
 					id,
 					newVersion.getId()
 				)
