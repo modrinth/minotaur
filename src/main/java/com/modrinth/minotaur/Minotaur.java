@@ -29,6 +29,7 @@ public class Minotaur implements Plugin<Project> {
 			task.mustRunAfter(tasks.named("build"));
 			task.notCompatibleWithConfigurationCache("Fundamentally incompatible with configuration cache");
 
+			task.getFile().set(ext.getFile());
 			task.getAdditionalFiles().set(ext.getAdditionalFileDsl().getAdditionalFiles());
 			task.getUntypedAdditionalFiles().from(ext.getAdditionalFiles());
 			task.getChangelog().set(ext.getChangelog());

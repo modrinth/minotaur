@@ -15,11 +15,11 @@ import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.*;
-import org.gradle.api.tasks.Optional;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,14 +65,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	}
 
 	/**
-	 * Input property used to add automatic task dependencies.
-	 *
-	 * @return property
+	 * @return the main file to upload
 	 */
-	@InputFiles
-	@Optional
-	@ApiStatus.Internal
-	public abstract ConfigurableFileCollection getWiredInputFiles();
+	@InputFile
+	public abstract RegularFileProperty getFile();
 
 	/**
 	 * @return additional files to upload alongside the main file
@@ -227,7 +223,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 
 			// Get each of the files, starting with the primary file
 			Map<File, String> files = new LinkedHashMap<>();
-			files.put(ext.getFile().get().getAsFile(), "primary");
+			files.put(getFile().get().getAsFile(), "primary");
 
 			// Convert each of the Object files from the extension to a proper File
 			getUntypedAdditionalFiles().forEach(resolvedFile -> {
