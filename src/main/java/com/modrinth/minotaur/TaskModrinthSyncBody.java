@@ -7,6 +7,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.UntrackedTask;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -16,6 +17,7 @@ import static com.modrinth.minotaur.Util.ext;
 /**
  * A task used to communicate with Modrinth for the purpose of syncing project body with, for example, a README.
  */
+@UntrackedTask(because = "edits data remotely on Modrinth")
 public class TaskModrinthSyncBody extends DefaultTask {
 	/**
 	 * Uploads a body to a project, both of which are specified in {@link ModrinthExtension}.
