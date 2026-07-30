@@ -16,9 +16,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.plugins.PluginManager;
 import org.gradle.api.provider.ListProperty;
-import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.*;
 import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.TaskAction;
 import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
@@ -30,6 +29,7 @@ import static com.modrinth.minotaur.Util.*;
 /**
  * A task used to communicate with Modrinth for the purpose of uploading build artifacts.
  */
+@UntrackedTask(because = "uploads to Modrinth")
 public abstract class TaskModrinthUpload extends DefaultTask {
 	/**
 	 * The response from the API when the file was uploaded successfully.
