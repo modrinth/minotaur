@@ -5,10 +5,13 @@ import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.Action;
-import org.gradle.api.Project;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.ProviderFactory;
+
+import javax.inject.Inject;
 
 /**
  * Class defining the extension used for configuring {@link TaskModrinthUpload}. This is done via the {@code modrinth
@@ -46,30 +49,28 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public static final String DEFAULT_VERSION_TYPE = "release";
 
-	/**
-	 * @param project The Gradle project that the extension is applied to
-	 */
-	public ModrinthExtension(Project project) {
-		super(project.getObjects());
-		additionalFileDsl = project.getObjects().newInstance(AdditionalFileDSL.class);
-		apiUrl = project.getObjects().property(String.class).convention(DEFAULT_API_URL);
-		token = project.getObjects().property(String.class).convention(project.getProviders().environmentVariable("MODRINTH_TOKEN"));
-		projectId = project.getObjects().property(String.class);
-		versionNumber = project.getObjects().property(String.class);
-		versionName = project.getObjects().property(String.class);
-		changelog = project.getObjects().property(String.class).convention(DEFAULT_CHANGELOG);
-		legacyUploadFile = project.getObjects().property(Object.class);
-		file = project.getObjects().fileProperty().convention(legacyUploadFile.flatMap(o -> Util.resolveFileProperty(project, o)));
-		additionalFiles = project.getObjects().listProperty(Object.class).empty();
-		versionType = project.getObjects().property(String.class).convention(DEFAULT_VERSION_TYPE);
-		gameVersions = project.getObjects().listProperty(String.class).empty();
-		loaders = project.getObjects().listProperty(String.class).empty();
-		dependencies = project.getObjects().listProperty(Dependency.class).empty();
-		failSilently = project.getObjects().property(Boolean.class).convention(false);
-		detectLoaders = project.getObjects().property(Boolean.class).convention(true);
-		debugMode = project.getObjects().property(Boolean.class).convention(false);
-		syncBodyFrom = project.getObjects().property(String.class);
-		autoAddDependsOn = project.getObjects().property(Boolean.class).convention(true);
+	@Inject
+	public ModrinthExtension(ProviderFactory providers, ObjectFactory objects) {
+		super(objects);
+		additionalFileDsl = objects.newInstance(AdditionalFileDSL.class);
+		apiUrl = objects.property(String.class).convention(DEFAULT_API_URL);
+		token = objects.property(String.class).convention(providers.environmentVariable("MODRINTH_TOKEN"));
+		projectId = objects.property(String.class);
+		versionNumber = objects.property(String.class);
+		versionName = objects.property(String.class);
+		changelog = objects.property(String.class).convention(DEFAULT_CHANGELOG);
+		legacyUploadFile = objects.property(Object.class);
+		file = objects.fileProperty();
+		additionalFiles = objects.listProperty(Object.class).empty();
+		versionType = objects.property(String.class).convention(DEFAULT_VERSION_TYPE);
+		gameVersions = objects.listProperty(String.class).empty();
+		loaders = objects.listProperty(String.class).empty();
+		dependencies = objects.listProperty(Dependency.class).empty();
+		failSilently = objects.property(Boolean.class).convention(false);
+		detectLoaders = objects.property(Boolean.class).convention(true);
+		debugMode = objects.property(Boolean.class).convention(false);
+		syncBodyFrom = objects.property(String.class);
+		autoAddDependsOn = objects.property(Boolean.class).convention(true);
 	}
 
 	public void additionalFiles(Action<? super AdditionalFileDSL> action) {

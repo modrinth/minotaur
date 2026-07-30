@@ -18,7 +18,7 @@ public class Minotaur implements Plugin<Project> {
 	 */
 	@Override
 	public void apply(final Project project) {
-		ModrinthExtension ext = project.getExtensions().create("modrinth", ModrinthExtension.class, project);
+		ModrinthExtension ext = project.getExtensions().create("modrinth", ModrinthExtension.class);
 		project.getLogger().debug("Created the `modrinth` extension.");
 
 		TaskContainer tasks = project.getTasks();
