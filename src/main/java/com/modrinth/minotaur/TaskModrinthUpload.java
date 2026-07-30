@@ -102,6 +102,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	public abstract Property<Boolean> getFailSilently();
 
 	/**
+	 * @return The ID of the project to upload the file to.
+	 */
+	@Input
+	public abstract Property<String> getProjectId();
+
+	/**
 	 * @return the version number of the build
 	 */
 	@Input
@@ -118,6 +124,12 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	 */
 	@Nested
 	public abstract ModrinthApiSettings getApiSettings();
+
+	/**
+	 * @return whether the task should only simulate the upload without actually performing it
+	 */
+	@Input
+	public abstract Property<Boolean> getIsDryRun();
 
 	/**
 	 * Defines what to do when the Modrinth upload task is invoked.
@@ -138,10 +150,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 		try {
 			ModrinthAPI api = api(getLogger(), getApiSettings());
 
-			String slug = ext.getProjectId().get();
+			String slug = getProjectId().get();
 			String id = api.projects().getProjectIdBySlug(slug).join();
 			if (id == null) {
-				if (ext.getDebugMode().get()) {
+				if (getIsDryRun().get()) {
 					getLogger().error("Cannot find project with id '{}'.", slug);
 					id = "<unknown>";
 				} else {
@@ -277,7 +289,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.build();
 
 			// Return early in debug mode
-			if (ext.getDebugMode().get()) {
+			if (getIsDryRun().get()) {
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 				getLogger().lifecycle("Full data to be sent for upload: {}", gson.toJson(data));
 				getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
