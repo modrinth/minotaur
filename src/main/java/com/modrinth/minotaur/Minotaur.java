@@ -6,8 +6,6 @@ import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 
-import static com.modrinth.minotaur.Util.ext;
-
 /**
  * The main class for Minotaur.
  */
@@ -20,7 +18,7 @@ public class Minotaur implements Plugin<Project> {
 	 */
 	@Override
 	public void apply(final Project project) {
-		project.getExtensions().create("modrinth", ModrinthExtension.class, project);
+		ModrinthExtension ext = project.getExtensions().create("modrinth", ModrinthExtension.class, project);
 		project.getLogger().debug("Created the `modrinth` extension.");
 
 		TaskContainer tasks = project.getTasks();
@@ -41,8 +39,6 @@ public class Minotaur implements Plugin<Project> {
 		project.getLogger().debug("Registered the `modrinthSyncBody` task.");
 
 		project.afterEvaluate(evaluatedProject -> {
-			ModrinthExtension ext = ext(evaluatedProject);
-
 			if (!ext.getAutoAddDependsOn().getOrElse(true)) {
 				return;
 			}
