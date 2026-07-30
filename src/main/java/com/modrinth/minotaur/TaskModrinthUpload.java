@@ -171,6 +171,8 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	@TaskAction
 	public void apply() {
 		try {
+			getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
+
 			if (getLoaders().get().isEmpty()) {
 				throw new InvalidUserDataException("Cannot upload to Modrinth: no loaders specified!");
 			}
@@ -186,7 +188,6 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				throw new InvalidUserDataException("Cannot upload to Modrinth: invalid version type specified: " + getVersionType().get(), e);
 			}
 
-			getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
 			ModrinthAPI api = api(getLogger(), getApiSettings());
 
 			String slug = getProjectId().get();
