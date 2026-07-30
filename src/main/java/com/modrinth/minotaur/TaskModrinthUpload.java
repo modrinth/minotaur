@@ -170,23 +170,22 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 	 */
 	@TaskAction
 	public void apply() {
-		if (getLoaders().get().isEmpty()) {
-			throw new InvalidUserDataException("Cannot upload to Modrinth: no loaders specified!");
-		}
-
-		if (getGameVersions().get().isEmpty()) {
-			throw new InvalidUserDataException("Cannot upload to Modrinth: no game versions specified!");
-		}
-
-		VersionType versionType;
 		try {
-			versionType = VersionType.valueOf(getVersionType().get().toUpperCase(Locale.ROOT));
-		} catch (IllegalArgumentException e) {
-			throw new InvalidUserDataException("Cannot upload to Modrinth: invalid version type specified: " + getVersionType().get(), e);
-		}
+			if (getLoaders().get().isEmpty()) {
+				throw new InvalidUserDataException("Cannot upload to Modrinth: no loaders specified!");
+			}
 
+			if (getGameVersions().get().isEmpty()) {
+				throw new InvalidUserDataException("Cannot upload to Modrinth: no game versions specified!");
+			}
 
-		try {
+			VersionType versionType;
+			try {
+				versionType = VersionType.valueOf(getVersionType().get().toUpperCase(Locale.ROOT));
+			} catch (IllegalArgumentException e) {
+				throw new InvalidUserDataException("Cannot upload to Modrinth: invalid version type specified: " + getVersionType().get(), e);
+			}
+
 			getLogger().lifecycle("Minotaur: {}", getClass().getPackage().getImplementationVersion());
 			ModrinthAPI api = api(getLogger(), getApiSettings());
 
@@ -276,7 +275,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				getLogger().info("Failed to upload to Modrinth. Check logs for more info.");
 				getLogger().error("Modrinth upload failed silently.", e);
 			} else if (e instanceof GradleException) {
-				throw e;
+				throw (GradleException) e;
 			} else {
 				throw new GradleException("Failed to upload file to Modrinth! " + e.getMessage(), e);
 			}
