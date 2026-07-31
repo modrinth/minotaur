@@ -205,6 +205,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 			if (getIsDryRun().get()) {
 				Gson gson = new GsonBuilder().setPrettyPrinting().create();
 				getLogger().lifecycle("Full data to be sent for upload: {}", gson.toJson(data));
+				getLogger().lifecycle("Files to be uploaded: {}", data.getFileNames().stream().collect(Collectors.joining(", ")));
 				getLogger().lifecycle("Minotaur debug mode is enabled. Not going to upload this version.");
 				return;
 			}
