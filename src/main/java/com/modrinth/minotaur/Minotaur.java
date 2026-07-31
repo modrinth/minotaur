@@ -7,6 +7,7 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.plugins.ExtraPropertiesExtension;
 import org.gradle.api.plugins.PluginManager;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.TaskContainer;
 import org.slf4j.Logger;
@@ -46,6 +47,16 @@ public class Minotaur implements Plugin<Project> {
 		ModrinthExtension ext = project.getExtensions().create("modrinth", ModrinthExtension.class);
 		project.getLogger().debug("Created the `modrinth` extension.");
 
+		ListProperty<String> defaultLoaders = project.getObjects().listProperty(String.class).empty();
+		ListProperty<String> defaultGameVersions = project.getObjects().listProperty(String.class).empty();
+
+		// Some of the plugins we inspect register their extensions *super* late
+		// and this is the only thing that's late enough, as far as I can tell.
+		project.getGradle().projectsEvaluated(g -> {
+			defaultLoaders.set(detectLoaders(project));
+			defaultGameVersions.set(detectGameVersions(project));
+		});
+
 		TaskContainer tasks = project.getTasks();
 		tasks.register("modrinth", TaskModrinthUpload.class, task -> {
 			task.setGroup("publishing");
@@ -64,8 +75,8 @@ public class Minotaur implements Plugin<Project> {
 			task.getVersionName().set(ext.getVersionName().orElse(task.getVersionNumber()));
 			wireUpApiSettings(task.getApiSettings(), ext, resolvedVersion);
 			task.getIsDryRun().set(ext.getDebugMode());
-			task.getLoaders().set(getOrDetectLoaders(ext, project));
-			task.getGameVersions().set(getOrDetectGameVersions(ext, project));
+			task.getLoaders().set(getOrDefaultLoaders(ext, defaultLoaders));
+			task.getGameVersions().set(getOrDefaultGameVersions(ext, defaultGameVersions));
 			task.getDependencies().set(ext.getDependencies().zip(ext.getNamedDependencies(), (deps, named) ->
 				Stream.concat(
 					named.stream().map(NamedDependency::getDependency),
@@ -101,10 +112,9 @@ public class Minotaur implements Plugin<Project> {
 		settings.getVersionNumber().set(resolvedVersion);
 	}
 
-	private static Provider<List<String>> getOrDetectLoaders(ModrinthExtension ext, Project project) {
-		List<String> detectedLoaders = detectLoaders(project);
+	private static Provider<List<String>> getOrDefaultLoaders(ModrinthExtension ext, Provider<List<String>> defaultLoaders) {
 		Provider<List<String>> fallback = ext.getDetectLoaders()
-			.map(detect -> detect ? detectedLoaders : Collections.emptyList());
+			.zip(defaultLoaders, (detect, loaders) -> detect ? loaders : Collections.emptyList());
 		return ext.getLoaders().map(l -> l.isEmpty() ? null : l).orElse(fallback);
 	}
 
@@ -133,9 +143,8 @@ public class Minotaur implements Plugin<Project> {
 		return new ArrayList<>(loaders);
 	}
 
-	private static Provider<List<String>> getOrDetectGameVersions(ModrinthExtension ext, Project project) {
-		List<String> detectedVersions = detectGameVersions(project);
-		return ext.getGameVersions().map(v -> v.isEmpty() ? detectedVersions : v);
+	private static Provider<List<String>> getOrDefaultGameVersions(ModrinthExtension ext, Provider<List<String>> detectedVersions) {
+		return ext.getGameVersions().zip(detectedVersions, (v, def) -> v.isEmpty() ? def : v);
 	}
 
 	private static List<String> detectGameVersions(Project project) {
