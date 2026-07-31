@@ -96,7 +96,7 @@ public class Minotaur implements Plugin<Project> {
 
 	private static void wireUpApiSettings(ModrinthApiSettings settings, ModrinthExtension ext, Provider<String> resolvedVersion) {
 		settings.getApiUrl().set(ext.getApiUrl());
-		settings.getToken().set(ext.getToken());
+		settings.getToken().set(ext.getToken().orElse(ext.getDebugMode().map(d -> d ? "mrp-meow" : null)));
 		settings.getProjectId().set(ext.getProjectId());
 		settings.getVersionNumber().set(resolvedVersion);
 	}
