@@ -20,6 +20,11 @@ dependencies {
 	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.2.0'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'
 	compileOnly annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.10.0'
+}
+
+test {
+	useJUnitPlatform()
 }
 
 gradlePlugin {

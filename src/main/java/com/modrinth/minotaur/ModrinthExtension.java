@@ -210,14 +210,14 @@ public class ModrinthExtension extends DependencyDSL {
 	}
 
 	/**
-	 * @return The client side environment setting (required, optional, unsupported, unknown)
+	 * @return The client side environment setting. See {@link com.modrinth.minotaur.request.EnvironmentSupport}.
 	 */
 	public Property<String> getClientSide() {
 		return this.clientSide;
 	}
 
 	/**
-	 * @return The server side environment setting (required, optional, unsupported, unknown)
+	 * @return The server side environment setting. See {@link com.modrinth.minotaur.request.EnvironmentSupport}.
 	 */
 	public Property<String> getServerSide() {
 		return this.serverSide;

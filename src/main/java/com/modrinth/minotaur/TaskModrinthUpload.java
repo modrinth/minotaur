@@ -3,6 +3,7 @@ package com.modrinth.minotaur;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.request.EnvironmentSupport;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion;
@@ -244,10 +245,10 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.files(files);
 
 			if (ext.getClientSide().isPresent()) {
-				dataBuilder.clientSide(ext.getClientSide().get());
+				dataBuilder.clientSide(EnvironmentSupport.from(ext.getClientSide().get()));
 			}
 			if (ext.getServerSide().isPresent()) {
-				dataBuilder.serverSide(ext.getServerSide().get());
+				dataBuilder.serverSide(EnvironmentSupport.from(ext.getServerSide().get()));
 			}
 
 			TemporaryCreateVersionRequest data = dataBuilder.build();
