@@ -31,6 +31,7 @@ import com.google.gson.reflect.TypeToken;
 
 import com.modrinth.minotaur.ModrinthExtension;
 import com.modrinth.minotaur.Util;
+import com.modrinth.minotaur.request.EnvironmentSupport;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -98,6 +99,12 @@ public class TemporaryCreateVersion extends Endpoint<ProjectVersion, TemporaryCr
 
 		/** The requested status of the project */
 		private ProjectStatus requestedStatus;
+
+		/** The client side environment support setting */
+		private EnvironmentSupport clientSide;
+
+		/** The server side environment support setting */
+		private EnvironmentSupport serverSide;
 
 		/** The project ID of the version */
 		@NonNull
