@@ -18,6 +18,7 @@ dependencies {
 	compileOnly gradleApi()
 	compileOnly group: 'org.jetbrains', name: 'annotations', version: '+'
 	api group: 'dev.masecla', name: 'Modrinth4J', version: '2.2.0'
+	api group: 'com.squareup.okio', name: 'okio', version: '3.4.0'
 	compileOnly group: 'io.papermc.paperweight', name: 'paperweight-userdev', version: '1.5.2'
 	compileOnly annotationProcessor(group: 'org.projectlombok', name: 'lombok', version: '1.18.30')
 }
