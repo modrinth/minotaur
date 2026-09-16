@@ -3,6 +3,7 @@ package com.modrinth.minotaur;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.modrinth.minotaur.dependencies.Dependency;
+import com.modrinth.minotaur.request.Environment;
 import com.modrinth.minotaur.responses.ResponseUpload;
 import io.papermc.paperweight.userdev.PaperweightUserExtension;
 import com.modrinth.minotaur.masecla.modrinth4j.endpoints.version.TemporaryCreateVersion;
@@ -243,6 +244,7 @@ public abstract class TaskModrinthUpload extends DefaultTask {
 				.loaders(ext.getLoaders().get())
 				.dependencies(dependencies)
 				.files(files)
+				.environment(ext.getEnvironment().map(environment -> Environment.valueOf(environment.toUpperCase(Locale.ROOT))).getOrNull())
 				.build();
 
 			// Return early in debug mode

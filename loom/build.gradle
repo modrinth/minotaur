@@ -40,6 +40,7 @@ modrinth {
 		embedded.project "uiW75cBG"
 		required.version "modmenu", "11.0.2"
 	}
+	environment = "client_and_server"
 	debugMode = true
 }
 

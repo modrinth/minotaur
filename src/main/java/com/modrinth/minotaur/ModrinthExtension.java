@@ -3,6 +3,7 @@ package com.modrinth.minotaur;
 import com.modrinth.minotaur.additionalfiles.AdditionalFileDSL;
 import com.modrinth.minotaur.dependencies.Dependency;
 import com.modrinth.minotaur.dependencies.container.DependencyDSL;
+import com.modrinth.minotaur.request.Environment;
 import masecla.modrinth4j.model.version.ProjectVersion.VersionType;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
@@ -16,7 +17,7 @@ import org.gradle.api.provider.Property;
  */
 public class ModrinthExtension extends DependencyDSL {
 	private final AdditionalFileDSL additionalFileDsl;
-	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, syncBodyFrom;
+	private final Property<String> apiUrl, token, projectId, versionNumber, versionName, changelog, versionType, environment, syncBodyFrom;
 	private final Property<Object> legacyUploadFile;
 	private final RegularFileProperty file;
 	private final ListProperty<Object> additionalFiles;
@@ -62,6 +63,7 @@ public class ModrinthExtension extends DependencyDSL {
 		file = project.getObjects().fileProperty().convention(legacyUploadFile.flatMap(o -> Util.resolveFileProperty(project, o)));
 		additionalFiles = project.getObjects().listProperty(Object.class).empty();
 		versionType = project.getObjects().property(String.class).convention(DEFAULT_VERSION_TYPE);
+		environment = project.getObjects().property(String.class);
 		gameVersions = project.getObjects().listProperty(String.class).empty();
 		loaders = project.getObjects().listProperty(String.class).empty();
 		dependencies = project.getObjects().listProperty(Dependency.class).empty();
@@ -156,6 +158,13 @@ public class ModrinthExtension extends DependencyDSL {
 	 */
 	public Property<String> getVersionType() {
 		return this.versionType;
+	}
+
+	/**
+	 * @return The environment of the version. See {@link Environment}.
+	 */
+	public Property<String> getEnvironment() {
+		return this.environment;
 	}
 
 	/**
