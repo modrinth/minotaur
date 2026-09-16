@@ -2,7 +2,7 @@ plugins {
 	id 'com.gradle.plugin-publish' version '1.2.0'
 }
 
-version = '2.9.0'
+version = '2.10.0'
 group = 'com.modrinth.minotaur'
 base.archivesName = 'Minotaur'
 description = 'Modrinth plugin for publishing builds to the website!'
